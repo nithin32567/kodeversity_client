@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef, type FormEvent } from "react";
-import { useAuth } from "@/presentation/hooks/useAuth";
+import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import { getAuthErrorMessage } from "@/domain/auth";
 import {
   Dialog,
@@ -8,8 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/presentation/components/ui/dialog";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/presentation/components/ui/input-otp";
+} from "@/presentation/core-ui/dialog";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/presentation/core-ui/input-otp";
 
 // ---------------------------------------------------------------------------
 // Route definition

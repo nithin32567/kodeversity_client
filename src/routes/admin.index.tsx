@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { analyticsService, type DashboardAnalytics } from "@/infrastructure/admin/analyticsService";
-import { KpiCard } from "@/presentation/components/admin/KpiCard";
-import { OverviewAnalytics } from "@/presentation/components/admin/OverviewAnalytics";
-import { RecentActivities } from "@/presentation/components/admin/RecentActivities";
-import { SystemStatus } from "@/presentation/components/admin/SystemStatus";
-import { TopCategories } from "@/presentation/components/admin/TopCategories";
-import { EnrollmentsDonut } from "@/presentation/components/admin/EnrollmentsDonut";
-import { RevenueBars } from "@/presentation/components/admin/RevenueBars";
-import { QuickActions } from "@/presentation/components/admin/QuickActions";
-import { TopCoursesTable } from "@/presentation/components/admin/TopCoursesTable";
+import { KpiCard } from "@/presentation/features/admin-analytics/components/KpiCard";
+import { OverviewAnalytics } from "@/presentation/features/admin-analytics/components/OverviewAnalytics";
+import { RecentActivities } from "@/presentation/features/admin-analytics/components/RecentActivities";
+import { SystemStatus } from "@/presentation/features/admin-analytics/components/SystemStatus";
+import { TopCategories } from "@/presentation/features/admin-analytics/components/TopCategories";
+import { EnrollmentsDonut } from "@/presentation/features/admin-analytics/components/EnrollmentsDonut";
+import { RevenueBars } from "@/presentation/features/admin-analytics/components/RevenueBars";
+import { QuickActions } from "@/presentation/features/admin-analytics/components/QuickActions";
+import { TopCoursesTable } from "@/presentation/features/admin-analytics/components/TopCoursesTable";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,

@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Hero } from "@/presentation/components/student/hero/Hero";
-import { SplashCursor } from "@/presentation/components/ui/SplashCursor";
-import { CoursesSection } from "@/presentation/components/student/courses/CoursesSection";
-import { ChallengesSection } from "@/presentation/components/student/challenges/ChallengesSection";
-import { LearningSection } from "@/presentation/components/student/learning/LearningSection";
-import LogoLoop from "@/presentation/components/ui/LogoLoop";
-import { RevealFooter } from "@/presentation/components/student/footer/RevealFooter";
+import { Hero } from "@/presentation/features/student-learning/components/hero/Hero";
+import { SplashCursor } from "@/presentation/global/SplashCursor";
+import { CoursesSection } from "@/presentation/features/student-learning/components/CoursesSection";
+import { ChallengesSection } from "@/presentation/features/playground/components/ChallengesSection";
+import { LearningSection } from "@/presentation/features/student-learning/components/LearningSection";
+import LogoLoop from "@/presentation/global/LogoLoop";
+import { RevealFooter } from "@/presentation/features/student-learning/components/RevealFooter";
 import { useAccent } from "@/presentation/lib/useAccent";
 import { SiReact, SiNextdotjs, SiTypescript, SiTailwindcss } from "react-icons/si";
 

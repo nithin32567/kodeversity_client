@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { StudentLayout } from "@/presentation/layouts/StudentLayout";
+import { StudentLayout } from "@/presentation/global/layouts/StudentLayout";
 
 export const Route = createFileRoute("/_student")({
   beforeLoad: ({ context, location }) => {

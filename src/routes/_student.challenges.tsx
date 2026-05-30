@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Play, BookOpen, Clock, ExternalLink } from "lucide-react";
-import { AppShell } from "@/presentation/components/student/AppShell";
+import { AppShell } from "@/presentation/global/AppShell";
 
 export const Route = createFileRoute("/_student/challenges")({
   head: () => ({

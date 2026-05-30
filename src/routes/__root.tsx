@@ -1,9 +1,9 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Outlet, Link, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 
-import { SmoothScroll } from "@/presentation/components/ui/SmoothScroll";
-import { Toaster } from "@/presentation/components/ui/sonner";
-import { AuthProvider } from "@/presentation/contexts/AuthContext";
+import { SmoothScroll } from "@/presentation/global/SmoothScroll";
+import { Toaster } from "@/presentation/core-ui/sonner";
+import { AuthProvider } from "@/presentation/features/auth/components/AuthProvider";
 import type { RouterContext } from "@/router";
 
 function NotFoundComponent() {

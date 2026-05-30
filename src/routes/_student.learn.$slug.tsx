@@ -29,9 +29,9 @@ import {
   Award,
   CheckCheck,
 } from "lucide-react";
-import { findCourseBySlug } from "@/presentation/components/student/courses/data";
-import { MagicBentoCard, MagicBentoSection } from "@/presentation/components/ui/MagicBento";
-import { AppShell } from "@/presentation/components/student/AppShell";
+import { findCourseBySlug } from "@/presentation/features/student-learning/components/data";
+import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
+import { AppShell } from "@/presentation/global/AppShell";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
 
 export const Route = createFileRoute("/_student/learn/$slug")({

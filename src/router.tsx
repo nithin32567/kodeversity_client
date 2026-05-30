@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
-import { authStore, type AuthSnapshot } from "@/presentation/contexts/authStore";
+import { authStore, type AuthSnapshot } from "@/presentation/features/auth/hooks/authStore";
 
 export interface RouterContext {
   queryClient: QueryClient;

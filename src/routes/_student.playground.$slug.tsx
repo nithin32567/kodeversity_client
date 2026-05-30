@@ -34,7 +34,7 @@ import {
   MessageSquare,
   ChevronDown,
 } from "lucide-react";
-import { findCourseBySlug } from "@/presentation/components/student/courses/data";
+import { findCourseBySlug } from "@/presentation/features/student-learning/components/data";
 import kodeversityLogo from "@/assets/kodeversity-logo.png";
 
 export const Route = createFileRoute("/_student/playground/$slug")({

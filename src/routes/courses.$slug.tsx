@@ -30,10 +30,10 @@ import {
   HelpCircle,
   AlertCircle,
 } from "lucide-react";
-import { MagicBentoCard, MagicBentoSection } from "@/presentation/components/ui/MagicBento";
+import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
-import { AppShell } from "@/presentation/components/student/AppShell";
-import { useCourse } from "@/presentation/hooks/useCourses";
+import { AppShell } from "@/presentation/global/AppShell";
+import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
 import type { Course, Chapter } from "@/domain/course";
 
 export const Route = createFileRoute("/courses/$slug")({

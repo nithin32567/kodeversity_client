@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { useAuth } from "@/presentation/hooks/useAuth";
+import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import { getAuthErrorMessage, UserRole } from "@/domain/auth";
 
 interface LoginSearch {
