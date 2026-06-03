@@ -25,6 +25,17 @@ export const endpoints = {
     lessonById: (courseSlug: string, lessonId: string) =>
       `${COURSE_URL}/api/courses/${courseSlug}/lessons/${lessonId}`,
     createInstructor: `${COURSE_URL}/api/courses/instructors`,
+    assignInstructor: (courseId: string) => `${COURSE_URL}/api/courses/${courseId}/instructor`,
+    enrolledStudents: (courseId: string) =>
+      `${COURSE_URL}/api/courses/${courseId}/enrolled-students`,
+    createModule: (courseId: string) => `${COURSE_URL}/api/courses/${courseId}/modules`,
+    updateModule: (moduleId: string) => `${COURSE_URL}/api/modules/${moduleId}`,
+    deleteModule: (moduleId: string) => `${COURSE_URL}/api/modules/${moduleId}`,
+    reorderModules: (courseId: string) => `${COURSE_URL}/api/courses/${courseId}/modules/reorder`,
+    createChapter: (moduleId: string) => `${COURSE_URL}/api/modules/${moduleId}/chapters`,
+    updateChapter: (chapterId: string) => `${COURSE_URL}/api/chapters/${chapterId}`,
+    deleteChapter: (chapterId: string) => `${COURSE_URL}/api/chapters/${chapterId}`,
+    reorderChapters: (moduleId: string) => `${COURSE_URL}/api/modules/${moduleId}/chapters/reorder`,
   },
   user: {
     profile: `${USER_URL}/users/me`,

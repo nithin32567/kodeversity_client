@@ -16,6 +16,7 @@ import {
   AlertCircle,
   ChevronsUpDown,
   ChevronsDownUp,
+  Upload,
 } from "lucide-react";
 import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
 import { managementService } from "@/infrastructure/admin/managementService";
@@ -41,10 +42,29 @@ interface AddModuleForm {
   title: string;
   sortOrder?: number;
 }
+interface QuizQuestion {
+  questionText: string;
+  options: string[];
+  correctAnswer: string;
+}
+
 interface AddChapterForm {
   title: string;
   type: ChapterType;
   sortOrder?: number;
+  videoUrl?: string | null;
+  duration?: number | null;
+  documentUrl?: string | null;
+  quizzes?:
+    | {
+        title: string;
+        questions: {
+          questionText: string;
+          options: string[];
+          correctAnswer: string;
+        }[];
+      }[]
+    | null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -220,8 +240,142 @@ function AddChapterPanel({
   const [title, setTitle] = useState("");
   const [type, setType] = useState<ChapterType>("VIDEO");
   const [sortOrder, setSortOrder] = useState("");
+
+  // Video states
+  const [videoUrl, setVideoUrl] = useState("");
+  const [duration, setDuration] = useState("");
+
+  // Document states
+  const [documentUrl, setDocumentUrl] = useState("");
+  const [fileName, setFileName] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Quiz states
+  const [quizTitle, setQuizTitle] = useState("");
+  const [questions, setQuestions] = useState<QuizQuestion[]>([
+    { questionText: "", options: ["", ""], correctAnswer: "" },
+  ]);
+
+  // Sync Quiz Title with Chapter Title if empty
+  useEffect(() => {
+    if (!quizTitle && title) {
+      setQuizTitle(`${title} Quiz`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title]);
+
+  const addQuestion = () => {
+    setQuestions([...questions, { questionText: "", options: ["", ""], correctAnswer: "" }]);
+  };
+
+  const removeQuestion = (qIndex: number) => {
+    setQuestions(questions.filter((_, idx) => idx !== qIndex));
+  };
+
+  const updateQuestionText = (qIndex: number, text: string) => {
+    setQuestions(questions.map((q, idx) => (idx === qIndex ? { ...q, questionText: text } : q)));
+  };
+
+  const updateOptionText = (qIndex: number, oIndex: number, text: string) => {
+    setQuestions(
+      questions.map((q, idx) => {
+        if (idx !== qIndex) return q;
+        const newOptions = q.options.map((opt, oIdx) => (oIdx === oIndex ? text : opt));
+        let newCorrectAnswer = q.correctAnswer;
+        if (q.correctAnswer === q.options[oIndex]) {
+          newCorrectAnswer = text;
+        }
+        return { ...q, options: newOptions, correctAnswer: newCorrectAnswer };
+      }),
+    );
+  };
+
+  const addOption = (qIndex: number) => {
+    setQuestions(
+      questions.map((q, idx) => {
+        if (idx !== qIndex) return q;
+        return { ...q, options: [...q.options, ""] };
+      }),
+    );
+  };
+
+  const removeOption = (qIndex: number, oIndex: number) => {
+    setQuestions(
+      questions.map((q, idx) => {
+        if (idx !== qIndex) return q;
+        const optionToRemove = q.options[oIndex];
+        const newOptions = q.options.filter((_, oIdx) => oIdx !== oIndex);
+        let newCorrectAnswer = q.correctAnswer;
+        if (q.correctAnswer === optionToRemove) {
+          newCorrectAnswer = "";
+        }
+        return { ...q, options: newOptions, correctAnswer: newCorrectAnswer };
+      }),
+    );
+  };
+
+  const setCorrectAnswer = (qIndex: number, answer: string) => {
+    setQuestions(questions.map((q, idx) => (idx === qIndex ? { ...q, correctAnswer: answer } : q)));
+  };
+
+  const isFormInvalid = () => {
+    if (!title.trim()) return true;
+    if (type === "VIDEO" && !videoUrl.trim()) return true;
+    if (type === "DOCUMENT" && !documentUrl.trim()) return true;
+    if (type === "QUIZ") {
+      const validQuestions = questions.filter((q) => q.questionText.trim());
+      if (validQuestions.length === 0) return true;
+      return questions.some((q) => {
+        if (!q.questionText.trim()) return false;
+        const filledOptions = q.options.map((o) => o.trim()).filter(Boolean);
+        if (filledOptions.length < 2) return true;
+        if (!q.correctAnswer.trim()) return true;
+        if (!filledOptions.includes(q.correctAnswer.trim())) return true;
+        return false;
+      });
+    }
+    return false;
+  };
+
+  const handleSubmit = () => {
+    if (isFormInvalid()) return;
+
+    const payload: AddChapterForm = {
+      title: title.trim(),
+      type,
+      sortOrder: sortOrder ? parseInt(sortOrder, 10) : undefined,
+    };
+
+    if (type === "VIDEO") {
+      payload.videoUrl = videoUrl.trim() || null;
+      payload.duration = duration ? parseInt(duration, 10) : null;
+    } else if (type === "DOCUMENT") {
+      payload.documentUrl = documentUrl.trim() || null;
+    } else if (type === "QUIZ") {
+      const finalQuizTitle = quizTitle.trim() || `${title.trim()} Quiz`;
+      const formattedQuestions = questions
+        .filter((q) => q.questionText.trim())
+        .map((q) => ({
+          questionText: q.questionText.trim(),
+          options: q.options.map((o) => o.trim()).filter(Boolean),
+          correctAnswer: q.correctAnswer.trim(),
+        }))
+        .filter((q) => q.options.length >= 2 && q.correctAnswer);
+
+      payload.quizzes = [
+        {
+          title: finalQuizTitle,
+          questions: formattedQuestions,
+        },
+      ];
+    }
+
+    onAdd(payload);
+  };
+
   return (
-    <div className="mt-2 rounded-lg border border-dashed border-primary/20 bg-primary/5 p-3 space-y-2">
+    <div className="mt-2 rounded-lg border border-dashed border-primary/20 bg-primary/5 p-3.5 space-y-4">
       <div className="flex gap-3">
         <input
           autoFocus
@@ -238,10 +392,12 @@ function AddChapterPanel({
           className="w-24 rounded-md border border-[var(--hairline)] bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
         />
       </div>
+
       <div className="flex items-center gap-2">
         {(["VIDEO", "DOCUMENT", "QUIZ"] as ChapterType[]).map((t) => (
           <button
             key={t}
+            type="button"
             onClick={() => setType(t)}
             className={`px-2.5 py-1 rounded-md text-[11px] font-semibold border transition ${
               type === t
@@ -252,21 +408,493 @@ function AddChapterPanel({
             {t}
           </button>
         ))}
-        <div className="flex-1" />
+      </div>
+
+      {/* Conditional Inputs */}
+      {type === "VIDEO" && (
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 bg-card/40 border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
+          <div className="sm:col-span-8 flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Video URL
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="Enter Video URL like YouTube/Vimeo/S3"
+                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] pl-9 pr-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+              />
+              <Video className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+            </div>
+          </div>
+          <div className="sm:col-span-4 flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Duration (minutes)
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              placeholder="e.g. 10"
+              className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+            />
+          </div>
+        </div>
+      )}
+
+      {type === "DOCUMENT" && (
+        <div className="space-y-3 bg-card/40 border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide block">
+            Document Attachment (.PDF)
+          </label>
+
+          <div
+            onClick={() => document.getElementById("pdf-file-input")?.click()}
+            className="border-2 border-dashed border-[var(--hairline)] hover:border-primary/40 rounded-lg p-4 flex flex-col items-center justify-center gap-2 cursor-pointer bg-background/20 hover:bg-background/40 transition group"
+          >
+            <input
+              id="pdf-file-input"
+              type="file"
+              accept=".pdf"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setFileName(file.name);
+                  setIsUploading(true);
+                  setUploadProgress(0);
+
+                  let progress = 0;
+                  const interval = setInterval(() => {
+                    progress += 25;
+                    setUploadProgress(progress);
+                    if (progress >= 100) {
+                      clearInterval(interval);
+                      setIsUploading(false);
+                      setDocumentUrl(`/uploads/lessons/${file.name}`);
+                    }
+                  }, 150);
+                }
+              }}
+            />
+            <Upload className="h-6 w-6 text-muted-foreground group-hover:text-primary transition" />
+            <div className="text-center">
+              <p className="text-xs font-medium text-foreground">
+                {fileName ? fileName : "Click to select a PDF file"}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">PDF documents up to 50MB</p>
+            </div>
+
+            {isUploading && (
+              <div className="w-full mt-2">
+                <div className="w-full bg-[var(--hairline)] rounded-full h-1">
+                  <div
+                    className="bg-[image:var(--gradient-primary)] h-1 rounded-full transition-all duration-150"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground text-center mt-1">
+                  Uploading... {uploadProgress}%
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">
+              Or paste PDF URL
+            </span>
+            <input
+              type="text"
+              value={documentUrl}
+              onChange={(e) => {
+                setDocumentUrl(e.target.value);
+                if (e.target.value) {
+                  setFileName("");
+                }
+              }}
+              placeholder="https://example.com/document.pdf"
+              className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+            />
+          </div>
+        </div>
+      )}
+
+      {type === "QUIZ" && (
+        <div className="space-y-4 bg-card/40 border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
+          <div className="flex items-center justify-between border-b border-[var(--hairline)] pb-2">
+            <h4 className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
+              <HelpCircle className="h-4 w-4 text-emerald-400" /> Quiz Builder
+            </h4>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Quiz Title
+            </label>
+            <input
+              type="text"
+              value={quizTitle}
+              onChange={(e) => setQuizTitle(e.target.value)}
+              placeholder="e.g. Chapter Final Assessment"
+              className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+            />
+          </div>
+
+          {/* Question List */}
+          <div className="space-y-4">
+            {questions.map((q, qIdx) => (
+              <div
+                key={qIdx}
+                className="relative bg-card border border-[var(--hairline)] rounded-lg p-3.5 space-y-3"
+              >
+                {/* Delete Question Button */}
+                <button
+                  type="button"
+                  onClick={() => removeQuestion(qIdx)}
+                  className="absolute top-3 right-3 p-1 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition"
+                  title="Remove Question"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+
+                <div className="flex flex-col gap-1.5 pr-8">
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">
+                    Question {qIdx + 1}
+                  </label>
+                  <input
+                    type="text"
+                    value={q.questionText}
+                    onChange={(e) => updateQuestionText(qIdx, e.target.value)}
+                    placeholder="Enter question text here..."
+                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+                  />
+                </div>
+
+                {/* Option Editor */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                      Options & Correct Selection
+                    </label>
+                    <span className="text-[9px] text-muted-foreground">
+                      Select radio to set correct answer
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {q.options.map((opt, oIdx) => (
+                      <div key={oIdx} className="flex items-center gap-2">
+                        {/* Radio selection for correct answer */}
+                        <input
+                          type="radio"
+                          name={`correct-${qIdx}`}
+                          checked={q.correctAnswer !== "" && q.correctAnswer === opt}
+                          disabled={!opt.trim()}
+                          onChange={() => {
+                            if (opt.trim()) {
+                              setCorrectAnswer(qIdx, opt);
+                            }
+                          }}
+                          className="h-3.5 w-3.5 text-primary border-[var(--hairline)] focus:ring-primary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                          title={opt.trim() ? "Mark as correct answer" : "Type option text first"}
+                        />
+
+                        <input
+                          type="text"
+                          value={opt}
+                          onChange={(e) => updateOptionText(qIdx, oIdx, e.target.value)}
+                          placeholder={`Option ${oIdx + 1}`}
+                          className="flex-1 rounded-md border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-2.5 py-1.5 text-xs text-foreground focus:outline-none"
+                        />
+
+                        {q.options.length > 2 && (
+                          <button
+                            type="button"
+                            onClick={() => removeOption(qIdx, oIdx)}
+                            className="p-1.5 rounded-md hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition"
+                            title="Delete Option"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => addOption(qIdx)}
+                    className="inline-flex items-center gap-1 text-[11px] text-primary hover:text-primary/80 font-medium transition mt-1"
+                  >
+                    <Plus className="h-3 w-3" /> Add Option
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={addQuestion}
+            className="w-full py-2 border border-dashed border-primary/30 rounded-lg text-xs font-semibold text-primary bg-primary/5 hover:bg-primary/10 transition flex items-center justify-center gap-1.5"
+          >
+            <Plus className="h-3.5 w-3.5" /> Add Question
+          </button>
+        </div>
+      )}
+
+      {/* Action buttons */}
+      <div className="flex gap-2 justify-end pt-2 border-t border-[var(--hairline)]">
         <button
-          onClick={() =>
-            onAdd({ title, type, sortOrder: sortOrder ? parseInt(sortOrder, 10) : undefined })
-          }
-          disabled={!title.trim()}
-          className="inline-flex items-center gap-1 rounded-lg bg-[image:var(--gradient-primary)] px-3 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-40"
+          onClick={handleSubmit}
+          disabled={isFormInvalid() || isUploading}
+          className="inline-flex items-center gap-1 rounded-lg bg-[image:var(--gradient-primary)] px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow-[var(--shadow-primary)] disabled:opacity-40 transition cursor-pointer"
         >
-          <Check className="h-3 w-3" /> Add Lesson
+          <Check className="h-3.5 w-3.5" /> Add Lesson
         </button>
         <button
           onClick={onCancel}
-          className="p-1.5 rounded-md hover:bg-foreground/5 text-muted-foreground"
+          className="p-2 rounded-lg hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition cursor-pointer"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-4 w-4" /> Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Edit Chapter Panel ───────────────────────────────────────────────────────
+
+function EditChapterPanel({
+  chapter,
+  onSave,
+  onCancel,
+}: {
+  chapter: Chapter;
+  onSave: (f: AddChapterForm) => void;
+  onCancel: () => void;
+}) {
+  const [title, setTitle] = useState(chapter.title);
+  const [type, setType] = useState<ChapterType>(chapter.type);
+  const [sortOrder, setSortOrder] = useState(chapter.sortOrder?.toString() || "");
+
+  // Video states
+  const [videoUrl, setVideoUrl] = useState(chapter.videoUrl || "");
+  const [duration, setDuration] = useState(chapter.duration?.toString() || "");
+
+  // Document states
+  const [documentUrl, setDocumentUrl] = useState(chapter.documentUrl || "");
+  const [fileName, setFileName] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const isFormInvalid = () => {
+    if (!title.trim()) return true;
+    if (type === "VIDEO" && !videoUrl.trim()) return true;
+    if (type === "DOCUMENT" && !documentUrl.trim()) return true;
+    return false;
+  };
+
+  const handleSubmit = () => {
+    if (isFormInvalid()) return;
+
+    const payload: AddChapterForm = {
+      title: title.trim(),
+      type,
+      sortOrder: sortOrder ? parseInt(sortOrder, 10) : undefined,
+    };
+
+    if (type === "VIDEO") {
+      payload.videoUrl = videoUrl.trim() || null;
+      payload.duration = duration ? parseInt(duration, 10) : null;
+    } else if (type === "DOCUMENT") {
+      payload.documentUrl = documentUrl.trim() || null;
+    }
+
+    onSave(payload);
+  };
+
+  return (
+    <div className="w-full rounded-lg border border-[var(--hairline)] bg-card p-3.5 space-y-4 text-left">
+      <div className="flex justify-between items-center border-b border-[var(--hairline)] pb-2 mb-2">
+        <h4 className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
+          <Edit3 className="h-4 w-4 text-primary" /> Edit Lesson Details
+        </h4>
+      </div>
+
+      <div className="flex gap-3">
+        <input
+          autoFocus
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Chapter title..."
+          className="flex-1 rounded-md border border-[var(--hairline)] bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+        />
+        <input
+          type="number"
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+          placeholder="Sort Order"
+          className="w-24 rounded-md border border-[var(--hairline)] bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+        />
+      </div>
+
+      <div className="flex items-center gap-2">
+        {(["VIDEO", "DOCUMENT", "QUIZ"] as ChapterType[]).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setType(t)}
+            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold border transition ${
+              type === t
+                ? CHAPTER_TYPE_COLORS[t]
+                : "border-[var(--hairline)] text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {/* Conditional Inputs */}
+      {type === "VIDEO" && (
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 bg-[var(--surface-2,var(--card))] border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
+          <div className="sm:col-span-8 flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Video URL
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="Enter Video URL like YouTube/Vimeo/S3"
+                className="w-full rounded-lg border border-[var(--hairline)] bg-card pl-9 pr-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+              />
+              <Video className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+            </div>
+          </div>
+          <div className="sm:col-span-4 flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Duration (minutes)
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              placeholder="e.g. 10"
+              className="w-full rounded-lg border border-[var(--hairline)] bg-card px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+            />
+          </div>
+        </div>
+      )}
+
+      {type === "DOCUMENT" && (
+        <div className="space-y-3 bg-[var(--surface-2,var(--card))] border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide block">
+            Document Attachment (.PDF)
+          </label>
+
+          <div
+            onClick={() => document.getElementById(`pdf-file-edit-input-${chapter.id}`)?.click()}
+            className="border-2 border-dashed border-[var(--hairline)] hover:border-primary/40 rounded-lg p-4 flex flex-col items-center justify-center gap-2 cursor-pointer bg-background/20 hover:bg-background/40 transition group"
+          >
+            <input
+              id={`pdf-file-edit-input-${chapter.id}`}
+              type="file"
+              accept=".pdf"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setFileName(file.name);
+                  setIsUploading(true);
+                  setUploadProgress(0);
+
+                  let progress = 0;
+                  const interval = setInterval(() => {
+                    progress += 25;
+                    setUploadProgress(progress);
+                    if (progress >= 100) {
+                      clearInterval(interval);
+                      setIsUploading(false);
+                      setDocumentUrl(`/uploads/lessons/${file.name}`);
+                    }
+                  }, 150);
+                }
+              }}
+            />
+            <Upload className="h-6 w-6 text-muted-foreground group-hover:text-primary transition" />
+            <div className="text-center">
+              <p className="text-xs font-medium text-foreground">
+                {fileName ? fileName : "Click to select a PDF file"}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">PDF documents up to 50MB</p>
+            </div>
+
+            {isUploading && (
+              <div className="w-full mt-2">
+                <div className="w-full bg-[var(--hairline)] rounded-full h-1">
+                  <div
+                    className="bg-[image:var(--gradient-primary)] h-1 rounded-full transition-all duration-150"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground text-center mt-1">
+                  Uploading... {uploadProgress}%
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">
+              Or paste PDF URL
+            </span>
+            <input
+              type="text"
+              value={documentUrl}
+              onChange={(e) => {
+                setDocumentUrl(e.target.value);
+                if (e.target.value) {
+                  setFileName("");
+                }
+              }}
+              placeholder="https://example.com/document.pdf"
+              className="w-full rounded-lg border border-[var(--hairline)] bg-card px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+            />
+          </div>
+        </div>
+      )}
+
+      {type === "QUIZ" && (
+        <div className="p-4 bg-[var(--surface-2,var(--card))] border border-[var(--hairline)] rounded-xl text-center">
+          <HelpCircle className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
+          <p className="text-xs text-muted-foreground">
+            Quiz questions can be managed when creating the quiz. Use this form to update the Quiz
+            Chapter title and ordering.
+          </p>
+        </div>
+      )}
+
+      {/* Action buttons */}
+      <div className="flex gap-2 justify-end pt-2 border-t border-[var(--hairline)]">
+        <button
+          onClick={handleSubmit}
+          disabled={isFormInvalid() || isUploading}
+          className="inline-flex items-center gap-1 rounded-lg bg-[image:var(--gradient-primary)] px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow-[var(--shadow-primary)] disabled:opacity-40 transition cursor-pointer"
+        >
+          <Check className="h-3.5 w-3.5" /> Save Changes
+        </button>
+        <button
+          onClick={onCancel}
+          className="p-2 rounded-lg hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition cursor-pointer"
+        >
+          <X className="h-4 w-4" /> Cancel
         </button>
       </div>
     </div>
@@ -280,6 +908,7 @@ function ChapterRow({
   index,
   moduleId,
   onDelete,
+  onUpdate,
   onReorderChapters,
   onDragStartActive,
 }: {
@@ -287,11 +916,26 @@ function ChapterRow({
   index: number;
   moduleId: string;
   onDelete: () => void;
+  onUpdate: (f: AddChapterForm) => void;
   onReorderChapters: (fromIdx: number, toIdx: number) => void;
   onDragStartActive: () => void;
 }) {
   const [dragEnabled, setDragEnabled] = useState(false);
   const [isDragPreview, setIsDragPreview] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  if (isEditing) {
+    return (
+      <EditChapterPanel
+        chapter={chapter}
+        onSave={(f) => {
+          onUpdate(f);
+          setIsEditing(false);
+        }}
+        onCancel={() => setIsEditing(false)}
+      />
+    );
+  }
 
   return (
     <li
@@ -340,6 +984,13 @@ function ChapterRow({
         {chapter.type}
       </span>
       <button
+        onClick={() => setIsEditing(true)}
+        className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition cursor-pointer"
+        aria-label={`Edit ${chapter.title}`}
+      >
+        <Edit3 className="h-3.5 w-3.5" />
+      </button>
+      <button
         onClick={onDelete}
         className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
         aria-label={`Delete ${chapter.title}`}
@@ -357,6 +1008,8 @@ function ModuleRow({
   index,
   onDeleteChapter,
   onAddChapter,
+  onUpdateChapter,
+  onUpdateTitle,
   onReorderChapters,
   onReorderModules,
   isOpen,
@@ -367,6 +1020,8 @@ function ModuleRow({
   index: number;
   onDeleteChapter: (chapterId: string) => void;
   onAddChapter: (moduleId: string, form: AddChapterForm) => void;
+  onUpdateChapter: (moduleId: string, chapterId: string, form: AddChapterForm) => void;
+  onUpdateTitle: (moduleId: string, title: string) => void;
   onReorderChapters: (fromIdx: number, toIdx: number) => void;
   onReorderModules: (fromIdx: number, toIdx: number) => void;
   isOpen: boolean;
@@ -376,11 +1031,17 @@ function ModuleRow({
   const [addingChapter, setAddingChapter] = useState(false);
   const [dragEnabled, setDragEnabled] = useState(false);
   const [isDragPreview, setIsDragPreview] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(module.title);
 
   const [draggedChapterIndex, setDraggedChapterIndex] = useState<number | null>(null);
   const [dragOverChapterIndex, setDragOverChapterIndex] = useState<number | null>(null);
 
   const sortedChapters = [...(module.chapters ?? [])].sort((a, b) => a.sortOrder - b.sortOrder);
+
+  useEffect(() => {
+    setEditedTitle(module.title);
+  }, [module.title]);
 
   return (
     <div
@@ -403,21 +1064,61 @@ function ModuleRow({
         }
       }}
       onDragEnd={() => setDragEnabled(false)}
-      className={`rounded-xl border border-[var(--hairline)] overflow-hidden transition-all duration-300 ease-out ${
+      className={`rounded-xl border border-[var(--hairline)] overflow-hidden transition-all duration-300 ease-out group/module ${
         isDragPreview
           ? "bg-white/10 backdrop-blur-md border-white/30 shadow-[0_8px_32px_rgba(255,255,255,0.15)] opacity-95 scale-[1.02] rotate-1"
           : "bg-card"
       }`}
     >
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--hairline)] bg-card/80">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--hairline)] bg-card/80 group/mod-header">
         <GripVertical
           className="h-5 w-5 text-muted-foreground/40 cursor-grab shrink-0"
           onMouseDown={() => setDragEnabled(true)}
           onMouseUp={() => setDragEnabled(false)}
         />
-        <span className="flex-1 font-semibold text-foreground text-sm">
-          {index + 1}. {module.title}
-        </span>
+
+        {isEditingTitle ? (
+          <div className="flex-1 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            <input
+              autoFocus
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              className="flex-1 rounded border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-2 py-1 text-xs text-foreground focus:outline-none"
+            />
+            <button
+              onClick={async () => {
+                if (editedTitle.trim() && editedTitle.trim() !== module.title) {
+                  await onUpdateTitle(module.id, editedTitle.trim());
+                }
+                setIsEditingTitle(false);
+              }}
+              className="p-1 rounded hover:bg-emerald-500/10 text-emerald-400 cursor-pointer"
+            >
+              <Check className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => {
+                setEditedTitle(module.title);
+                setIsEditingTitle(false);
+              }}
+              className="p-1 rounded hover:bg-red-500/10 text-red-400 cursor-pointer"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <span className="flex-1 font-semibold text-foreground text-sm flex items-center gap-2">
+            {index + 1}. {module.title}
+            <button
+              onClick={() => setIsEditingTitle(true)}
+              className="opacity-0 group-hover/mod-header:opacity-100 p-0.5 rounded text-muted-foreground hover:text-foreground transition cursor-pointer"
+              title="Edit Module Title"
+            >
+              <Edit3 className="h-3.5 w-3.5" />
+            </button>
+          </span>
+        )}
+
         <span className="text-xs text-muted-foreground">{sortedChapters.length} chapters</span>
         <button
           onClick={() => setAddingChapter(true)}
@@ -465,6 +1166,7 @@ function ModuleRow({
                     index={chIdx}
                     moduleId={module.id}
                     onDelete={() => onDeleteChapter(ch.id)}
+                    onUpdate={(f) => onUpdateChapter(module.id, ch.id, f)}
                     onReorderChapters={(fromIdx, toIdx) => {
                       onReorderChapters(fromIdx, toIdx);
                       setDraggedChapterIndex(null);
@@ -501,14 +1203,18 @@ function CurriculumPanel({
   modules,
   onAddModule,
   onAddChapter,
+  onUpdateChapter,
   onDeleteChapter,
+  onUpdateModuleTitle,
   onReorderModules,
   onReorderChapters,
 }: {
   modules: Module[];
   onAddModule: (f: AddModuleForm) => void;
   onAddChapter: (moduleId: string, form: AddChapterForm) => void;
+  onUpdateChapter: (moduleId: string, chapterId: string, form: AddChapterForm) => void;
   onDeleteChapter: (moduleId: string, chapterId: string) => void;
+  onUpdateModuleTitle: (moduleId: string, title: string) => void;
   onReorderModules: (fromIdx: number, toIdx: number) => void;
   onReorderChapters: (moduleId: string, fromIdx: number, toIdx: number) => void;
 }) {
@@ -611,6 +1317,8 @@ function CurriculumPanel({
               onToggle={() => handleToggleModule(mod.id)}
               onDeleteChapter={(chId) => onDeleteChapter(mod.id, chId)}
               onAddChapter={onAddChapter}
+              onUpdateChapter={onUpdateChapter}
+              onUpdateTitle={onUpdateModuleTitle}
               onReorderChapters={(fromIdx, toIdx) => onReorderChapters(mod.id, fromIdx, toIdx)}
               onReorderModules={(fromIdx, toIdx) => {
                 onReorderModules(fromIdx, toIdx);
@@ -638,11 +1346,43 @@ function CurriculumPanel({
 
 // ─── Right Column: Config Tabs ────────────────────────────────────────────────
 
-function EditDetailsTab({ course, instructors }: { course: Course; instructors: Instructor[] }) {
+function EditDetailsTab({
+  course,
+  instructors,
+  onSaveInstructor,
+}: {
+  course: Course;
+  instructors: Instructor[];
+  onSaveInstructor: (instructorId: string | null) => Promise<void>;
+}) {
   const [title, setTitle] = useState(course.title);
   const [level, setLevel] = useState<CourseLevel>(course.level);
   const [price, setPrice] = useState(String(course.price));
   const [instructorId, setInstructorId] = useState(course.instructorId ?? "");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveStatus(null);
+    try {
+      await onSaveInstructor(instructorId || null);
+      setSaveStatus({
+        type: "success",
+        message:
+          "Instructor updated! (Note: general details updates are not supported by the API yet)",
+      });
+    } catch (err) {
+      console.error(err);
+      const msg = err instanceof Error ? err.message : "Failed to update instructor.";
+      setSaveStatus({ type: "error", message: msg });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="p-5 space-y-5">
@@ -710,16 +1450,87 @@ function EditDetailsTab({ course, instructors }: { course: Course; instructors: 
         </p>
       </div>
 
+      {saveStatus && (
+        <div
+          className={`p-3 rounded-lg text-xs border ${
+            saveStatus.type === "success"
+              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+              : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+          }`}
+        >
+          {saveStatus.message}
+        </div>
+      )}
+
       <div className="pt-2">
-        <button className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[image:var(--gradient-primary)] px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] hover:opacity-90 transition">
-          <Save className="h-4 w-4" /> Save Details
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[image:var(--gradient-primary)] px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
+        >
+          {isSaving ? (
+            "Saving..."
+          ) : (
+            <>
+              <Save className="h-4 w-4" /> Save Details
+            </>
+          )}
         </button>
       </div>
     </div>
   );
 }
 
-function EnrolledStudentsTab({ students }: { students: EnrolledStudent[] }) {
+interface EnrolledStudentItem {
+  id: string;
+  purchasedAt: string;
+  student?: {
+    name?: string | null;
+    email: string;
+  } | null;
+}
+
+function EnrolledStudentsTab({ courseId }: { courseId: string }) {
+  const [students, setStudents] = useState<
+    { id: string; name: string; email: string; purchasedAt: string }[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    managementService
+      .getEnrolledStudents(courseId)
+      .then((data: EnrolledStudentItem[]) => {
+        if (!active) return;
+        const mapped = data.map((item) => ({
+          id: item.id,
+          name: item.student?.name || "Unknown Student",
+          email: item.student?.email || "",
+          purchasedAt: item.purchasedAt,
+        }));
+        setStudents(mapped);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        if (!active) return;
+        console.error("Failed to load enrolled students:", err);
+        setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [courseId]);
+
+  if (isLoading) {
+    return (
+      <div className="p-12 flex flex-col items-center justify-center text-center">
+        <span className="h-6 w-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin animate-infinite" />
+        <p className="text-xs text-muted-foreground mt-2">Loading enrolled students...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-5">
       {students.length === 0 ? (
@@ -752,21 +1563,16 @@ function EnrolledStudentsTab({ students }: { students: EnrolledStudent[] }) {
   );
 }
 
-function ConfigPanel({ course, instructors }: { course: Course; instructors: Instructor[] }) {
+function ConfigPanel({
+  course,
+  instructors,
+  onSaveInstructor,
+}: {
+  course: Course;
+  instructors: Instructor[];
+  onSaveInstructor: (instructorId: string | null) => Promise<void>;
+}) {
   const [tab, setTab] = useState<"details" | "students">("details");
-
-  // Mock enrolled students derived from course.totalStudents count
-  const mockStudents: EnrolledStudent[] = Array.from(
-    { length: Math.min(course.totalStudents, 5) },
-    (_, i) => ({
-      id: `s${i}`,
-      name:
-        ["Arjun Mehta", "Priya Sharma", "Ravi Kumar", "Ananya Singh", "Siddharth Nair"][i] ??
-        `Student ${i + 1}`,
-      email: `student${i + 1}@example.com`,
-      purchasedAt: new Date(Date.now() - i * 86400000 * 3).toISOString(),
-    }),
-  );
 
   return (
     <SectionCard>
@@ -783,8 +1589,14 @@ function ConfigPanel({ course, instructors }: { course: Course; instructors: Ins
         />
       </div>
 
-      {tab === "details" && <EditDetailsTab course={course} instructors={instructors} />}
-      {tab === "students" && <EnrolledStudentsTab students={mockStudents} />}
+      {tab === "details" && (
+        <EditDetailsTab
+          course={course}
+          instructors={instructors}
+          onSaveInstructor={onSaveInstructor}
+        />
+      )}
+      {tab === "students" && <EnrolledStudentsTab courseId={course.id} />}
     </SectionCard>
   );
 }
@@ -792,7 +1604,7 @@ function ConfigPanel({ course, instructors }: { course: Course; instructors: Ins
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export function CourseManagementDashboard({ slug }: { slug: string }) {
-  const { data: course, isLoading, isError } = useCourse(slug);
+  const { data: course, isLoading, isError, refetch } = useCourse(slug);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [localModules, setLocalModules] = useState<Module[]>([]);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
@@ -806,85 +1618,165 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
   }, []);
 
   const handleAddModule = useCallback(
-    (form: AddModuleForm) => {
-      if (!form.title.trim()) return;
-      setLocalModules((prev) => {
-        const order = form.sortOrder !== undefined ? form.sortOrder : prev.length;
-        const newModule: Module = {
-          id: `new-mod-${Date.now()}`,
-          title: form.title,
-          sortOrder: order,
-          courseId: course?.id ?? "",
-          chapters: [],
-        };
-        const updated = [...prev, newModule].sort((a, b) => a.sortOrder - b.sortOrder);
-        return updated.map((m, idx) => ({ ...m, sortOrder: idx }));
-      });
+    async (form: AddModuleForm) => {
+      if (!form.title.trim() || !course?.id) return;
+      try {
+        const newModule = await managementService.createModule(course.id, form.title.trim());
+        const moduleWithChapters = { ...newModule, chapters: [] };
+        setLocalModules((prev) => {
+          const updated = [...prev, moduleWithChapters].sort((a, b) => a.sortOrder - b.sortOrder);
+          return updated;
+        });
+      } catch (err) {
+        console.error("Failed to create module:", err);
+      }
     },
     [course?.id],
   );
 
-  const handleAddChapter = useCallback((moduleId: string, form: AddChapterForm) => {
+  const handleAddChapter = useCallback(async (moduleId: string, form: AddChapterForm) => {
     if (!form.title.trim()) return;
-    setLocalModules((prev) =>
-      prev.map((mod) => {
-        if (mod.id !== moduleId) return mod;
-        const currentChapters = mod.chapters ?? [];
-        const order = form.sortOrder !== undefined ? form.sortOrder : currentChapters.length;
-        const newChapter: Chapter = {
-          id: `new-ch-${Date.now()}`,
-          title: form.title,
+    try {
+      const newChapter = await managementService.createChapter(moduleId, {
+        title: form.title.trim(),
+        type: form.type,
+        isPreview: false,
+        videoUrl: form.videoUrl || null,
+        duration: form.duration || null,
+        documentUrl: form.documentUrl || null,
+        quizzes: form.quizzes || null,
+      });
+      setLocalModules((prev) =>
+        prev.map((mod) => {
+          if (mod.id !== moduleId) return mod;
+          const currentChapters = mod.chapters ?? [];
+          const updatedChapters = [...currentChapters, newChapter].sort(
+            (a, b) => a.sortOrder - b.sortOrder,
+          );
+          return {
+            ...mod,
+            chapters: updatedChapters,
+          };
+        }),
+      );
+    } catch (err) {
+      console.error("Failed to create chapter:", err);
+    }
+  }, []);
+
+  const handleDeleteChapter = useCallback(async (moduleId: string, chapterId: string) => {
+    try {
+      await managementService.deleteChapter(chapterId);
+      setLocalModules((prev) =>
+        prev.map((mod) =>
+          mod.id !== moduleId
+            ? mod
+            : { ...mod, chapters: (mod.chapters ?? []).filter((c) => c.id !== chapterId) },
+        ),
+      );
+    } catch (err) {
+      console.error("Failed to delete chapter:", err);
+    }
+  }, []);
+
+  const handleUpdateModuleTitle = useCallback(async (moduleId: string, title: string) => {
+    try {
+      await managementService.updateModule(moduleId, title);
+      setLocalModules((prev) => prev.map((mod) => (mod.id === moduleId ? { ...mod, title } : mod)));
+    } catch (err) {
+      console.error("Failed to update module title:", err);
+    }
+  }, []);
+
+  const handleUpdateChapter = useCallback(
+    async (moduleId: string, chapterId: string, form: AddChapterForm) => {
+      try {
+        const updated = await managementService.updateChapter(chapterId, {
+          title: form.title.trim(),
           type: form.type,
-          sortOrder: order,
-          isPreview: false,
-          videoUrl: null,
-          duration: null,
-          documentUrl: null,
-          moduleId,
-          quizzes: [],
-        };
-        const updatedChapters = [...currentChapters, newChapter].sort(
-          (a, b) => a.sortOrder - b.sortOrder,
+          videoUrl: form.type === "VIDEO" ? form.videoUrl : null,
+          duration: form.type === "VIDEO" ? form.duration : null,
+          documentUrl: form.type === "DOCUMENT" ? form.documentUrl : null,
+        });
+        setLocalModules((prev) =>
+          prev.map((mod) => {
+            if (mod.id !== moduleId) return mod;
+            return {
+              ...mod,
+              chapters: (mod.chapters ?? []).map((ch) => (ch.id === chapterId ? updated : ch)),
+            };
+          }),
         );
-        return {
-          ...mod,
-          chapters: updatedChapters.map((c, idx) => ({ ...c, sortOrder: idx })),
-        };
-      }),
-    );
-  }, []);
+      } catch (err) {
+        console.error("Failed to update chapter:", err);
+      }
+    },
+    [],
+  );
 
-  const handleDeleteChapter = useCallback((moduleId: string, chapterId: string) => {
-    setLocalModules((prev) =>
-      prev.map((mod) =>
-        mod.id !== moduleId
-          ? mod
-          : { ...mod, chapters: (mod.chapters ?? []).filter((c) => c.id !== chapterId) },
-      ),
-    );
-  }, []);
+  const handleReorderModules = useCallback(
+    async (fromIdx: number, toIdx: number) => {
+      if (!course?.id) return;
+      const updated = handleModuleReorder(localModules, fromIdx, toIdx);
+      setLocalModules(updated);
+      try {
+        await managementService.reorderModules(
+          course.id,
+          updated.map((m) => ({ id: m.id, sortOrder: m.sortOrder })),
+        );
+      } catch (err) {
+        console.error("Failed to reorder modules:", err);
+      }
+    },
+    [course?.id, localModules],
+  );
 
-  const handleReorderModules = useCallback((fromIdx: number, toIdx: number) => {
-    setLocalModules((prev) => handleModuleReorder(prev, fromIdx, toIdx));
-  }, []);
+  const handleReorderChapters = useCallback(
+    async (moduleId: string, fromIdx: number, toIdx: number) => {
+      let updatedChapters: Chapter[] = [];
+      setLocalModules((prev) =>
+        prev.map((mod) => {
+          if (mod.id !== moduleId) return mod;
+          updatedChapters = handleChapterReorder(mod.chapters ?? [], fromIdx, toIdx);
+          return { ...mod, chapters: updatedChapters };
+        }),
+      );
 
-  const handleReorderChapters = useCallback((moduleId: string, fromIdx: number, toIdx: number) => {
-    setLocalModules((prev) =>
-      prev.map((mod) =>
-        mod.id !== moduleId
-          ? mod
-          : { ...mod, chapters: handleChapterReorder(mod.chapters ?? [], fromIdx, toIdx) },
-      ),
-    );
-  }, []);
+      if (updatedChapters.length > 0) {
+        try {
+          await managementService.reorderChapters(
+            moduleId,
+            updatedChapters.map((c) => ({ id: c.id, sortOrder: c.sortOrder })),
+          );
+        } catch (err) {
+          console.error("Failed to reorder chapters:", err);
+        }
+      }
+    },
+    [],
+  );
 
   const handleSaveAll = useCallback(async () => {
     setSaveStatus("saving");
-    // Placeholder — wire up to your API
-    await new Promise((r) => setTimeout(r, 800));
-    setSaveStatus("saved");
-    setTimeout(() => setSaveStatus("idle"), 2000);
-  }, []);
+    try {
+      await refetch();
+      setSaveStatus("saved");
+    } catch (err) {
+      console.error(err);
+      setSaveStatus("idle");
+    } finally {
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    }
+  }, [refetch]);
+
+  const handleSaveInstructor = useCallback(
+    async (instructorId: string | null) => {
+      if (!course?.id) return;
+      await managementService.assignInstructor(course.id, instructorId);
+      refetch();
+    },
+    [course?.id, refetch],
+  );
 
   // ── Loading ──
   if (isLoading) {
@@ -928,11 +1820,11 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
         <button
           onClick={handleSaveAll}
           disabled={saveStatus === "saving"}
-          className="inline-flex items-center gap-2 rounded-xl bg-[image:var(--gradient-primary)] px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-primary)] hover:opacity-90 active:scale-[0.98] transition disabled:opacity-60 shrink-0"
+          className="inline-flex items-center gap-2 rounded-xl bg-[image:var(--gradient-primary)] px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-primary)] hover:opacity-90 active:scale-[0.98] transition disabled:opacity-60 shrink-0 cursor-pointer"
         >
           {saveStatus === "saving" ? (
             <>
-              <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+              <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin animate-infinite" />
               Saving…
             </>
           ) : saveStatus === "saved" ? (
@@ -979,7 +1871,9 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
             modules={localModules}
             onAddModule={handleAddModule}
             onAddChapter={handleAddChapter}
+            onUpdateChapter={handleUpdateChapter}
             onDeleteChapter={handleDeleteChapter}
+            onUpdateModuleTitle={handleUpdateModuleTitle}
             onReorderModules={handleReorderModules}
             onReorderChapters={handleReorderChapters}
           />
@@ -987,7 +1881,11 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
 
         {/* Right: Config Tabs */}
         <div className="lg:col-span-5">
-          <ConfigPanel course={course} instructors={instructors} />
+          <ConfigPanel
+            course={course}
+            instructors={instructors}
+            onSaveInstructor={handleSaveInstructor}
+          />
         </div>
       </div>
     </main>
