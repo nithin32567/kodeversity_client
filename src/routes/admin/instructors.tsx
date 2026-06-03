@@ -105,10 +105,10 @@ export function AdminInstructorsPage() {
       ) : filteredInstructors.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-[var(--hairline)] bg-[var(--surface-2)]/10 text-center">
           <GraduationCap className="h-12 w-12 text-muted-foreground/60 mb-3" />
-          <h3 className="font-semibold text-lg text-foreground/80">No instructors match your query</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Try resetting your search term.
-          </p>
+          <h3 className="font-semibold text-lg text-foreground/80">
+            No instructors match your query
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">Try resetting your search term.</p>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -136,7 +136,9 @@ export function AdminInstructorsPage() {
                   <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-[var(--surface)]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-base font-semibold truncate text-foreground">{instructor.name}</div>
+                  <div className="text-base font-semibold truncate text-foreground">
+                    {instructor.name}
+                  </div>
                   <div className="mt-1 flex items-center gap-1.5 text-xs text-blue-400 font-medium">
                     <Briefcase className="h-3 w-3" />
                     <span className="truncate">{instructor.designation}</span>

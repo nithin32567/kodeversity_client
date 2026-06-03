@@ -9,8 +9,8 @@ export interface Student extends User {
   highestQualification?: string;
   createdAt?: string;
   updatedAt?: string;
-  enrolledCourses?: any[];
-  chapterProgress?: any[];
+  enrolledCourses?: unknown[];
+  chapterProgress?: unknown[];
 }
 
 export const Route = createFileRoute("/admin/students")({
@@ -112,9 +112,7 @@ export function AdminStudentsPage() {
         <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-[var(--hairline)] bg-[var(--surface-2)]/10 text-center">
           <Users className="h-12 w-12 text-muted-foreground/60 mb-3" />
           <h3 className="font-semibold text-lg text-foreground/80">No students match your query</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Try resetting your search term.
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">Try resetting your search term.</p>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -142,14 +140,16 @@ export function AdminStudentsPage() {
                   <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-[var(--surface)]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold truncate text-foreground">{student.name}</div>
+                  <div className="text-sm font-semibold truncate text-foreground">
+                    {student.name}
+                  </div>
                   <div className="text-xs text-muted-foreground truncate">{student.email}</div>
                   <div className="mt-1 text-[10px] uppercase font-bold tracking-wider text-blue-400">
                     {student.role || "STUDENT"}
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-2 mt-4 pt-4 border-t border-[var(--hairline)]">
                 {student.phone && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">

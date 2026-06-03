@@ -60,7 +60,7 @@ async function refreshToken(): Promise<string | null> {
   if (refreshPromise) {
     return refreshPromise;
   }
-  
+
   refreshPromise = (async () => {
     try {
       const res = await fetch(`${AUTH_REFRESH_URL}/api/auth/refresh`, {
@@ -94,7 +94,7 @@ async function refreshToken(): Promise<string | null> {
       refreshPromise = null;
     }
   })();
-  
+
   return refreshPromise;
 }
 
