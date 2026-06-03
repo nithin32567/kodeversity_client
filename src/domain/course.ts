@@ -73,7 +73,7 @@ export interface Course {
   totalStudents: number;
   createdAt: string;
   updatedAt: string;
-  instructorId: string;
+  instructorId?: string | null;
   instructor?: Instructor;
   modules?: Module[];
   companies?: Company[];

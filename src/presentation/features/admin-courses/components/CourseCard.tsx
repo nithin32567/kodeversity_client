@@ -1,0 +1,120 @@
+import type { Course } from "@/domain/course";
+import { Clock, BookOpen, Award, Layers } from "lucide-react";
+
+interface CourseCardProps {
+  course: Course;
+}
+
+const levelLabels: Record<string, string> = {
+  BEGINNER: "Beginner",
+  INTERMEDIATE: "Intermediate",
+  ADVANCED: "Advanced",
+  BEGINNER_TO_ADVANCED: "All Levels",
+};
+
+function formatDuration(seconds: number): string {
+  const hours = Math.round(seconds / 3600);
+  return hours > 0 ? `${hours} hr${hours > 1 ? "s" : ""}` : "<1 hr";
+}
+
+function formatPrice(price: number, currency: string): string {
+  if (currency === "INR") return `₹${price.toLocaleString("en-IN")}`;
+  return `$${price.toFixed(2)}`;
+}
+
+export function CourseCard({ course }: CourseCardProps) {
+  const hasDiscount = course.discountPrice !== null && course.discountPrice !== undefined;
+  const priceVal = formatPrice(course.price, course.currency);
+  const discountVal = hasDiscount ? formatPrice(course.discountPrice!, course.currency) : null;
+  const initials = course.instructor?.name
+    ? course.instructor.name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+    : "IN";
+
+  return (
+    <div className="group flex flex-col rounded-2xl border border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)]/80 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-0.5 transition duration-350 overflow-hidden">
+      {/* Image / Thumbnail placeholder container */}
+      <div className="relative aspect-[16/10] bg-[var(--surface-2)] border-b border-[var(--hairline)] grid place-items-center overflow-hidden">
+        {course.thumbnailUrl ? (
+          <img
+            src={course.thumbnailUrl}
+            alt={course.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-purple-950/20 to-slate-900 grid place-items-center">
+            <Layers className="h-10 w-10 text-indigo-400 opacity-60" />
+          </div>
+        )}
+
+        {/* Level Badge */}
+        <span className="absolute top-3 left-3 px-2 py-1 rounded-md text-[10px] font-bold tracking-wider bg-black/60 backdrop-blur-sm text-indigo-300 ring-1 ring-white/10 uppercase">
+          {levelLabels[course.level] || course.level}
+        </span>
+
+        {/* Duration Badge */}
+        <span className="absolute bottom-3 right-3 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold bg-black/60 backdrop-blur-sm text-slate-300 ring-1 ring-white/10">
+          <Clock className="h-3 w-3" />
+          {formatDuration(course.totalDuration)}
+        </span>
+      </div>
+
+      {/* Info Container */}
+      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+        <div className="space-y-2">
+          <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-indigo-400 transition">
+            {course.title}
+          </h3>
+          <p className="text-xs text-muted-foreground line-clamp-2">
+            {course.subtitle || course.description}
+          </p>
+        </div>
+
+        {/* Key stats row */}
+        <div className="flex items-center gap-4 text-xs text-muted-foreground border-t border-[var(--hairline)] pt-3">
+          <div className="flex items-center gap-1">
+            <BookOpen className="h-3.5 w-3.5" />
+            <span>{course.lessonsCount} lessons</span>
+          </div>
+          {course.hasCertificate && (
+            <div className="flex items-center gap-1 text-emerald-400">
+              <Award className="h-3.5 w-3.5" />
+              <span>Certificate</span>
+            </div>
+          )}
+        </div>
+
+        {/* Price & Instructor Row */}
+        <div className="flex items-center justify-between border-t border-[var(--hairline)] pt-3">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-semibold grid place-items-center">
+              {initials}
+            </div>
+            <div className="text-[11px]">
+              <p className="font-medium text-foreground/80 leading-none">
+                {course.instructor?.name ?? "Guest Instructor"}
+              </p>
+              <p className="text-muted-foreground/60 leading-none text-[9px] mt-0.5">
+                {course.instructor?.designation ?? "Instructor"}
+              </p>
+            </div>
+          </div>
+
+          <div className="text-right">
+            {hasDiscount ? (
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground line-through">{priceVal}</span>
+                <span className="font-bold text-md text-foreground">{discountVal}</span>
+              </div>
+            ) : (
+              <span className="font-bold text-md text-foreground">{priceVal}</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

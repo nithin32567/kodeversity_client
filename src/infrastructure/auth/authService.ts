@@ -1,6 +1,6 @@
 import type { User } from "@/domain/user";
 import type { RegisterPayload, OtpPayload } from "@/domain/auth";
-import { apiClient } from "@/infrastructure/http/apiClient";
+import { apiClient, tokenStore } from "@/infrastructure/http/apiClient";
 import { endpoints } from "@/infrastructure/http/endpoints";
 
 export interface LoginPayload {
@@ -38,8 +38,11 @@ export const authService = {
 
   logout: () => apiClient.post<void>(endpoints.auth.logout, undefined),
 
-  refresh: () =>
-    apiClient.post<RefreshData>(endpoints.auth.refresh, undefined, { skipAuthRefresh: true }),
+  refresh: async (): Promise<RefreshData> => {
+    const token = await tokenStore.refresh();
+    if (!token) throw new Error("Session expired or refresh failed");
+    return { accessToken: token };
+  },
 
   verifyToken: () => apiClient.get<VerifyTokenData>(endpoints.auth.verifyToken),
 

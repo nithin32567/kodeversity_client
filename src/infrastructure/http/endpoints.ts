@@ -19,10 +19,12 @@ export const endpoints = {
   },
   course: {
     list: `${COURSE_URL}/api/courses`,
+    levels: `${COURSE_URL}/api/courses/levels`,
     bySlug: (slug: string) => `${COURSE_URL}/api/courses/${slug}`,
     lessons: (slug: string) => `${COURSE_URL}/api/courses/${slug}/lessons`,
     lessonById: (courseSlug: string, lessonId: string) =>
       `${COURSE_URL}/api/courses/${courseSlug}/lessons/${lessonId}`,
+    createInstructor: `${COURSE_URL}/api/courses/instructors`,
   },
   user: {
     profile: `${USER_URL}/users/me`,
@@ -43,7 +45,9 @@ export const endpoints = {
   },
   admin: {
     analytics: `${ADMIN_URL}/api/admin/analytics`,
-    courses: `${ADMIN_URL}/api/admin/courses`,
+    courses: `${COURSE_URL}/api/courses`,
     users: `${ADMIN_URL}/api/admin/users`,
+    students: `${AUTH_URL}/api/auth/students`,
+    instructors: `${AUTH_URL}/api/auth/instructors`,
   },
 } as const;

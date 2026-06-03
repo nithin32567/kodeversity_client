@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   BookOpen,
@@ -22,12 +23,12 @@ import {
   BadgeCheck,
 } from "lucide-react";
 
-type Item = { label: string; icon: React.ComponentType<{ className?: string }>; active?: boolean };
+type Item = { label: string; icon: React.ComponentType<{ className?: string }>; to?: string };
 
 const manage: Item[] = [
-  { label: "Courses", icon: BookOpen },
-  { label: "Students", icon: Users },
-  { label: "Instructors", icon: GraduationCap },
+  { label: "Courses", icon: BookOpen, to: "/admin/courses" },
+  { label: "Students", icon: Users, to: "/admin/students" },
+  { label: "Instructors", icon: GraduationCap, to: "/admin/instructors" },
   { label: "Categories", icon: FolderKanban },
   { label: "Enrollments", icon: ClipboardList },
   { label: "Certificates", icon: Award },
@@ -60,13 +61,31 @@ function Group({ title, items }: { title: string; items: Item[] }) {
       <ul className="space-y-0.5">
         {items.map((it) => (
           <li key={it.label}>
-            <a
-              href="#"
-              className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground/75 hover:text-foreground hover:bg-white/[0.04] transition"
-            >
-              <it.icon className="h-[18px] w-[18px] opacity-80" />
-              <span>{it.label}</span>
-            </a>
+            {it.to ? (
+              <Link
+                to={it.to}
+                activeProps={{
+                  className:
+                    "flex items-center  gap-3 px-3 py-2 rounded-md text-sm text-white bg-white/[0.08] font-medium transition",
+                }}
+                inactiveProps={{
+                  className:
+                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground/75 hover:text-foreground hover:bg-white/[0.04] transition",
+                }}
+              >
+                <it.icon className="h-[18px] w-[18px] opacity-80" />
+                <span>{it.label}</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => e.preventDefault()}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground/75 hover:text-foreground hover:bg-white/[0.04] transition"
+              >
+                <it.icon className="h-[18px] w-[18px] opacity-80" />
+                <span>{it.label}</span>
+              </button>
+            )}
           </li>
         ))}
       </ul>
@@ -97,9 +116,9 @@ export function Sidebar() {
   const initials = getInitials(email, name);
 
   return (
-    <aside className="hidden lg:flex lg:sticky lg:top-0 lg:h-screen w-[248px] shrink-0 border-r border-[var(--hairline)] bg-[var(--surface)]/60 backdrop-blur-sm flex-col">
+    <aside className="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:max-h-screen w-[248px] shrink-0 border-r border-[var(--hairline)] bg-[var(--surface)]/60 backdrop-blur-sm flex-col">
       {/* Logo */}
-      <div className="flex items-center justify-between px-5 py-5">
+      <div className="flex items-center justify-between px-5 py-5 shrink-0">
         <div className="flex items-center gap-2">
           <div
             className="h-9 w-9 rounded-lg grid place-items-center text-white font-bold"
@@ -113,17 +132,28 @@ export function Sidebar() {
           <ChevronLeft className="h-4 w-4" />
         </button>
       </div>
-
-      <nav className="px-2 pb-4 flex-1 overflow-y-auto">
+      <nav
+        data-lenis-prevent="true"
+        className="px-2 pb-6 flex-1 min-h-0 overflow-y-auto overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
         {/* Dashboard active */}
-        <a
-          href="#"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-white shadow-lg shadow-blue-500/20"
-          style={{ background: "var(--grad-blue)" }}
+        <Link
+          to="/admin"
+          activeOptions={{ exact: true }}
+          activeProps={{
+            className:
+              "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-white shadow-lg shadow-blue-500/20",
+            style: { background: "var(--grad-blue)" },
+          }}
+          inactiveProps={{
+            className:
+              "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-foreground/75 hover:text-foreground hover:bg-white/[0.04] transition",
+            style: { background: "none" },
+          }}
         >
           <LayoutDashboard className="h-[18px] w-[18px]" />
           <span>Dashboard</span>
-        </a>
+        </Link>
 
         <Group title="MANAGE" items={manage} />
         <Group title="CONTENT & LEARNING" items={content} />
@@ -132,7 +162,7 @@ export function Sidebar() {
       </nav>
 
       {/* User card */}
-      <div className="m-3 p-3 rounded-lg bg-[var(--surface-2)] border border-[var(--hairline)] flex items-center gap-3">
+      <div className="m-3 p-3 rounded-lg bg-[var(--surface-2)] border border-[var(--hairline)] flex items-center gap-3 shrink-0">
         <div className="relative">
           <div
             className="h-10 w-10 rounded-full grid place-items-center text-white text-sm font-semibold"

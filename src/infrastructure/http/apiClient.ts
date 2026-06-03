@@ -7,11 +7,14 @@
 let accessToken: string | null = null;
 let onUnauthorized: (() => void) | null = null;
 
+let refreshPromise: Promise<string | null> | null = null;
+
 export const tokenStore = {
   get: () => accessToken,
   set: (token: string | null) => {
     accessToken = token;
   },
+  refresh: () => refreshToken(),
 };
 
 export const setUnauthorizedHandler = (fn: (() => void) | null) => {
@@ -54,35 +57,45 @@ const AUTH_REFRESH_URL =
   (import.meta.env.VITE_AUTH_SERVICE_URL as string | undefined) ?? "http://localhost:4000";
 
 async function refreshToken(): Promise<string | null> {
-  try {
-    const res = await fetch(`${AUTH_REFRESH_URL}/api/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
-    if (!res.ok) {
-      // Check if the server is telling us the refresh cookie is missing → logout.
-      try {
-        const payload = (await res.json()) as ApiEnvelope<unknown>;
-        if (
-          payload.error === "REFRESH_TOKEN_MISSING" ||
-          payload.error === "REFRESH_TOKEN_REUSE_DETECTED"
-        ) {
-          onUnauthorized?.();
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+  
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${AUTH_REFRESH_URL}/api/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        // Check if the server is telling us the refresh cookie is missing → logout.
+        try {
+          const payload = (await res.json()) as ApiEnvelope<unknown>;
+          if (
+            payload.error === "REFRESH_TOKEN_MISSING" ||
+            payload.error === "REFRESH_TOKEN_REUSE_DETECTED"
+          ) {
+            onUnauthorized?.();
+          }
+        } catch {
+          /* ignore */
         }
-      } catch {
-        /* ignore */
+        return null;
+      }
+      const payload = (await res.json()) as ApiEnvelope<{ accessToken: string }>;
+      if (payload.success && payload.data?.accessToken) {
+        accessToken = payload.data.accessToken;
+        return accessToken;
       }
       return null;
+    } catch {
+      return null;
+    } finally {
+      refreshPromise = null;
     }
-    const payload = (await res.json()) as ApiEnvelope<{ accessToken: string }>;
-    if (payload.success && payload.data?.accessToken) {
-      accessToken = payload.data.accessToken;
-      return accessToken;
-    }
-    return null;
-  } catch {
-    return null;
-  }
+  })();
+  
+  return refreshPromise;
 }
 
 export async function apiRequest<T = unknown>(path: string, init: ApiRequestInit = {}): Promise<T> {
