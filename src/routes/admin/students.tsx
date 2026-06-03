@@ -1,8 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Search, Users, AlertCircle } from "lucide-react";
+import { Search, Users, AlertCircle, Phone, GraduationCap, Calendar, BookOpen } from "lucide-react";
 import { managementService } from "@/infrastructure/admin/managementService";
 import type { User } from "@/domain/user";
+
+export interface Student extends User {
+  phone?: string;
+  highestQualification?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  enrolledCourses?: any[];
+  chapterProgress?: any[];
+}
 
 export const Route = createFileRoute("/admin/students")({
   head: () => ({ meta: [{ title: "Student Management — Kodeversity" }] }),
@@ -10,7 +19,7 @@ export const Route = createFileRoute("/admin/students")({
 });
 
 export function AdminStudentsPage() {
-  const [students, setStudents] = useState<User[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,7 +30,7 @@ export function AdminStudentsPage() {
     managementService
       .getStudents()
       .then((studentList) => {
-        setStudents(studentList);
+        setStudents(studentList as Student[]);
         setIsLoading(false);
       })
       .catch((err) => {
@@ -112,30 +121,57 @@ export function AdminStudentsPage() {
           {filteredStudents.map((student) => (
             <div
               key={student.id}
-              className="flex items-center gap-4 p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] hover:bg-[var(--surface-2)] transition"
+              className="flex flex-col p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] hover:bg-[var(--surface-2)] transition"
             >
-              <div className="relative">
-                {student.avatarUrl ? (
-                  <img
-                    src={student.avatarUrl}
-                    alt={student.name}
-                    className="h-12 w-12 rounded-full object-cover border border-[var(--hairline)]"
-                  />
-                ) : (
-                  <div
-                    className="h-12 w-12 rounded-full grid place-items-center text-white text-sm font-semibold border border-[var(--hairline)]"
-                    style={{ background: "var(--grad-purple)" }}
-                  >
-                    {(student.name || "UN").slice(0, 2).toUpperCase()}
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  {student.avatarUrl ? (
+                    <img
+                      src={student.avatarUrl}
+                      alt={student.name}
+                      className="h-12 w-12 rounded-full object-cover border border-[var(--hairline)]"
+                    />
+                  ) : (
+                    <div
+                      className="h-12 w-12 rounded-full grid place-items-center text-white text-sm font-semibold border border-[var(--hairline)]"
+                      style={{ background: "var(--grad-purple)" }}
+                    >
+                      {(student.name || "UN").slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-[var(--surface)]" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold truncate text-foreground">{student.name}</div>
+                  <div className="text-xs text-muted-foreground truncate">{student.email}</div>
+                  <div className="mt-1 text-[10px] uppercase font-bold tracking-wider text-blue-400">
+                    {student.role || "STUDENT"}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2 mt-4 pt-4 border-t border-[var(--hairline)]">
+                {student.phone && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Phone className="h-3.5 w-3.5" />
+                    <span>{student.phone}</span>
                   </div>
                 )}
-                <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-[var(--surface)]" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold truncate text-foreground">{student.name}</div>
-                <div className="text-xs text-muted-foreground truncate">{student.email}</div>
-                <div className="mt-1 text-[10px] uppercase font-bold tracking-wider text-blue-400">
-                  {student.role}
+                {student.highestQualification && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <GraduationCap className="h-3.5 w-3.5" />
+                    <span>{student.highestQualification}</span>
+                  </div>
+                )}
+                {student.createdAt && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>Joined: {new Date(student.createdAt).toLocaleDateString()}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <BookOpen className="h-3.5 w-3.5" />
+                  <span>Enrolled Courses: {student.enrolledCourses?.length || 0}</span>
                 </div>
               </div>
             </div>
