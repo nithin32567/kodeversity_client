@@ -29,10 +29,10 @@ export function CourseCard({ course }: CourseCardProps) {
   const discountVal = hasDiscount ? formatPrice(course.discountPrice!, course.currency) : null;
   const initials = course.instructor?.name
     ? course.instructor.name
-        .split(" ")
-        .map((n) => n[0])
-        .slice(0, 2)
-        .join("")
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
     : "IN";
 
   return (
