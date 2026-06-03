@@ -1,5 +1,6 @@
 import type { Course } from "@/domain/course";
 import { Clock, BookOpen, Award, Layers } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 interface CourseCardProps {
   course: Course;
@@ -113,6 +114,24 @@ export function CourseCard({ course }: CourseCardProps) {
               <span className="font-bold text-md text-foreground">{priceVal}</span>
             )}
           </div>
+        </div>
+
+        {/* Action Row */}
+        <div className="pt-3 mt-1 border-t border-[var(--hairline)] flex flex-col gap-2">
+          <Link
+            to="/courses/$slug"
+            params={{ slug: course.slug }}
+            className="flex w-full items-center justify-center rounded-lg bg-[image:var(--gradient-primary)] py-2.5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] transition-transform hover:scale-[1.02]"
+          >
+            View Course Details
+          </Link>
+          <Link
+            to="/admin/courses/$slug"
+            params={{ slug: course.slug }}
+            className="flex w-full items-center justify-center rounded-lg border border-[var(--hairline)] bg-transparent py-2 text-xs font-semibold text-muted-foreground hover:text-foreground hover:border-primary/40 transition"
+          >
+            ⚙ Manage Course
+          </Link>
         </div>
       </div>
     </div>
