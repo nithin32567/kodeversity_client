@@ -60,5 +60,9 @@ export const endpoints = {
     users: `${ADMIN_URL}/api/admin/users`,
     students: `${AUTH_URL}/api/auth/students`,
     instructors: `${AUTH_URL}/api/auth/instructors`,
+    batches: `${COURSE_URL}/api/batches`,
+    batchStudents: (batchId: string) => `${COURSE_URL}/api/batches/${batchId}/students`,
+    removeStudentFromBatch: (batchId: string, studentId: string) =>
+      `${COURSE_URL}/api/batches/${batchId}/students/${studentId}`,
   },
 } as const;

@@ -124,7 +124,9 @@ export async function apiRequest<T = unknown>(path: string, init: ApiRequestInit
     try {
       const clone = (await res.clone().json()) as ApiEnvelope<unknown>;
       shouldRefresh =
-        clone.error === "INVALID_OR_EXPIRED_ACCESS_TOKEN" || clone.error === "MISSING_ACCESS_TOKEN";
+        clone.error === "INVALID_OR_EXPIRED_ACCESS_TOKEN" ||
+        clone.error === "MISSING_ACCESS_TOKEN" ||
+        clone.error === "UNAUTHORIZED";
     } catch {
       shouldRefresh = true;
     }

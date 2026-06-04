@@ -16,6 +16,9 @@ export const Route = createFileRoute("/login")({
   }),
   beforeLoad: ({ context, search }) => {
     if (context.auth.isAuthenticated) {
+      if (context.auth.user?.role === "ADMIN") {
+        throw redirect({ to: "/admin/batches" });
+      }
       throw redirect({ to: (search.redirect as string | undefined) ?? "/dashboard" });
     }
   },
@@ -24,7 +27,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const navigate = useNavigate();
   const search = Route.useSearch();
 
@@ -43,12 +46,15 @@ function LoginPage() {
     try {
       const { role } = await login(email, password);
 
-      // Role-based routing.
+      // Block Admins on the common login page
       if (role === UserRole.ADMIN) {
-        void navigate({ to: "/admin" });
-      } else {
-        void navigate({ to: search.redirect ?? "/dashboard" });
+        await logout();
+        setError("Admins must use the secure admin portal to log in.");
+        return;
       }
+
+      // Role-based routing.
+      void navigate({ to: search.redirect ?? "/dashboard" });
     } catch (err) {
       const code = (err as Error).message;
       if (code === "EMAIL_NOT_VERIFIED") {

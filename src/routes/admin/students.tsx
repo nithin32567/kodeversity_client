@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Search, Users, AlertCircle, Phone, GraduationCap, Calendar, BookOpen } from "lucide-react";
+import { Search, Users, AlertCircle, Phone, GraduationCap, Calendar, BookOpen, RefreshCw } from "lucide-react";
 import { managementService } from "@/infrastructure/admin/managementService";
 import type { User } from "@/domain/user";
+import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 
 export interface Student extends User {
   phone?: string;
@@ -19,12 +20,14 @@ export const Route = createFileRoute("/admin/students")({
 });
 
 export function AdminStudentsPage() {
+  const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchStudents = useCallback(() => {
+    if (isAuthLoading || !isAuthenticated) return;
     setIsLoading(true);
     setIsError(false);
     managementService
@@ -38,7 +41,7 @@ export function AdminStudentsPage() {
         setIsError(true);
         setIsLoading(false);
       });
-  }, []);
+  }, [isAuthLoading, isAuthenticated]);
 
   useEffect(() => {
     fetchStudents();
@@ -52,6 +55,17 @@ export function AdminStudentsPage() {
       );
     });
   }, [students, searchQuery]);
+
+  if (isAuthLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3">
+          <RefreshCw className="h-8 w-8 text-blue-400 animate-spin" />
+          <p className="text-sm text-muted-foreground">Verifying credentials...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="flex-1 px-4 pb-6 sm:px-6 lg:px-8 lg:pb-8 space-y-6 overflow-y-auto max-w-[1400px] mx-auto w-full">

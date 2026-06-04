@@ -21,6 +21,7 @@ import {
   Settings,
   ChevronLeft,
   BadgeCheck,
+  Layers,
 } from "lucide-react";
 
 type Item = { label: string; icon: React.ComponentType<{ className?: string }>; to?: string };
@@ -29,6 +30,7 @@ const manage: Item[] = [
   { label: "Courses", icon: BookOpen, to: "/admin/courses" },
   { label: "Students", icon: Users, to: "/admin/students" },
   { label: "Instructors", icon: GraduationCap, to: "/admin/instructors" },
+  { label: "Batches", icon: Layers, to: "/admin/batches" },
   { label: "Categories", icon: FolderKanban },
   { label: "Enrollments", icon: ClipboardList },
   { label: "Certificates", icon: Award },
@@ -36,7 +38,7 @@ const manage: Item[] = [
   { label: "Announcements", icon: Megaphone },
 ];
 const content: Item[] = [
-  { label: "Live Classes", icon: Video },
+  { label: "Live Classes", icon: Video, to: "/admin/live-classes" },
   { label: "Assignments", icon: FileText },
   { label: "Quizzes", icon: HelpCircle },
   { label: "Resource Library", icon: Library },

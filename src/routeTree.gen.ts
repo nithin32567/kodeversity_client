@@ -23,15 +23,22 @@ import { Route as CoursesIndexRouteImport } from './routes/courses/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as CoursesSlugRouteImport } from './routes/courses/$slug'
 import { Route as AdminStudentsRouteImport } from './routes/admin/students'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminLiveClassesRouteImport } from './routes/admin/live-classes'
 import { Route as AdminInstructorsRouteImport } from './routes/admin/instructors'
 import { Route as AdminCoursesRouteImport } from './routes/admin/courses'
+import { Route as AdminBatchesRouteImport } from './routes/admin/batches'
 import { Route as StudentSettingsRouteImport } from './routes/_student/settings'
+import { Route as StudentProfileRouteImport } from './routes/_student/profile'
+import { Route as StudentMyBatchesRouteImport } from './routes/_student/my-batches'
+import { Route as StudentLiveClassesRouteImport } from './routes/_student/live-classes'
 import { Route as StudentDashboardRouteImport } from './routes/_student/dashboard'
 import { Route as StudentChallengesRouteImport } from './routes/_student/challenges'
 import { Route as StudentCertificatesRouteImport } from './routes/_student/certificates'
 import { Route as AdminCoursesIndexRouteImport } from './routes/admin/courses/index'
 import { Route as AdminCoursesSlugRouteImport } from './routes/admin/courses/$slug'
 import { Route as StudentPlaygroundSlugRouteImport } from './routes/_student/playground.$slug'
+import { Route as StudentMeetingsSessionIdRouteImport } from './routes/_student/meetings.$sessionId'
 import { Route as StudentLearnSlugRouteImport } from './routes/_student/learn.$slug'
 
 const RoadmapsRoute = RoadmapsRouteImport.update({
@@ -103,6 +110,16 @@ const AdminStudentsRoute = AdminStudentsRouteImport.update({
   path: '/students',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLiveClassesRoute = AdminLiveClassesRouteImport.update({
+  id: '/live-classes',
+  path: '/live-classes',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminInstructorsRoute = AdminInstructorsRouteImport.update({
   id: '/instructors',
   path: '/instructors',
@@ -113,9 +130,29 @@ const AdminCoursesRoute = AdminCoursesRouteImport.update({
   path: '/courses',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBatchesRoute = AdminBatchesRouteImport.update({
+  id: '/batches',
+  path: '/batches',
+  getParentRoute: () => AdminRoute,
+} as any)
 const StudentSettingsRoute = StudentSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentProfileRoute = StudentProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentMyBatchesRoute = StudentMyBatchesRouteImport.update({
+  id: '/my-batches',
+  path: '/my-batches',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentLiveClassesRoute = StudentLiveClassesRouteImport.update({
+  id: '/live-classes',
+  path: '/live-classes',
   getParentRoute: () => StudentRoute,
 } as any)
 const StudentDashboardRoute = StudentDashboardRouteImport.update({
@@ -148,6 +185,12 @@ const StudentPlaygroundSlugRoute = StudentPlaygroundSlugRouteImport.update({
   path: '/playground/$slug',
   getParentRoute: () => StudentRoute,
 } as any)
+const StudentMeetingsSessionIdRoute =
+  StudentMeetingsSessionIdRouteImport.update({
+    id: '/meetings/$sessionId',
+    path: '/meetings/$sessionId',
+    getParentRoute: () => StudentRoute,
+  } as any)
 const StudentLearnSlugRoute = StudentLearnSlugRouteImport.update({
   id: '/learn/$slug',
   path: '/learn/$slug',
@@ -167,14 +210,21 @@ export interface FileRoutesByFullPath {
   '/certificates': typeof StudentCertificatesRoute
   '/challenges': typeof StudentChallengesRoute
   '/dashboard': typeof StudentDashboardRoute
+  '/live-classes': typeof StudentLiveClassesRoute
+  '/my-batches': typeof StudentMyBatchesRoute
+  '/profile': typeof StudentProfileRoute
   '/settings': typeof StudentSettingsRoute
+  '/admin/batches': typeof AdminBatchesRoute
   '/admin/courses': typeof AdminCoursesRouteWithChildren
   '/admin/instructors': typeof AdminInstructorsRoute
+  '/admin/live-classes': typeof AdminLiveClassesRoute
+  '/admin/login': typeof AdminLoginRoute
   '/admin/students': typeof AdminStudentsRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/courses/': typeof CoursesIndexRoute
   '/learn/$slug': typeof StudentLearnSlugRoute
+  '/meetings/$sessionId': typeof StudentMeetingsSessionIdRoute
   '/playground/$slug': typeof StudentPlaygroundSlugRoute
   '/admin/courses/$slug': typeof AdminCoursesSlugRoute
   '/admin/courses/': typeof AdminCoursesIndexRoute
@@ -191,13 +241,20 @@ export interface FileRoutesByTo {
   '/certificates': typeof StudentCertificatesRoute
   '/challenges': typeof StudentChallengesRoute
   '/dashboard': typeof StudentDashboardRoute
+  '/live-classes': typeof StudentLiveClassesRoute
+  '/my-batches': typeof StudentMyBatchesRoute
+  '/profile': typeof StudentProfileRoute
   '/settings': typeof StudentSettingsRoute
+  '/admin/batches': typeof AdminBatchesRoute
   '/admin/instructors': typeof AdminInstructorsRoute
+  '/admin/live-classes': typeof AdminLiveClassesRoute
+  '/admin/login': typeof AdminLoginRoute
   '/admin/students': typeof AdminStudentsRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/admin': typeof AdminIndexRoute
   '/courses': typeof CoursesIndexRoute
   '/learn/$slug': typeof StudentLearnSlugRoute
+  '/meetings/$sessionId': typeof StudentMeetingsSessionIdRoute
   '/playground/$slug': typeof StudentPlaygroundSlugRoute
   '/admin/courses/$slug': typeof AdminCoursesSlugRoute
   '/admin/courses': typeof AdminCoursesIndexRoute
@@ -217,14 +274,21 @@ export interface FileRoutesById {
   '/_student/certificates': typeof StudentCertificatesRoute
   '/_student/challenges': typeof StudentChallengesRoute
   '/_student/dashboard': typeof StudentDashboardRoute
+  '/_student/live-classes': typeof StudentLiveClassesRoute
+  '/_student/my-batches': typeof StudentMyBatchesRoute
+  '/_student/profile': typeof StudentProfileRoute
   '/_student/settings': typeof StudentSettingsRoute
+  '/admin/batches': typeof AdminBatchesRoute
   '/admin/courses': typeof AdminCoursesRouteWithChildren
   '/admin/instructors': typeof AdminInstructorsRoute
+  '/admin/live-classes': typeof AdminLiveClassesRoute
+  '/admin/login': typeof AdminLoginRoute
   '/admin/students': typeof AdminStudentsRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/courses/': typeof CoursesIndexRoute
   '/_student/learn/$slug': typeof StudentLearnSlugRoute
+  '/_student/meetings/$sessionId': typeof StudentMeetingsSessionIdRoute
   '/_student/playground/$slug': typeof StudentPlaygroundSlugRoute
   '/admin/courses/$slug': typeof AdminCoursesSlugRoute
   '/admin/courses/': typeof AdminCoursesIndexRoute
@@ -244,14 +308,21 @@ export interface FileRouteTypes {
     | '/certificates'
     | '/challenges'
     | '/dashboard'
+    | '/live-classes'
+    | '/my-batches'
+    | '/profile'
     | '/settings'
+    | '/admin/batches'
     | '/admin/courses'
     | '/admin/instructors'
+    | '/admin/live-classes'
+    | '/admin/login'
     | '/admin/students'
     | '/courses/$slug'
     | '/admin/'
     | '/courses/'
     | '/learn/$slug'
+    | '/meetings/$sessionId'
     | '/playground/$slug'
     | '/admin/courses/$slug'
     | '/admin/courses/'
@@ -268,13 +339,20 @@ export interface FileRouteTypes {
     | '/certificates'
     | '/challenges'
     | '/dashboard'
+    | '/live-classes'
+    | '/my-batches'
+    | '/profile'
     | '/settings'
+    | '/admin/batches'
     | '/admin/instructors'
+    | '/admin/live-classes'
+    | '/admin/login'
     | '/admin/students'
     | '/courses/$slug'
     | '/admin'
     | '/courses'
     | '/learn/$slug'
+    | '/meetings/$sessionId'
     | '/playground/$slug'
     | '/admin/courses/$slug'
     | '/admin/courses'
@@ -293,14 +371,21 @@ export interface FileRouteTypes {
     | '/_student/certificates'
     | '/_student/challenges'
     | '/_student/dashboard'
+    | '/_student/live-classes'
+    | '/_student/my-batches'
+    | '/_student/profile'
     | '/_student/settings'
+    | '/admin/batches'
     | '/admin/courses'
     | '/admin/instructors'
+    | '/admin/live-classes'
+    | '/admin/login'
     | '/admin/students'
     | '/courses/$slug'
     | '/admin/'
     | '/courses/'
     | '/_student/learn/$slug'
+    | '/_student/meetings/$sessionId'
     | '/_student/playground/$slug'
     | '/admin/courses/$slug'
     | '/admin/courses/'
@@ -421,6 +506,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminStudentsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/live-classes': {
+      id: '/admin/live-classes'
+      path: '/live-classes'
+      fullPath: '/admin/live-classes'
+      preLoaderRoute: typeof AdminLiveClassesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/instructors': {
       id: '/admin/instructors'
       path: '/instructors'
@@ -435,11 +534,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCoursesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/batches': {
+      id: '/admin/batches'
+      path: '/batches'
+      fullPath: '/admin/batches'
+      preLoaderRoute: typeof AdminBatchesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_student/settings': {
       id: '/_student/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof StudentSettingsRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/_student/profile': {
+      id: '/_student/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof StudentProfileRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/_student/my-batches': {
+      id: '/_student/my-batches'
+      path: '/my-batches'
+      fullPath: '/my-batches'
+      preLoaderRoute: typeof StudentMyBatchesRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/_student/live-classes': {
+      id: '/_student/live-classes'
+      path: '/live-classes'
+      fullPath: '/live-classes'
+      preLoaderRoute: typeof StudentLiveClassesRouteImport
       parentRoute: typeof StudentRoute
     }
     '/_student/dashboard': {
@@ -484,6 +611,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentPlaygroundSlugRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/_student/meetings/$sessionId': {
+      id: '/_student/meetings/$sessionId'
+      path: '/meetings/$sessionId'
+      fullPath: '/meetings/$sessionId'
+      preLoaderRoute: typeof StudentMeetingsSessionIdRouteImport
+      parentRoute: typeof StudentRoute
+    }
     '/_student/learn/$slug': {
       id: '/_student/learn/$slug'
       path: '/learn/$slug'
@@ -498,8 +632,12 @@ interface StudentRouteChildren {
   StudentCertificatesRoute: typeof StudentCertificatesRoute
   StudentChallengesRoute: typeof StudentChallengesRoute
   StudentDashboardRoute: typeof StudentDashboardRoute
+  StudentLiveClassesRoute: typeof StudentLiveClassesRoute
+  StudentMyBatchesRoute: typeof StudentMyBatchesRoute
+  StudentProfileRoute: typeof StudentProfileRoute
   StudentSettingsRoute: typeof StudentSettingsRoute
   StudentLearnSlugRoute: typeof StudentLearnSlugRoute
+  StudentMeetingsSessionIdRoute: typeof StudentMeetingsSessionIdRoute
   StudentPlaygroundSlugRoute: typeof StudentPlaygroundSlugRoute
 }
 
@@ -507,8 +645,12 @@ const StudentRouteChildren: StudentRouteChildren = {
   StudentCertificatesRoute: StudentCertificatesRoute,
   StudentChallengesRoute: StudentChallengesRoute,
   StudentDashboardRoute: StudentDashboardRoute,
+  StudentLiveClassesRoute: StudentLiveClassesRoute,
+  StudentMyBatchesRoute: StudentMyBatchesRoute,
+  StudentProfileRoute: StudentProfileRoute,
   StudentSettingsRoute: StudentSettingsRoute,
   StudentLearnSlugRoute: StudentLearnSlugRoute,
+  StudentMeetingsSessionIdRoute: StudentMeetingsSessionIdRoute,
   StudentPlaygroundSlugRoute: StudentPlaygroundSlugRoute,
 }
 
@@ -530,15 +672,21 @@ const AdminCoursesRouteWithChildren = AdminCoursesRoute._addFileChildren(
 )
 
 interface AdminRouteChildren {
+  AdminBatchesRoute: typeof AdminBatchesRoute
   AdminCoursesRoute: typeof AdminCoursesRouteWithChildren
   AdminInstructorsRoute: typeof AdminInstructorsRoute
+  AdminLiveClassesRoute: typeof AdminLiveClassesRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   AdminStudentsRoute: typeof AdminStudentsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminBatchesRoute: AdminBatchesRoute,
   AdminCoursesRoute: AdminCoursesRouteWithChildren,
   AdminInstructorsRoute: AdminInstructorsRoute,
+  AdminLiveClassesRoute: AdminLiveClassesRoute,
+  AdminLoginRoute: AdminLoginRoute,
   AdminStudentsRoute: AdminStudentsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }

@@ -3,6 +3,34 @@ import { endpoints } from "@/infrastructure/http/endpoints";
 import type { Course, Instructor } from "@/domain/course";
 import type { User } from "@/domain/user";
 
+export interface Batch {
+  id: string;
+  name: string;
+  code: string;
+  startDate: string;
+  endDate?: string | null;
+  status: "UPCOMING" | "ACTIVE" | "COMPLETED";
+  courseId: string;
+  course?: {
+    name: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BatchStudent {
+  id: string;
+  batchId: string;
+  studentId: string;
+  joinedAt: string;
+  student: {
+    id: string;
+    name: string | null;
+    email: string;
+    avatarUrl?: string | null;
+  };
+}
+
 export const managementService = {
   getCourses: async (): Promise<Course[]> => {
     try {
@@ -111,5 +139,42 @@ export const managementService = {
     chapters: { id: string; sortOrder: number }[],
   ): Promise<any> => {
     return await apiClient.patch<any>(endpoints.course.reorderChapters(moduleId), { chapters });
+  },
+  getBatches: async (): Promise<Batch[]> => {
+    try {
+      return await apiClient.get<Batch[]>(endpoints.admin.batches);
+    } catch {
+      return [];
+    }
+  },
+  createBatch: async (batchData: {
+    name: string;
+    code: string;
+    courseId: string;
+    startDate: string;
+    endDate?: string | null;
+  }): Promise<Batch> => {
+    return await apiClient.post<Batch>(
+      endpoints.admin.batches,
+      batchData,
+    );
+  },
+  addStudentsToBatch: async (batchId: string, studentIds: string[]): Promise<BatchStudent[]> => {
+    return await apiClient.post<BatchStudent[]>(
+      endpoints.admin.batchStudents(batchId),
+      { studentIds },
+    );
+  },
+  getBatchRoster: async (batchId: string): Promise<BatchStudent[]> => {
+    try {
+      return await apiClient.get<BatchStudent[]>(
+        endpoints.admin.batchStudents(batchId),
+      );
+    } catch {
+      return [];
+    }
+  },
+  removeStudentFromBatch: async (batchId: string, studentId: string): Promise<void> => {
+    await apiClient.del<any>(endpoints.admin.removeStudentFromBatch(batchId, studentId));
   },
 };
