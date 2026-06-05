@@ -3,5 +3,5 @@ import { ComingSoon } from "@/presentation/global/ComingSoon";
 
 export const Route = createFileRoute("/_student/settings")({
   head: () => ({ meta: [{ title: "Settings — Kodeversity" }] }),
-  component: () => <ComingSoon title="Settings" />,
+  component: () => <ComingSoon title="Settings" wrap={false} />,
 });

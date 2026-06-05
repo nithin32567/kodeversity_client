@@ -12,7 +12,11 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import { studentService } from "@/infrastructure/student/studentService";
-import { managementService, type Batch, type BatchStudent } from "@/infrastructure/admin/managementService";
+import {
+  managementService,
+  type Batch,
+  type BatchStudent,
+} from "@/infrastructure/admin/managementService";
 
 export const Route = createFileRoute("/_student/my-batches")({
   head: () => ({ meta: [{ title: "My Batches — Kodeversity" }] }),
@@ -23,12 +27,14 @@ export function MyBatchesPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Detail selection
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [roster, setRoster] = useState<BatchStudent[]>([]);
   const [rosterLoading, setRosterLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"schedule" | "announcements" | "classmates">("schedule");
+  const [activeTab, setActiveTab] = useState<"schedule" | "announcements" | "classmates">(
+    "schedule",
+  );
 
   useEffect(() => {
     if (isAuthLoading || !user) return;
@@ -86,14 +92,16 @@ export function MyBatchesPage() {
     {
       id: "1",
       title: "Welcome to the Cohort Program! 🎉",
-      content: "We are thrilled to start this learning journey with you. Check out the schedule tab to review upcoming lessons.",
+      content:
+        "We are thrilled to start this learning journey with you. Check out the schedule tab to review upcoming lessons.",
       date: "2 days ago",
       author: "LMS Admin Team",
     },
     {
       id: "2",
       title: "Weekly Q&A Session Schedule",
-      content: "Please note that the weekly live mentoring and doubt resolution will be scheduled every Friday evening. Attendance is highly recommended.",
+      content:
+        "Please note that the weekly live mentoring and doubt resolution will be scheduled every Friday evening. Attendance is highly recommended.",
       date: "5 days ago",
       author: "Lead Instructor",
     },
@@ -102,11 +110,12 @@ export function MyBatchesPage() {
   return (
     <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 overflow-y-auto max-w-[1400px] mx-auto w-full">
       {batches.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-[var(--hairline)] bg-[var(--surface-2)]/10 text-center">
+        <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-border bg-card/10 text-center">
           <Layers className="h-12 w-12 text-muted-foreground/45 mb-3" />
           <h3 className="font-semibold text-lg text-foreground/80">No batches assigned</h3>
           <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-            You are not currently enrolled in any cohort batches. Contact support if this is an error.
+            You are not currently enrolled in any cohort batches. Contact support if this is an
+            error.
           </p>
         </div>
       ) : (
@@ -116,7 +125,7 @@ export function MyBatchesPage() {
             <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
               My Cohorts
             </h3>
-            
+
             <div className="grid gap-3">
               {batches.map((batch) => {
                 const isSelected = selectedBatch?.id === batch.id;
@@ -124,21 +133,25 @@ export function MyBatchesPage() {
                   <div
                     key={batch.id}
                     onClick={() => setSelectedBatch(batch)}
-                    className={`p-4 rounded-xl border cursor-pointer transition flex justify-between items-center bg-[var(--surface)] hover:bg-[var(--surface-2)]/40 ${
+                    className={`p-4 rounded-xl border cursor-pointer transition flex justify-between items-center bg-card hover:bg-card/80 ${
                       isSelected
-                        ? "border-indigo-500 shadow-md shadow-indigo-500/5 bg-[var(--surface-2)]/20"
-                        : "border-[var(--hairline)]"
+                        ? "border-primary shadow-md shadow-primary/5 bg-card/60"
+                        : "border-border"
                     }`}
                   >
                     <div className="min-w-0">
-                      <h4 className={`font-semibold text-sm truncate ${isSelected ? "text-indigo-400" : "text-foreground"}`}>
+                      <h4
+                        className={`font-semibold text-sm truncate ${isSelected ? "text-indigo-400" : "text-foreground"}`}
+                      >
                         {batch.name}
                       </h4>
                       <p className="text-xs text-muted-foreground mt-0.5 font-mono">
                         Code: {batch.code} • Status: {batch.status}
                       </p>
                     </div>
-                    <ChevronRight className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${isSelected ? "translate-x-1" : ""}`} />
+                    <ChevronRight
+                      className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${isSelected ? "translate-x-1" : ""}`}
+                    />
                   </div>
                 );
               })}
@@ -148,7 +161,7 @@ export function MyBatchesPage() {
           {/* ── RIGHT COLUMN: COHORT DETAILS ── */}
           <div className="lg:col-span-2 space-y-4">
             {selectedBatch && (
-              <div className="p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] shadow-lg space-y-5">
+              <div className="p-6 rounded-2xl border border-border bg-card shadow-lg space-y-5">
                 {/* Header */}
                 <div>
                   <h2 className="text-xl font-bold tracking-tight text-white font-display">
@@ -160,7 +173,7 @@ export function MyBatchesPage() {
                 </div>
 
                 {/* Tabs Menu */}
-                <div className="flex border-b border-[var(--hairline)] pb-0.5 gap-4">
+                <div className="flex border-b border-border pb-0.5 gap-4">
                   <button
                     onClick={() => setActiveTab("schedule")}
                     className={`pb-2.5 text-xs font-semibold uppercase tracking-wider border-b-2 transition ${
@@ -197,7 +210,7 @@ export function MyBatchesPage() {
                 <div className="min-h-[220px]">
                   {activeTab === "schedule" && (
                     <div className="space-y-4">
-                      <div className="p-4 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)]/30 space-y-3">
+                      <div className="p-4 rounded-xl border border-border bg-card/35 space-y-3">
                         <div className="flex items-center gap-2 text-xs font-semibold text-white">
                           <Calendar className="h-4 w-4 text-indigo-400" />
                           <span>Timeline Duration</span>
@@ -230,13 +243,15 @@ export function MyBatchesPage() {
                         </div>
                       </div>
 
-                      <div className="p-4 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)]/30 space-y-3">
+                      <div className="p-4 rounded-xl border border-border bg-card/35 space-y-3">
                         <div className="flex items-center gap-2 text-xs font-semibold text-white">
                           <Clock className="h-4 w-4 text-purple-400" />
                           <span>Weekly Commitment</span>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Scheduled live lectures will load directly under the <strong>Live Classes</strong> sidebar item. Make sure you check this calendar daily.
+                          Scheduled live lectures will load directly under the{" "}
+                          <strong>Live Classes</strong> sidebar item. Make sure you check this
+                          calendar daily.
                         </p>
                       </div>
                     </div>
@@ -247,16 +262,20 @@ export function MyBatchesPage() {
                       {simulatedAnnouncements.map((ann) => (
                         <div
                           key={ann.id}
-                          className="p-4 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)]/20 hover:bg-[var(--surface-2)]/40 transition space-y-2"
+                          className="p-4 rounded-xl border border-border bg-card/20 hover:bg-card/40 transition space-y-2"
                         >
                           <div className="flex justify-between items-start gap-3">
                             <h4 className="font-bold text-xs text-white flex items-center gap-1.5">
                               <Megaphone className="h-3.5 w-3.5 text-indigo-400" />
                               {ann.title}
                             </h4>
-                            <span className="text-[9px] font-mono text-muted-foreground shrink-0">{ann.date}</span>
+                            <span className="text-[9px] font-mono text-muted-foreground shrink-0">
+                              {ann.date}
+                            </span>
                           </div>
-                          <p className="text-xs text-muted-foreground leading-relaxed">{ann.content}</p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {ann.content}
+                          </p>
                           <div className="text-[10px] text-muted-foreground/80 text-right">
                             By: <strong>{ann.author}</strong>
                           </div>
@@ -290,26 +309,32 @@ export function MyBatchesPage() {
                             return (
                               <div
                                 key={r.id}
-                                className={`p-3 rounded-lg border flex items-center gap-3 bg-[var(--surface-2)]/10 hover:bg-[var(--surface-2)]/30 transition ${
-                                  isMe ? "border-indigo-500/20" : "border-[var(--hairline)]"
+                                className={`p-3 rounded-lg border flex items-center gap-3 bg-card/10 hover:bg-card/30 transition ${
+                                  isMe ? "border-primary/20" : "border-border"
                                 }`}
                               >
                                 <div
                                   className="h-8 w-8 rounded-full grid place-items-center text-white text-[11px] font-bold"
-                                  style={{ background: isMe ? "var(--grad-purple)" : "var(--grad-blue)" }}
+                                  style={{
+                                    background: isMe ? "var(--gradient-primary)" : "var(--gradient-primary-soft)",
+                                  }}
                                 >
                                   {classMateInitials}
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <div className="text-xs font-semibold text-white truncate flex items-center gap-1.5">
-                                    <span className="truncate">{r.student.name || "Enrolled Student"}</span>
+                                    <span className="truncate">
+                                      {r.student.name || "Enrolled Student"}
+                                    </span>
                                     {isMe && (
                                       <span className="px-1.5 py-0.5 rounded text-[8px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase font-bold shrink-0">
                                         You
                                       </span>
                                     )}
                                   </div>
-                                  <div className="text-[10px] text-muted-foreground truncate">{r.student.email}</div>
+                                  <div className="text-[10px] text-muted-foreground truncate">
+                                    {r.student.email}
+                                  </div>
                                 </div>
                               </div>
                             );

@@ -82,7 +82,9 @@ export function EmbeddedClassroomPage() {
       <div className="flex-1 flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="h-8 w-8 text-indigo-400 animate-spin" />
-          <p className="text-sm text-muted-foreground">Authenticating with meeting server and initializing room...</p>
+          <p className="text-sm text-muted-foreground">
+            Authenticating with meeting server and initializing room...
+          </p>
         </div>
       </div>
     );
@@ -91,7 +93,7 @@ export function EmbeddedClassroomPage() {
   if (error) {
     return (
       <div className="flex-1 flex items-center justify-center p-6 min-h-[400px]">
-        <div className="max-w-md w-full p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] text-center space-y-4">
+        <div className="max-w-md w-full p-6 rounded-2xl border border-border bg-card text-center space-y-4">
           <AlertCircle className="h-12 w-12 text-rose-500 mx-auto" />
           <h3 className="text-lg font-bold text-white">Connection Error</h3>
           <p className="text-xs text-muted-foreground">
@@ -100,7 +102,7 @@ export function EmbeddedClassroomPage() {
           <div className="flex gap-3 pt-2">
             <Link
               to="/live-classes"
-              className="flex-1 py-2.5 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)] text-xs font-semibold text-foreground hover:text-white transition"
+              className="flex-1 py-2.5 rounded-xl border border-border bg-card text-xs font-semibold text-foreground hover:text-white transition"
             >
               Back to List
             </Link>
@@ -113,7 +115,7 @@ export function EmbeddedClassroomPage() {
   return (
     <main className="flex-1 flex flex-col h-full overflow-hidden bg-black relative">
       {/* Meeting Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-[var(--surface)]/95 shrink-0 z-10">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-card/95 shrink-0 z-10">
         <div className="flex items-center gap-3">
           <Link
             to="/live-classes"
@@ -147,14 +149,16 @@ export function EmbeddedClassroomPage() {
               mode="fill"
               className="flex-1 w-full h-full"
               // Disable browser caching and recording blocks where possible
-              config={{
-                controlBar: {
-                  recording: false, // Students cannot trigger cloud recording
-                },
-                screenshare: {
-                  allowShare: false, // Prevent students from sharing/capturing screen by default
-                },
-              } as any}
+              config={
+                {
+                  controlBar: {
+                    recording: false, // Students cannot trigger cloud recording
+                  },
+                  screenshare: {
+                    allowShare: false, // Prevent students from sharing/capturing screen by default
+                  },
+                } as any
+              }
             />
           </div>
         ) : (
@@ -166,7 +170,7 @@ export function EmbeddedClassroomPage() {
       </div>
 
       {/* Info Footer Banner */}
-      <div className="bg-[var(--surface)] px-4 py-2 border-t border-white/5 flex flex-wrap gap-x-6 gap-y-1 justify-center text-[10px] text-muted-foreground shrink-0 z-10">
+      <div className="bg-card px-4 py-2 border-t border-white/5 flex flex-wrap gap-x-6 gap-y-1 justify-center text-[10px] text-muted-foreground shrink-0 z-10">
         <span className="flex items-center gap-1">
           <MicOff className="h-3 w-3 text-rose-400" />
           Muted by default

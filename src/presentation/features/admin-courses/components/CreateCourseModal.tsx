@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { X, Sparkles, ChevronDown, DollarSign, Plus } from "lucide-react";
 import { managementService } from "@/infrastructure/admin/managementService";
+import { instructorService } from "@/infrastructure/instructor/instructorService";
+import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import type { CourseLevel, Instructor } from "@/domain/course";
 import { toast } from "sonner";
 
@@ -56,6 +58,7 @@ export function CreateCourseModal({
   instructors,
   levels,
 }: CreateCourseModalProps) {
+  const { user } = useAuth();
   const [formState, setFormState] = useState(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [manuallyEditedSlug, setManuallyEditedSlug] = useState(false);
@@ -192,7 +195,18 @@ export function CreateCourseModal({
     };
 
     try {
-      await managementService.createCourse(payload);
+      if (user?.role === "INSTRUCTOR") {
+        await instructorService.createCourse({
+          title: payload.title,
+          slug: payload.slug,
+          description: payload.description,
+          level: payload.level,
+          price: payload.price,
+          coverImageUrl: payload.thumbnailUrl || undefined,
+        });
+      } else {
+        await managementService.createCourse(payload);
+      }
       toast.success("Course created successfully!");
       setFormState({
         ...initialFormState,

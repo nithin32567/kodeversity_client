@@ -60,6 +60,7 @@ export interface Course {
   description: string;
   promoVideoUrl: string | null;
   thumbnailUrl: string | null;
+  coverImageUrl?: string | null;
   price: number;
   discountPrice: number | null;
   currency: string;
@@ -71,6 +72,9 @@ export interface Course {
   whatYouWillLearn: string[];
   courseIncludes: string[];
   totalStudents: number;
+  rating?: number | null;
+  isPublished?: boolean;
+  enrollmentCount?: number;
   createdAt: string;
   updatedAt: string;
   instructorId?: string | null;

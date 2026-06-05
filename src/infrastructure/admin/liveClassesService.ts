@@ -38,7 +38,9 @@ export const liveClassesService = {
   getMeetingsByBatch: async (batchId: string, status?: MeetingStatus): Promise<LiveSession[]> => {
     const url = status ? `${base}/batch/${batchId}?status=${status}` : `${base}/batch/${batchId}`;
     try {
-      const response = await apiClient.get<{ success: boolean; data: LiveSession[] } | LiveSession[]>(url);
+      const response = await apiClient.get<
+        { success: boolean; data: LiveSession[] } | LiveSession[]
+      >(url);
       // Backend controller returns `{ success: true, data: result }`
       if (Array.isArray(response)) {
         return response;
@@ -77,7 +79,7 @@ export const liveClassesService = {
       userId: string;
       name: string;
       role: "host" | "participant";
-    }
+    },
   ): Promise<{ token: string; dyteMeetingId: string; sessionTitle: string }> => {
     const response = await apiClient.post<any>(`${base}/${id}/join`, payload);
     if (response && typeof response === "object" && "data" in response) {

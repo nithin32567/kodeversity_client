@@ -6,6 +6,7 @@ const PROGRESS_URL =
 const CHALLENGE_URL =
   (import.meta.env.VITE_CHALLENGE_SERVICE_URL as string) ?? "http://localhost:4005";
 const ADMIN_URL = (import.meta.env.VITE_ADMIN_SERVICE_URL as string) ?? "http://localhost:4002";
+const MEETING_URL = (import.meta.env.VITE_MEETING_SERVICE_URL as string) ?? "http://localhost:4002";
 
 export const endpoints = {
   auth: {
@@ -64,5 +65,22 @@ export const endpoints = {
     batchStudents: (batchId: string) => `${COURSE_URL}/api/batches/${batchId}/students`,
     removeStudentFromBatch: (batchId: string, studentId: string) =>
       `${COURSE_URL}/api/batches/${batchId}/students/${studentId}`,
+  },
+  instructor: {
+    // Dedicated instructor-scoped endpoints (backend filters by JWT's instructorId)
+    myCourses: `${COURSE_URL}/api/instructor/courses`,
+    myBatches: `${COURSE_URL}/api/instructor/batches`,
+    createCourse: `${COURSE_URL}/api/instructor/courses`,
+    // Module & chapter management — shared with admin but instructor-gated on backend
+    createModule: (courseId: string) => `${COURSE_URL}/api/courses/${courseId}/modules`,
+    updateModule: (moduleId: string) => `${COURSE_URL}/api/modules/${moduleId}`,
+    deleteModule: (moduleId: string) => `${COURSE_URL}/api/modules/${moduleId}`,
+    createChapter: (moduleId: string) => `${COURSE_URL}/api/modules/${moduleId}/chapters`,
+    updateChapter: (chapterId: string) => `${COURSE_URL}/api/chapters/${chapterId}`,
+    deleteChapter: (chapterId: string) => `${COURSE_URL}/api/chapters/${chapterId}`,
+    batchRoster: (batchId: string) => `${COURSE_URL}/api/batches/${batchId}/students`,
+    // Meetings — instructor creates & joins sessions for accessible batches
+    meetings: `${MEETING_URL}/api/meetings`,
+    meetingsByBatch: (batchId: string) => `${MEETING_URL}/api/meetings/batch/${batchId}`,
   },
 } as const;

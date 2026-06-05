@@ -154,22 +154,16 @@ export const managementService = {
     startDate: string;
     endDate?: string | null;
   }): Promise<Batch> => {
-    return await apiClient.post<Batch>(
-      endpoints.admin.batches,
-      batchData,
-    );
+    return await apiClient.post<Batch>(endpoints.admin.batches, batchData);
   },
   addStudentsToBatch: async (batchId: string, studentIds: string[]): Promise<BatchStudent[]> => {
-    return await apiClient.post<BatchStudent[]>(
-      endpoints.admin.batchStudents(batchId),
-      { studentIds },
-    );
+    return await apiClient.post<BatchStudent[]>(endpoints.admin.batchStudents(batchId), {
+      studentIds,
+    });
   },
   getBatchRoster: async (batchId: string): Promise<BatchStudent[]> => {
     try {
-      return await apiClient.get<BatchStudent[]>(
-        endpoints.admin.batchStudents(batchId),
-      );
+      return await apiClient.get<BatchStudent[]>(endpoints.admin.batchStudents(batchId));
     } catch {
       return [];
     }

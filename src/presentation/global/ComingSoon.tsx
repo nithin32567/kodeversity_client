@@ -2,10 +2,17 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { AppShell } from "@/presentation/global/AppShell";
 
-export function ComingSoon({ title, activeTop }: { title: string; activeTop?: string }) {
-  return (
-    <AppShell activeTop={activeTop}>
-      <section className="relative grid min-h-[calc(100vh-4rem)] place-items-center overflow-hidden px-4">
+export function ComingSoon({
+  title,
+  activeTop,
+  wrap = true,
+}: {
+  title: string;
+  activeTop?: string;
+  wrap?: boolean;
+}) {
+  const content = (
+    <section className="relative grid min-h-[calc(100vh-4rem)] place-items-center overflow-hidden px-4">
         <div
           className="pointer-events-none absolute inset-0 opacity-60"
           style={{
@@ -39,6 +46,8 @@ export function ComingSoon({ title, activeTop }: { title: string; activeTop?: st
           </div>
         </div>
       </section>
-    </AppShell>
   );
+
+  if (!wrap) return content;
+  return <AppShell activeTop={activeTop}>{content}</AppShell>;
 }

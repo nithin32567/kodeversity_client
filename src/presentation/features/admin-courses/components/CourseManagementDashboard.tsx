@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
 import { managementService } from "@/infrastructure/admin/managementService";
+import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import type {
   Course,
   Module,
@@ -150,6 +151,7 @@ function InputField({
   onChange,
   type = "text",
   placeholder,
+  disabled,
 }: {
   label: string;
   id: string;
@@ -157,6 +159,7 @@ function InputField({
   onChange: (v: string) => void;
   type?: string;
   placeholder?: string;
+  disabled?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -172,7 +175,8 @@ function InputField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+        disabled={disabled}
+        className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition disabled:opacity-60 disabled:cursor-not-allowed"
       />
     </div>
   );
@@ -1355,6 +1359,9 @@ function EditDetailsTab({
   instructors: Instructor[];
   onSaveInstructor: (instructorId: string | null) => Promise<void>;
 }) {
+  const { user } = useAuth();
+  const isInstructor = user?.role === "INSTRUCTOR";
+
   const [title, setTitle] = useState(course.title);
   const [level, setLevel] = useState<CourseLevel>(course.level);
   const [price, setPrice] = useState(String(course.price));
@@ -1366,6 +1373,7 @@ function EditDetailsTab({
   } | null>(null);
 
   const handleSave = async () => {
+    if (isInstructor) return;
     setIsSaving(true);
     setSaveStatus(null);
     try {
@@ -1392,6 +1400,7 @@ function EditDetailsTab({
         value={title}
         onChange={setTitle}
         placeholder="e.g. React Mastery"
+        disabled={isInstructor}
       />
 
       <div className="flex flex-col gap-1.5">
@@ -1404,8 +1413,9 @@ function EditDetailsTab({
         <select
           id="edit-level"
           value={level}
+          disabled={isInstructor}
           onChange={(e) => setLevel(e.target.value as CourseLevel)}
-          className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2.5 text-sm text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+          className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2.5 text-sm text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {LEVEL_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -1422,6 +1432,7 @@ function EditDetailsTab({
         value={price}
         onChange={setPrice}
         placeholder="0"
+        disabled={isInstructor}
       />
 
       <div className="flex flex-col gap-1.5">
@@ -1434,8 +1445,9 @@ function EditDetailsTab({
         <select
           id="edit-instructor"
           value={instructorId}
+          disabled={isInstructor}
           onChange={(e) => setInstructorId(e.target.value)}
-          className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2.5 text-sm text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+          className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2.5 text-sm text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <option value="">— Unassigned —</option>
           {instructors.map((ins) => (
@@ -1450,6 +1462,13 @@ function EditDetailsTab({
         </p>
       </div>
 
+      {isInstructor && (
+        <div className="p-3 rounded-xl border border-blue-500/10 bg-blue-500/5 text-blue-400 text-xs flex gap-2.5">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>Course metadata is managed by admins. To modify titles or prices, please contact support.</span>
+        </div>
+      )}
+
       {saveStatus && (
         <div
           className={`p-3 rounded-lg text-xs border ${
@@ -1462,21 +1481,23 @@ function EditDetailsTab({
         </div>
       )}
 
-      <div className="pt-2">
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[image:var(--gradient-primary)] px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
-        >
-          {isSaving ? (
-            "Saving..."
-          ) : (
-            <>
-              <Save className="h-4 w-4" /> Save Details
-            </>
-          )}
-        </button>
-      </div>
+      {!isInstructor && (
+        <div className="pt-2">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[image:var(--gradient-primary)] px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
+          >
+            {isSaving ? (
+              "Saving..."
+            ) : (
+              <>
+                <Save className="h-4 w-4" /> Save Details
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -1609,13 +1630,17 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
   const [localModules, setLocalModules] = useState<Module[]>([]);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
 
+  const { user } = useAuth();
+
   useEffect(() => {
     if (course?.modules) setLocalModules(course.modules);
   }, [course]);
 
   useEffect(() => {
-    managementService.getInstructors().then(setInstructors);
-  }, []);
+    if (user?.role !== "INSTRUCTOR") {
+      managementService.getInstructors().then(setInstructors);
+    }
+  }, [user]);
 
   const handleAddModule = useCallback(
     async (form: AddModuleForm) => {

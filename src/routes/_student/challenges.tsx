@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Play, BookOpen, Clock, ExternalLink } from "lucide-react";
-import { AppShell } from "@/presentation/global/AppShell";
+
 
 export const Route = createFileRoute("/_student/challenges")({
   head: () => ({
@@ -109,8 +109,7 @@ const levelClasses: Record<Level, string> = {
 
 function ChallengesPage() {
   return (
-    <AppShell activeTop="Courses" variant="learn">
-      <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background text-foreground">
         <div className="mx-auto max-w-[1600px] px-6 py-8">
           <header className="mb-6">
             <h1 className="font-display text-3xl font-bold tracking-tight text-foreground md:text-4xl">
@@ -191,6 +190,5 @@ function ChallengesPage() {
           </div>
         </div>
       </main>
-    </AppShell>
   );
 }

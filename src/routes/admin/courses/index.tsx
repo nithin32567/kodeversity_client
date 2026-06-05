@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Search, BookOpen, Plus, AlertCircle } from "lucide-react";
 import { managementService } from "@/infrastructure/admin/managementService";
+import { instructorService } from "@/infrastructure/instructor/instructorService";
+import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import type { Course, Instructor } from "@/domain/course";
 import { CourseCard } from "@/presentation/features/admin-courses/components/CourseCard";
 import { CreateCourseModal } from "@/presentation/features/admin-courses/components/CreateCourseModal";
@@ -19,6 +21,7 @@ const levelLabels: Record<string, string> = {
 };
 
 export function AdminCoursesPage() {
+  const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
@@ -42,9 +45,28 @@ export function AdminCoursesPage() {
   const fetchCourses = useCallback(() => {
     setIsLoading(true);
     setIsError(false);
-    Promise.all([managementService.getCourses(), managementService.getInstructors()])
+
+    const isInstructor = user?.role === "INSTRUCTOR";
+    const coursesPromise = isInstructor
+      ? instructorService.getMyCourses()
+      : managementService.getCourses();
+
+    const instructorsPromise = isInstructor
+      ? Promise.resolve([])
+      : managementService.getInstructors();
+
+    Promise.all([coursesPromise, instructorsPromise])
       .then(([courseList, instructorList]) => {
-        setCourses(courseList);
+        let finalCourses = courseList;
+        if (isInstructor && user?.id) {
+          const filtered = courseList.filter(
+            (c) => c.instructorId === user.id || c.instructor?.id === user.id,
+          );
+          if (filtered.length > 0 || courseList.length === 0) {
+            finalCourses = filtered;
+          }
+        }
+        setCourses(finalCourses);
         setInstructors(instructorList);
         setIsLoading(false);
       })
@@ -53,7 +75,7 @@ export function AdminCoursesPage() {
         setIsError(true);
         setIsLoading(false);
       });
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchCourses();

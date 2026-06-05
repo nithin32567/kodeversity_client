@@ -43,7 +43,7 @@ export function StudentProfilePage() {
           studentService.getStudents(),
           managementService.getCourses(),
         ]);
-        
+
         const matchedStudent = students.find((s) => s.id === user.id);
         if (matchedStudent) {
           setProfileDetail({
@@ -93,17 +93,17 @@ export function StudentProfilePage() {
   return (
     <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 overflow-y-auto max-w-[1400px] mx-auto w-full">
       {/* ── TOP SECTION: PROFILE CARD ── */}
-      <div className="p-6 sm:p-8 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] relative overflow-hidden shadow-xl">
+      <div className="p-6 sm:p-8 rounded-2xl border border-border bg-card relative overflow-hidden shadow-xl">
         <div
           className="absolute -right-20 -bottom-20 h-64 w-64 rounded-full blur-[90px] opacity-10"
-          style={{ background: "var(--grad-orange)" }}
+          style={{ background: "var(--gradient-primary)" }}
         />
-        
+
         <div className="relative z-10 flex flex-col md:flex-row gap-6 items-start md:items-center">
           {/* Avatar Initials */}
           <div
-            className="h-20 w-20 sm:h-24 sm:w-24 rounded-full grid place-items-center text-white text-3xl font-bold border-2 border-[var(--hairline)] shadow-lg"
-            style={{ background: "var(--grad-pink)" }}
+            className="h-20 w-20 sm:h-24 sm:w-24 rounded-full grid place-items-center text-white text-3xl font-bold border-2 border-border shadow-lg"
+            style={{ background: "var(--gradient-primary)" }}
           >
             {user?.name
               ? user.name
@@ -135,11 +135,15 @@ export function StudentProfilePage() {
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Phone className="h-4 w-4 text-purple-400/80 shrink-0" />
-                <span className="truncate text-foreground/90">{profileDetail?.phone || "+91 XXXXX XXXXX"}</span>
+                <span className="truncate text-foreground/90">
+                  {profileDetail?.phone || "+91 XXXXX XXXXX"}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <GraduationCap className="h-4 w-4 text-emerald-400/80 shrink-0" />
-                <span className="truncate text-foreground/90">{profileDetail?.highestQualification || "Not Specified"}</span>
+                <span className="truncate text-foreground/90">
+                  {profileDetail?.highestQualification || "Not Specified"}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Calendar className="h-4 w-4 text-amber-400/80 shrink-0" />
@@ -172,7 +176,7 @@ export function StudentProfilePage() {
         </div>
 
         {purchasedCourses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-[var(--hairline)] bg-[var(--surface-2)]/10 text-center">
+          <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-border bg-card/10 text-center">
             <Award className="h-12 w-12 text-muted-foreground/45 mb-3" />
             <h3 className="font-semibold text-lg text-foreground/80">No active purchases found</h3>
             <p className="text-sm text-muted-foreground mt-1 max-w-sm">
@@ -190,10 +194,10 @@ export function StudentProfilePage() {
             {purchasedCourses.map((enroll) => (
               <div
                 key={enroll.id}
-                className="flex flex-col p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] hover:bg-[var(--surface-2)]/40 transition duration-300 group shadow-lg"
+                className="flex flex-col p-5 rounded-2xl border border-border bg-card hover:bg-card/85 transition duration-300 group shadow-lg"
               >
                 {/* Thumbnail */}
-                <div className="relative aspect-video rounded-xl bg-[var(--surface-2)] border border-[var(--hairline)] overflow-hidden shrink-0">
+                <div className="relative aspect-video rounded-xl bg-card border border-border overflow-hidden shrink-0">
                   {enroll.course?.thumbnailUrl ? (
                     <img
                       src={enroll.course.thumbnailUrl}
@@ -222,13 +226,15 @@ export function StudentProfilePage() {
                   </div>
 
                   {/* Pricing and Stats */}
-                  <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-[var(--hairline)] text-[11px] text-muted-foreground">
+                  <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-border text-[11px] text-muted-foreground">
                     <div className="flex items-center gap-1.5">
                       <Clock className="h-3.5 w-3.5 text-indigo-400/80" />
                       <span>{enroll.course?.totalDuration || 0} Hours</span>
                     </div>
                     <div className="text-right">
-                      <span>Paid: <strong>${enroll.pricePaid}</strong></span>
+                      <span>
+                        Paid: <strong>${enroll.pricePaid}</strong>
+                      </span>
                     </div>
                   </div>
 
@@ -236,7 +242,9 @@ export function StudentProfilePage() {
                   <div className="mt-4 space-y-1">
                     <div className="flex justify-between items-center text-[10px] font-mono text-muted-foreground">
                       <span>Learning Progress</span>
-                      <span className="font-semibold text-foreground">{Math.round(enroll.completedPercent)}%</span>
+                      <span className="font-semibold text-foreground">
+                        {Math.round(enroll.completedPercent)}%
+                      </span>
                     </div>
                     <div className="h-1.5 w-full bg-white/[0.05] rounded-full overflow-hidden">
                       <div
@@ -250,7 +258,7 @@ export function StudentProfilePage() {
                   <button
                     onClick={() => {
                       alert(
-                        `Resume Course learning for: "${enroll.course?.title}".\nIn production, this navigates to the learning viewer/player.`
+                        `Resume Course learning for: "${enroll.course?.title}".\nIn production, this navigates to the learning viewer/player.`,
                       );
                     }}
                     className="w-full mt-4 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/20 active:scale-[0.98] transition cursor-pointer"

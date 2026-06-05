@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { findCourseBySlug } from "@/presentation/features/student-learning/components/data";
 import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
-import { AppShell } from "@/presentation/global/AppShell";
+
 import { useAccentRgb } from "@/presentation/lib/useAccent";
 
 export const Route = createFileRoute("/_student/learn/$slug")({
@@ -146,8 +146,7 @@ function LearnPage() {
   const glow = useAccentRgb();
 
   return (
-    <AppShell activeTop="Courses" variant="learn">
-      <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background text-foreground">
         <div className="mx-auto max-w-[1600px] px-6 py-6">
           <Link
             to="/courses/$slug"
@@ -528,7 +527,6 @@ function LearnPage() {
           </MagicBentoSection>
         </div>
       </main>
-    </AppShell>
   );
 }
 

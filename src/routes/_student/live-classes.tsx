@@ -74,7 +74,7 @@ export function StudentLiveClassesPage() {
   return (
     <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 overflow-y-auto max-w-[1400px] mx-auto w-full">
       {/* Title Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-[var(--hairline)]">
+      <div className="flex items-center justify-between pb-4 border-b border-border">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-white font-display flex items-center gap-2">
             <Video className="h-6 w-6 text-indigo-400" />
@@ -87,7 +87,7 @@ export function StudentLiveClassesPage() {
         <button
           onClick={() => void fetchLiveClasses(true)}
           disabled={refreshing}
-          className="p-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)] text-muted-foreground hover:text-foreground transition disabled:opacity-50"
+          className="p-2 rounded-lg border border-border bg-card/45 hover:bg-card text-muted-foreground hover:text-foreground transition disabled:opacity-50"
           title="Refresh Schedule"
         >
           <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
@@ -95,7 +95,7 @@ export function StudentLiveClassesPage() {
       </div>
 
       {meetings.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-[var(--hairline)] bg-[var(--surface-2)]/10 text-center">
+        <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-border bg-card/10 text-center">
           <Video className="h-12 w-12 text-muted-foreground/45 mb-3" />
           <h3 className="font-semibold text-lg text-foreground/80">No sessions assigned</h3>
           <p className="text-sm text-muted-foreground mt-1 max-w-sm">
@@ -112,7 +112,7 @@ export function StudentLiveClassesPage() {
             </h3>
 
             {liveSessions.length === 0 ? (
-              <div className="p-6 rounded-2xl border border-dashed border-[var(--hairline)] bg-white/[0.01] text-center text-xs text-muted-foreground">
+              <div className="p-6 rounded-2xl border border-dashed border-border bg-white/[0.01] text-center text-xs text-muted-foreground">
                 No session is actively live right now.
               </div>
             ) : (
@@ -120,10 +120,10 @@ export function StudentLiveClassesPage() {
                 {liveSessions.map((meeting) => (
                   <div
                     key={meeting.id}
-                    className="p-5 rounded-2xl border border-red-500/30 bg-[var(--surface)] hover:bg-[var(--surface-2)]/40 transition duration-300 relative overflow-hidden shadow-lg shadow-red-950/10"
+                    className="p-5 rounded-2xl border border-red-500/30 bg-card hover:bg-card/85 transition duration-300 relative overflow-hidden shadow-lg shadow-red-950/10"
                   >
                     <div className="absolute top-0 left-0 right-0 h-[3px] bg-red-500 animate-pulse" />
-                    
+
                     <div className="space-y-3">
                       <div>
                         <span className="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20 uppercase tracking-wider">
@@ -141,9 +141,11 @@ export function StudentLiveClassesPage() {
                         {meeting.description || "No session description provided."}
                       </p>
 
-                      <div className="pt-3 border-t border-[var(--hairline)] flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="pt-3 border-t border-border flex items-center gap-2 text-xs text-muted-foreground">
                         <Clock className="h-3.5 w-3.5 text-red-400/80" />
-                        <span>Duration: <strong>{meeting.duration} mins</strong></span>
+                        <span>
+                          Duration: <strong>{meeting.duration} mins</strong>
+                        </span>
                       </div>
 
                       <button
@@ -167,15 +169,15 @@ export function StudentLiveClassesPage() {
             </h3>
 
             {upcomingSessions.length === 0 ? (
-              <div className="p-6 rounded-2xl border border-dashed border-[var(--hairline)] bg-white/[0.01] text-center text-xs text-muted-foreground">
+              <div className="p-6 rounded-2xl border border-dashed border-border bg-white/[0.01] text-center text-xs text-muted-foreground">
                 No future sessions scheduled. Check back later!
               </div>
             ) : (
-              <div className="p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] shadow-lg space-y-6 relative before:absolute before:left-8 before:top-6 before:bottom-6 before:w-[1px] before:bg-[var(--hairline)]">
+              <div className="p-6 rounded-2xl border border-border bg-card shadow-lg space-y-6 relative before:absolute before:left-8 before:top-6 before:bottom-6 before:w-[1px] before:bg-border">
                 {upcomingSessions.map((meeting) => (
                   <div key={meeting.id} className="relative pl-10 space-y-2 group">
                     {/* Circle dot */}
-                    <div className="absolute left-[26px] top-1.5 h-3.5 w-3.5 rounded-full bg-[var(--surface-2)] border border-[var(--hairline)] group-hover:border-indigo-400 transition ring-4 ring-[var(--surface)]" />
+                    <div className="absolute left-[26px] top-1.5 h-3.5 w-3.5 rounded-full bg-card/60 border border-border group-hover:border-indigo-400 transition ring-4 ring-card" />
 
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="space-y-0.5">

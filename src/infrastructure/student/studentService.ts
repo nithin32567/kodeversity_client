@@ -2,7 +2,8 @@ import { apiClient } from "@/infrastructure/http/apiClient";
 import { managementService } from "@/infrastructure/admin/managementService";
 import { liveClassesService, type LiveSession } from "@/infrastructure/admin/liveClassesService";
 
-const COURSE_URL = (import.meta.env.VITE_COURSE_SERVICE_URL as string | undefined) ?? "http://localhost:4001";
+const COURSE_URL =
+  (import.meta.env.VITE_COURSE_SERVICE_URL as string | undefined) ?? "http://localhost:4001";
 
 export interface StudentEnrollment {
   id: string;
@@ -25,9 +26,9 @@ export const studentService = {
   /** Get all student records and their course enrollments from the course-service database. */
   getStudents: async (): Promise<StudentWithEnrollments[]> => {
     try {
-      const response = await apiClient.get<{ success: boolean; data: StudentWithEnrollments[] } | StudentWithEnrollments[]>(
-        `${COURSE_URL}/api/students`
-      );
+      const response = await apiClient.get<
+        { success: boolean; data: StudentWithEnrollments[] } | StudentWithEnrollments[]
+      >(`${COURSE_URL}/api/students`);
       if (Array.isArray(response)) {
         return response;
       }
@@ -53,7 +54,7 @@ export const studentService = {
     try {
       const allBatches = await managementService.getBatches();
       const myBatches = [];
-      
+
       // We run sequential checks of batch rosters to see if the studentId is present
       for (const batch of allBatches) {
         const roster = await managementService.getBatchRoster(batch.id);
@@ -82,7 +83,7 @@ export const studentService = {
 
       const allMeetingsNested = await Promise.all(meetingsPromises);
       const allMeetings = allMeetingsNested.flat();
-      
+
       // Sort meetings by date/time ascending
       allMeetings.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
       return allMeetings;

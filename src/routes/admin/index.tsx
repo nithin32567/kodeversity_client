@@ -11,7 +11,19 @@ import { RevenueBars } from "@/presentation/features/admin-analytics/components/
 import { QuickActions } from "@/presentation/features/admin-analytics/components/QuickActions";
 import { TopCoursesTable } from "@/presentation/features/admin-analytics/components/TopCoursesTable";
 
+import { authStore } from "@/presentation/features/auth/hooks/authStore";
+
 export const Route = createFileRoute("/admin/")({
+  head: () => {
+    const role = authStore.get().user?.role;
+    return {
+      meta: [
+        {
+          title: `${role === "INSTRUCTOR" ? "Instructor Dashboard" : "Admin Dashboard"} — Kodeversity`,
+        },
+      ],
+    };
+  },
   component: AdminDashboard,
 });
 

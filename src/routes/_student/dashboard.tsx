@@ -17,13 +17,16 @@ import { studentService, type StudentEnrollment } from "@/infrastructure/student
 import { managementService, type Batch } from "@/infrastructure/admin/managementService";
 import { liveClassesService, type LiveSession } from "@/infrastructure/admin/liveClassesService";
 import type { Course } from "@/domain/course";
+import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
+import { useAccentRgb } from "@/presentation/lib/useAccent";
 
 export const Route = createFileRoute("/_student/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Kodeversity" }] }),
+  head: () => ({ meta: [{ title: "Student Dashboard — Kodeversity" }] }),
   component: StudentDashboard,
 });
 
 export function StudentDashboard() {
+  const glow = useAccentRgb();
   const { user, isLoading: isAuthLoading } = useAuth();
   const [enrollments, setEnrollments] = useState<StudentEnrollment[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -37,12 +40,13 @@ export function StudentDashboard() {
     const loadDashboardData = async () => {
       setLoading(true);
       try {
-        const [fetchedEnrollments, fetchedBatches, fetchedMeetings, fetchedCourses] = await Promise.all([
-          studentService.getStudentEnrollments(user.id),
-          studentService.getMyBatches(user.id),
-          studentService.getMyLiveClasses(user.id),
-          managementService.getCourses(),
-        ]);
+        const [fetchedEnrollments, fetchedBatches, fetchedMeetings, fetchedCourses] =
+          await Promise.all([
+            studentService.getStudentEnrollments(user.id),
+            studentService.getMyBatches(user.id),
+            studentService.getMyLiveClasses(user.id),
+            managementService.getCourses(),
+          ]);
         setEnrollments(fetchedEnrollments);
         setBatches(fetchedBatches);
         setMeetings(fetchedMeetings);
@@ -71,12 +75,16 @@ export function StudentDashboard() {
   // Aggregate metrics
   const enrolledCount = enrollments.length;
   const activeBatchesCount = batches.length;
-  const completedCourses = enrollments.filter((e) => e.isCompleted || e.completedPercent >= 100).length;
-  
+  const completedCourses = enrollments.filter(
+    (e) => e.isCompleted || e.completedPercent >= 100,
+  ).length;
+
   // Calculate average progress
   const averageProgress =
     enrolledCount > 0
-      ? Math.round(enrollments.reduce((acc, curr) => acc + curr.completedPercent, 0) / enrolledCount)
+      ? Math.round(
+          enrollments.reduce((acc, curr) => acc + curr.completedPercent, 0) / enrolledCount,
+        )
       : 0;
 
   // Filter meetings that are upcoming or live
@@ -97,7 +105,11 @@ export function StudentDashboard() {
   return (
     <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-8 overflow-y-auto max-w-[1400px] mx-auto w-full">
       {/* Welcome Banner */}
-      <div className="relative p-6 sm:p-8 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] overflow-hidden shadow-xl">
+      <MagicBentoCard
+        className="relative p-6 sm:p-8 rounded-2xl border border-border bg-card shadow-xl"
+        glowColor={glow}
+        enableStars
+      >
         <div
           className="absolute -right-24 -top-24 h-72 w-72 rounded-full blur-[100px] opacity-15"
           style={{ background: "var(--grad-cta)" }}
@@ -108,7 +120,8 @@ export function StudentDashboard() {
               Welcome back, {user?.name || "Student"}! 👋
             </h2>
             <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-              Here is an overview of your cohort learning journey, live sessions timeline, and course completions. Keep learning!
+              Here is an overview of your cohort learning journey, live sessions timeline, and
+              course completions. Keep learning!
             </p>
           </div>
           {activeLiveNow.length > 0 && (
@@ -122,12 +135,16 @@ export function StudentDashboard() {
             </Link>
           )}
         </div>
-      </div>
+      </MagicBentoCard>
 
       {/* Grid Metrics Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <MagicBentoSection className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" glowColor={glow}>
         {/* Metric 1 */}
-        <div className="p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] hover:bg-[var(--surface-2)]/30 transition shadow-lg flex items-center gap-4">
+        <MagicBentoCard
+          className="p-5 rounded-2xl border border-border bg-card flex items-center gap-4 animate-fade-in"
+          glowColor={glow}
+          enableTilt
+        >
           <div className="h-12 w-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 grid place-items-center shrink-0">
             <BookOpen className="h-6 w-6" />
           </div>
@@ -135,10 +152,14 @@ export function StudentDashboard() {
             <div className="text-xs text-muted-foreground font-medium">Courses Enrolled</div>
             <div className="text-2xl font-bold font-display mt-0.5">{enrolledCount}</div>
           </div>
-        </div>
+        </MagicBentoCard>
 
         {/* Metric 2 */}
-        <div className="p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] hover:bg-[var(--surface-2)]/30 transition shadow-lg flex items-center gap-4">
+        <MagicBentoCard
+          className="p-5 rounded-2xl border border-border bg-card flex items-center gap-4 animate-fade-in"
+          glowColor={glow}
+          enableTilt
+        >
           <div className="h-12 w-12 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 grid place-items-center shrink-0">
             <Layers className="h-6 w-6" />
           </div>
@@ -146,10 +167,14 @@ export function StudentDashboard() {
             <div className="text-xs text-muted-foreground font-medium">Cohort Batches</div>
             <div className="text-2xl font-bold font-display mt-0.5">{activeBatchesCount}</div>
           </div>
-        </div>
+        </MagicBentoCard>
 
         {/* Metric 3 */}
-        <div className="p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] hover:bg-[var(--surface-2)]/30 transition shadow-lg flex items-center gap-4">
+        <MagicBentoCard
+          className="p-5 rounded-2xl border border-border bg-card flex items-center gap-4 animate-fade-in"
+          glowColor={glow}
+          enableTilt
+        >
           <div className="h-12 w-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 grid place-items-center shrink-0">
             <Award className="h-6 w-6" />
           </div>
@@ -157,10 +182,14 @@ export function StudentDashboard() {
             <div className="text-xs text-muted-foreground font-medium">Certificates Earned</div>
             <div className="text-2xl font-bold font-display mt-0.5">{completedCourses}</div>
           </div>
-        </div>
+        </MagicBentoCard>
 
         {/* Metric 4 */}
-        <div className="p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] hover:bg-[var(--surface-2)]/30 transition shadow-lg flex items-center gap-4">
+        <MagicBentoCard
+          className="p-5 rounded-2xl border border-border bg-card flex items-center gap-4 animate-fade-in"
+          glowColor={glow}
+          enableTilt
+        >
           <div className="h-12 w-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 grid place-items-center shrink-0">
             <Clock className="h-6 w-6" />
           </div>
@@ -168,8 +197,8 @@ export function StudentDashboard() {
             <div className="text-xs text-muted-foreground font-medium">Average Progress</div>
             <div className="text-2xl font-bold font-display mt-0.5">{averageProgress}%</div>
           </div>
-        </div>
-      </div>
+        </MagicBentoCard>
+      </MagicBentoSection>
 
       {/* Main Grid split */}
       <div className="grid gap-6 lg:grid-cols-3">
@@ -189,9 +218,11 @@ export function StudentDashboard() {
           </div>
 
           {enrolledCoursesList.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 rounded-2xl border border-dashed border-[var(--hairline)] bg-[var(--surface-2)]/5 text-center">
+            <div className="flex flex-col items-center justify-center p-12 rounded-2xl border border-dashed border-border bg-card/10 text-center">
               <BookOpen className="h-10 w-10 text-muted-foreground/45 mb-2" />
-              <div className="font-semibold text-sm text-foreground/80">Not enrolled in any courses</div>
+              <div className="font-semibold text-sm text-foreground/80">
+                Not enrolled in any courses
+              </div>
               <p className="text-xs text-muted-foreground mt-1 max-w-[280px]">
                 Browse the marketplace to find and enroll in structured bootcamps.
               </p>
@@ -203,11 +234,13 @@ export function StudentDashboard() {
               </Link>
             </div>
           ) : (
-            <div className="grid gap-4">
+            <MagicBentoSection className="grid gap-4" glowColor={glow}>
               {enrolledCoursesList.slice(0, 3).map((enroll) => (
-                <div
+                <MagicBentoCard
                   key={enroll.id}
-                  className="p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] hover:bg-[var(--surface-2)]/30 transition duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="p-5 rounded-2xl border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  glowColor={glow}
+                  enableTilt
                 >
                   <div className="min-w-0 flex-1 space-y-1">
                     <h4 className="font-semibold text-sm text-foreground truncate">
@@ -231,14 +264,14 @@ export function StudentDashboard() {
 
                   <Link
                     to={`/profile`}
-                    className="shrink-0 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border border-[var(--hairline)] bg-[var(--surface-2)]/60 hover:bg-[var(--surface-2)] text-foreground hover:text-white transition"
+                    className="shrink-0 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border border-border bg-card/60 hover:bg-card/85 text-foreground hover:text-white transition"
                   >
                     <span>Resume</span>
                     <PlayCircle className="h-3.5 w-3.5" />
                   </Link>
-                </div>
+                </MagicBentoCard>
               ))}
-            </div>
+            </MagicBentoSection>
           )}
         </div>
 
@@ -249,30 +282,39 @@ export function StudentDashboard() {
             Live Classes Schedule
           </h3>
 
-          <div className="p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] space-y-5">
+          <MagicBentoCard
+            className="p-6 rounded-2xl border border-border bg-card space-y-5"
+            glowColor={glow}
+            enableStars={false}
+          >
             {upcomingMeetings.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground flex flex-col items-center justify-center gap-2">
                 <Video className="h-8 w-8 text-muted-foreground/45" />
                 <span className="text-xs">No upcoming classes scheduled.</span>
               </div>
             ) : (
-              <div className="space-y-5 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-[var(--hairline)]">
+              <div className="space-y-5 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-border">
                 {upcomingMeetings.map((meeting) => (
                   <div key={meeting.id} className="relative pl-7 space-y-1">
                     {/* Time dot */}
-                    <div className="absolute left-[9px] top-1.5 h-2 w-2 rounded-full bg-purple-400 shadow-md ring-4 ring-[var(--surface)]" />
+                    <div className="absolute left-[9px] top-1.5 h-2 w-2 rounded-full bg-purple-400 shadow-md ring-4 ring-card" />
 
                     <div className="text-[10px] font-mono text-purple-400 font-bold uppercase tracking-wider">
                       {new Date(meeting.startTime).toLocaleTimeString("en-US", {
                         hour: "numeric",
                         minute: "2-digit",
                       })}{" "}
-                      - {new Date(new Date(meeting.startTime).getTime() + meeting.duration * 60000).toLocaleTimeString("en-US", {
+                      -{" "}
+                      {new Date(
+                        new Date(meeting.startTime).getTime() + meeting.duration * 60000,
+                      ).toLocaleTimeString("en-US", {
                         hour: "numeric",
                         minute: "2-digit",
                       })}
                     </div>
-                    <h4 className="font-bold text-xs text-foreground line-clamp-1">{meeting.title}</h4>
+                    <h4 className="font-bold text-xs text-foreground line-clamp-1">
+                      {meeting.title}
+                    </h4>
                     <div className="text-[10px] text-muted-foreground">
                       Batch: {meeting.batchName || "Cohort"} • {meeting.duration}m
                     </div>
@@ -284,12 +326,12 @@ export function StudentDashboard() {
             {/* View Full Timeline Button */}
             <Link
               to="/live-classes"
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)]/30 hover:bg-[var(--surface-2)] text-xs font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer"
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-border bg-card/30 hover:bg-card/60 text-xs font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer"
             >
               <span>Manage Live Rooms</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
-          </div>
+          </MagicBentoCard>
         </div>
       </div>
     </main>

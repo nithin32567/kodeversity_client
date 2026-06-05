@@ -82,7 +82,9 @@ function AdminLoginPage() {
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email Address</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Email Address
+            </span>
             <div className="relative flex items-center">
               <Mail className="absolute left-3 h-4 w-4 text-muted-foreground" />
               <input
@@ -98,7 +100,9 @@ function AdminLoginPage() {
           </div>
 
           <div className="space-y-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Passphrase</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Passphrase
+            </span>
             <div className="relative flex items-center">
               <Lock className="absolute left-3 h-4 w-4 text-muted-foreground" />
               <input
@@ -115,7 +119,11 @@ function AdminLoginPage() {
         </div>
 
         {error && (
-          <div id="admin-login-error" role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive-foreground">
+          <div
+            id="admin-login-error"
+            role="alert"
+            className="flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive-foreground"
+          >
             <div className="mt-0.5 text-destructive">
               <Shield className="h-4 w-4" />
             </div>

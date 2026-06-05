@@ -19,8 +19,18 @@ import {
   User,
 } from "lucide-react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
-import { managementService, type Batch, type BatchStudent } from "@/infrastructure/admin/managementService";
-import { liveClassesService, type LiveSession, type MeetingStatus, type MeetingType } from "@/infrastructure/admin/liveClassesService";
+import {
+  managementService,
+  type Batch,
+  type BatchStudent,
+} from "@/infrastructure/admin/managementService";
+import type { Course } from "@/domain/course";
+import {
+  liveClassesService,
+  type LiveSession,
+  type MeetingStatus,
+  type MeetingType,
+} from "@/infrastructure/admin/liveClassesService";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/live-classes")({
@@ -39,7 +49,7 @@ export function LiveClassesPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [meetings, setMeetings] = useState<LiveSession[]>([]);
   const [roster, setRoster] = useState<BatchStudent[]>([]);
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
 
   // Loading states
   const [isLoading, setIsLoading] = useState(true);
@@ -174,7 +184,7 @@ export function LiveClassesPage() {
   // Categorize and filter meetings based on search & activeTab
   const filteredMeetings = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    
+
     return meetings.filter((meeting) => {
       // Search matching
       const matchesSearch =
@@ -199,9 +209,7 @@ export function LiveClassesPage() {
   // Student toggle
   const toggleStudentSelection = (studentId: string) => {
     setSelectedStudentIds((prev) =>
-      prev.includes(studentId)
-        ? prev.filter((id) => id !== studentId)
-        : [...prev, studentId]
+      prev.includes(studentId) ? prev.filter((id) => id !== studentId) : [...prev, studentId],
     );
   };
 
@@ -214,9 +222,10 @@ export function LiveClassesPage() {
       await liveClassesService.updateStatus(id, "CANCELLED");
       toast.success(`Class "${title}" has been cancelled.`);
       await fetchAllMeetings();
-    } catch (err: any) {
-      console.error("Failed to cancel meeting:", err);
-      toast.error(err.message || "Failed to cancel meeting.");
+    } catch (err) {
+      const error = err as Error;
+      console.error("Failed to cancel meeting:", error);
+      toast.error(error.message || "Failed to cancel meeting.");
     }
   };
 
@@ -236,14 +245,15 @@ export function LiveClassesPage() {
 
       toast.success("Joining meeting as host!");
       console.log("Dyte Host Token:", joinData.token);
-      
+
       // Simulate launching or show alert with details
       alert(
-        `[Dyte Integration] Initiating Dyte Meeting.\nMeeting ID: ${joinData.dyteMeetingId}\nHost Token: ${joinData.token.substring(0, 30)}...\n\nIn a full production environment, this token would load the <DyteMeeting> component in the UI.`
+        `[Dyte Integration] Initiating Dyte Meeting.\nMeeting ID: ${joinData.dyteMeetingId}\nHost Token: ${joinData.token.substring(0, 30)}...\n\nIn a full production environment, this token would load the <DyteMeeting> component in the UI.`,
       );
-    } catch (err: any) {
-      console.error("Failed to join meeting:", err);
-      toast.error(err.message || "Failed to join session as host.");
+    } catch (err) {
+      const error = err as Error;
+      console.error("Failed to join meeting:", error);
+      toast.error(error.message || "Failed to join session as host.");
     }
   };
 
@@ -278,7 +288,7 @@ export function LiveClassesPage() {
       });
 
       toast.success(`Live Class "${formTitle}" scheduled successfully!`);
-      
+
       // Reset form
       setFormTitle("");
       setFormDescription("");
@@ -292,9 +302,10 @@ export function LiveClassesPage() {
 
       // Refresh meetings list
       await fetchAllMeetings();
-    } catch (err: any) {
-      console.error("Failed to create meeting:", err);
-      toast.error(err.message || "Failed to schedule live class.");
+    } catch (err) {
+      const error = err as Error;
+      console.error("Failed to create meeting:", error);
+      toast.error(error.message || "Failed to schedule live class.");
     } finally {
       setIsSubmitting(false);
     }
@@ -315,7 +326,9 @@ export function LiveClassesPage() {
       <div className="flex-1 flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="h-8 w-8 text-blue-400 animate-spin" />
-          <p className="text-sm text-muted-foreground">Verifying credentials and loading batches...</p>
+          <p className="text-sm text-muted-foreground">
+            Verifying credentials and loading batches...
+          </p>
         </div>
       </div>
     );
@@ -450,7 +463,9 @@ export function LiveClassesPage() {
             <div
               key={meeting.id}
               className={`flex flex-col p-6 rounded-2xl border bg-[var(--surface)] hover:bg-[var(--surface-2)]/50 transition duration-300 group shadow-lg relative overflow-hidden ${
-                meeting.status === "LIVE" ? "border-red-500/30 shadow-red-500/5" : "border-[var(--hairline)]"
+                meeting.status === "LIVE"
+                  ? "border-red-500/30 shadow-red-500/5"
+                  : "border-[var(--hairline)]"
               }`}
             >
               {meeting.status === "LIVE" && (
@@ -477,13 +492,15 @@ export function LiveClassesPage() {
                     Cohort: {meeting.batchName || "N/A"}
                   </span>
                 </div>
-                
+
                 {/* Type Badge */}
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
-                  meeting.type === "CUSTOM_STUDENTS"
-                    ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
-                    : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                }`}>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                    meeting.type === "CUSTOM_STUDENTS"
+                      ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                      : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  }`}
+                >
                   {meeting.type === "CUSTOM_STUDENTS" ? "Specific Students" : "Entire Batch"}
                 </span>
               </div>
@@ -511,12 +528,22 @@ export function LiveClassesPage() {
                 </div>
                 <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
                   <Clock className="h-4 w-4 text-purple-400/80 shrink-0" />
-                  <span>Duration: <strong className="text-foreground/90 font-semibold">{meeting.duration} mins</strong></span>
+                  <span>
+                    Duration:{" "}
+                    <strong className="text-foreground/90 font-semibold">
+                      {meeting.duration} mins
+                    </strong>
+                  </span>
                 </div>
                 {meeting.type === "CUSTOM_STUDENTS" && meeting.allowedStudents && (
                   <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
                     <Users className="h-4 w-4 text-indigo-400/80 shrink-0" />
-                    <span>Audience: <strong className="text-foreground/90 font-semibold">{meeting.allowedStudents.length} student(s)</strong></span>
+                    <span>
+                      Audience:{" "}
+                      <strong className="text-foreground/90 font-semibold">
+                        {meeting.allowedStudents.length} student(s)
+                      </strong>
+                    </span>
                   </div>
                 )}
               </div>
@@ -535,10 +562,14 @@ export function LiveClassesPage() {
                   <>
                     <button
                       onClick={() =>
-                        toast.info("Edit Live Class is currently simulated. Use Cancel to recreate.", {
-                          description: "To change meeting parameters, cancel the current class and schedule a new session.",
-                          duration: 4000,
-                        })
+                        toast.info(
+                          "Edit Live Class is currently simulated. Use Cancel to recreate.",
+                          {
+                            description:
+                              "To change meeting parameters, cancel the current class and schedule a new session.",
+                            duration: 4000,
+                          },
+                        )
                       }
                       className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)] text-xs font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer"
                     >
@@ -569,7 +600,6 @@ export function LiveClassesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
           {/* Modal Container */}
           <div className="relative w-full max-w-lg p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] shadow-2xl space-y-5 animate-scale-in max-h-[90vh] flex flex-col">
-            
             {/* Header */}
             <div className="flex justify-between items-start shrink-0">
               <div>
@@ -590,7 +620,10 @@ export function LiveClassesPage() {
             </div>
 
             {/* Form - Scrollable */}
-            <form onSubmit={handleCreateMeetingSubmit} className="space-y-4 overflow-y-auto flex-1 pr-1 scrollbar-thin">
+            <form
+              onSubmit={handleCreateMeetingSubmit}
+              className="space-y-4 overflow-y-auto flex-1 pr-1 scrollbar-thin"
+            >
               {/* Title */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Class Title *</label>
@@ -639,7 +672,9 @@ export function LiveClassesPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Duration (mins) *</label>
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Duration (mins) *
+                  </label>
                   <input
                     type="number"
                     required
@@ -654,7 +689,9 @@ export function LiveClassesPage() {
 
               {/* Batch Select */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">Select Batch / Cohort *</label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Select Batch / Cohort *
+                </label>
                 <div className="relative">
                   <select
                     required
@@ -662,7 +699,9 @@ export function LiveClassesPage() {
                     onChange={(e) => setFormBatchId(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm focus:outline-none focus:border-blue-500 transition text-foreground appearance-none cursor-pointer"
                   >
-                    <option value="" disabled>-- Choose Recipient Cohort --</option>
+                    <option value="" disabled>
+                      -- Choose Recipient Cohort --
+                    </option>
                     {accessibleBatches.map((batch) => (
                       <option key={batch.id} value={batch.id}>
                         {batch.name} ({batch.code})
@@ -681,7 +720,9 @@ export function LiveClassesPage() {
 
               {/* Audience selection */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground block">Audience Target *</label>
+                <label className="text-xs font-semibold text-muted-foreground block">
+                  Audience Target *
+                </label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer select-none">
                     <input
@@ -702,7 +743,9 @@ export function LiveClassesPage() {
                       className="accent-blue-500 cursor-pointer"
                       disabled={!formBatchId}
                     />
-                    <span className={!formBatchId ? "text-muted-foreground/60" : ""}>Specific Students</span>
+                    <span className={!formBatchId ? "text-muted-foreground/60" : ""}>
+                      Specific Students
+                    </span>
                   </label>
                 </div>
               </div>
@@ -740,7 +783,9 @@ export function LiveClassesPage() {
                       </div>
                     ) : filteredRoster.length === 0 ? (
                       <div className="p-4 text-center text-xs text-muted-foreground">
-                        {studentFilter ? "No matches found." : "No students enrolled in this batch."}
+                        {studentFilter
+                          ? "No matches found."
+                          : "No students enrolled in this batch."}
                       </div>
                     ) : (
                       filteredRoster.map((r) => {
@@ -768,7 +813,9 @@ export function LiveClassesPage() {
                               <div className="text-xs font-semibold truncate text-foreground">
                                 {r.student.name || "Unnamed Student"}
                               </div>
-                              <div className="text-[10px] opacity-75 truncate">{r.student.email}</div>
+                              <div className="text-[10px] opacity-75 truncate">
+                                {r.student.email}
+                              </div>
                             </div>
                           </div>
                         );
