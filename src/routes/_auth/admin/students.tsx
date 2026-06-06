@@ -16,6 +16,7 @@ import {
   Trash2,
   Loader2,
 } from "lucide-react";
+import { X } from "lucide-react";
 import { toast } from "sonner";
 import { managementService } from "@/infrastructure/admin/managementService";
 import type { User } from "@/domain/user";

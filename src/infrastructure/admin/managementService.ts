@@ -1,6 +1,6 @@
 import { apiClient } from "@/infrastructure/http/apiClient";
 import { endpoints } from "@/infrastructure/http/endpoints";
-import type { Course, Instructor } from "@/domain/course";
+import type { Course, Instructor, Module, Chapter } from "@/domain/course";
 import type { User } from "@/domain/user";
 
 export interface Batch {
@@ -30,6 +30,15 @@ export interface BatchStudent {
     email: string;
     avatarUrl?: string | null;
   };
+}
+
+export interface EnrolledStudentItem {
+  id: string;
+  purchasedAt: string;
+  student?: {
+    name?: string | null;
+    email: string;
+  } | null;
 }
 
 export const managementService = {
@@ -84,18 +93,20 @@ export const managementService = {
       instructorId,
     });
   },
-  getEnrolledStudents: async (courseId: string): Promise<unknown[]> => {
+  getEnrolledStudents: async (courseId: string): Promise<EnrolledStudentItem[]> => {
     try {
-      return await apiClient.get<unknown[]>(endpoints.course.enrolledStudents(courseId));
+      return await apiClient.get<EnrolledStudentItem[]>(
+        endpoints.course.enrolledStudents(courseId),
+      );
     } catch {
       return [];
     }
   },
-  createModule: async (courseId: string, title: string): Promise<unknown> => {
-    return await apiClient.post<unknown>(endpoints.course.createModule(courseId), { title });
+  createModule: async (courseId: string, title: string): Promise<Module> => {
+    return await apiClient.post<Module>(endpoints.course.createModule(courseId), { title });
   },
-  updateModule: async (moduleId: string, title: string): Promise<unknown> => {
-    return await apiClient.patch<unknown>(endpoints.course.updateModule(moduleId), { title });
+  updateModule: async (moduleId: string, title: string): Promise<Module> => {
+    return await apiClient.patch<Module>(endpoints.course.updateModule(moduleId), { title });
   },
   deleteModule: async (moduleId: string): Promise<unknown> => {
     return await apiClient.del<unknown>(endpoints.course.deleteModule(moduleId));
@@ -126,11 +137,11 @@ export const managementService = {
           }[]
         | null;
     },
-  ): Promise<unknown> => {
-    return await apiClient.post<unknown>(endpoints.course.createChapter(moduleId), chapterData);
+  ): Promise<Chapter> => {
+    return await apiClient.post<Chapter>(endpoints.course.createChapter(moduleId), chapterData);
   },
-  updateChapter: async (chapterId: string, chapterData: unknown): Promise<unknown> => {
-    return await apiClient.patch<unknown>(endpoints.course.updateChapter(chapterId), chapterData);
+  updateChapter: async (chapterId: string, chapterData: unknown): Promise<Chapter> => {
+    return await apiClient.patch<Chapter>(endpoints.course.updateChapter(chapterId), chapterData);
   },
   deleteChapter: async (chapterId: string): Promise<unknown> => {
     return await apiClient.del<unknown>(endpoints.course.deleteChapter(chapterId));
