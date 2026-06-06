@@ -65,7 +65,17 @@ export const liveClassesService = {
     type: MeetingType;
     customStudentIds?: string[];
   }): Promise<LiveSession> => {
-    const response = await apiClient.post<LiveSession | { data: LiveSession }>(base, payload);
+    const backendPayload = {
+      title: payload.title,
+      description: payload.description,
+      startTime: payload.startTime,
+      duration: payload.duration,
+      batchId: payload.batchId,
+      instructorId: payload.instructorId,
+      targetType: payload.type === "CUSTOM_STUDENTS" ? "INDIVIDUAL" : "BATCH",
+      studentIds: payload.customStudentIds,
+    };
+    const response = await apiClient.post<LiveSession | { data: LiveSession }>(base, backendPayload);
     // Unbox `{ success: true, data: result }` if returned that way
     if (response && typeof response === "object" && "data" in response) {
       return response.data;
