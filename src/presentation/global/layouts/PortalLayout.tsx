@@ -1,10 +1,12 @@
 import { Outlet, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
+import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 
 export function PortalLayout() {
   const location = useLocation();
+  const { isLoading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Skip rendering layout wrappers for login / registration pages
@@ -16,6 +18,14 @@ export function PortalLayout() {
 
   if (isLoginPage) {
     return <Outlet />;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
   }
 
   return (
