@@ -884,8 +884,13 @@ export function LiveClassesPage() {
                               {isSelected && <Check className="h-2.5 w-2.5 stroke-[3px]" />}
                             </div>
                             <div className="min-w-0 flex-1">
-                              <div className="text-xs font-semibold truncate text-foreground">
-                                {r.student.name || "Unnamed Student"}
+                              <div className="text-xs font-semibold truncate text-foreground flex items-center gap-2">
+                                <span>{r.student.name || "Unnamed Student"}</span>
+                                {accessibleBatches.find((b) => b.id === formBatchId)?.code && (
+                                  <span className="text-[9px] font-mono bg-white/[0.04] px-1.5 py-0.5 rounded border border-[var(--hairline)] text-muted-foreground">
+                                    {accessibleBatches.find((b) => b.id === formBatchId)?.code}
+                                  </span>
+                                )}
                               </div>
                               <div className="text-[10px] opacity-75 truncate">
                                 {r.student.email}
