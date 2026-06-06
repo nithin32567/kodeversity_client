@@ -11,6 +11,9 @@ import {
   RefreshCw,
   AlertCircle,
   Info,
+  UserPlus,
+  X,
+  Check,
 } from "lucide-react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import {
@@ -20,6 +23,7 @@ import {
 } from "@/infrastructure/instructor/instructorService";
 import { managementService } from "@/infrastructure/admin/managementService";
 import type { Course } from "@/domain/course";
+import type { User } from "@/domain/user";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_auth/instructor/batches")({
@@ -90,14 +94,21 @@ export function InstructorMyBatchesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [rosterSearch, setRosterSearch] = useState("");
 
+  const [allStudents, setAllStudents] = useState<User[]>([]);
+  const [showAddStudentsModal, setShowAddStudentsModal] = useState(false);
+  const [studentModalSearch, setStudentModalSearch] = useState("");
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+  const [isEnrolling, setIsEnrolling] = useState(false);
+
   const fetchData = useCallback(async () => {
     if (isAuthLoading || !user) return;
     setIsLoading(true);
     setIsError(false);
     try {
-      const [fetchedBatches, fetchedCourses] = await Promise.all([
+      const [fetchedBatches, fetchedCourses, fetchedStudents] = await Promise.all([
         instructorService.getMyBatches(),
         managementService.getCourses(),
+        managementService.getStudents(),
       ]);
 
       let filteredBatches = fetchedBatches;
@@ -117,6 +128,7 @@ export function InstructorMyBatchesPage() {
 
       setBatches(filteredBatches);
       setCourses(fetchedCourses);
+      setAllStudents(fetchedStudents);
     } catch {
       setIsError(true);
       toast.error("Failed to load your batches.");
@@ -147,6 +159,47 @@ export function InstructorMyBatchesPage() {
       fetchRoster(selectedBatch.id);
     }
   }, [selectedBatch, fetchRoster]);
+
+  const availableStudentsForModal = useMemo(() => {
+    const enrolledIds = new Set(roster.map((r) => r.studentId));
+    return allStudents.filter((s) => !enrolledIds.has(s.id));
+  }, [allStudents, roster]);
+
+  const filteredModalStudents = useMemo(() => {
+    const q = studentModalSearch.toLowerCase();
+    return availableStudentsForModal.filter(
+      (s) => (s.name || "").toLowerCase().includes(q) || (s.email || "").toLowerCase().includes(q),
+    );
+  }, [availableStudentsForModal, studentModalSearch]);
+
+  const handleEnrollStudents = async () => {
+    if (!selectedBatch) return;
+    if (selectedStudentIds.length === 0) {
+      toast.error("Please select at least one student to enroll.");
+      return;
+    }
+
+    setIsEnrolling(true);
+    try {
+      await managementService.addStudentsToBatch(selectedBatch.id, selectedStudentIds);
+      toast.success(`Successfully enrolled ${selectedStudentIds.length} student(s).`);
+      setSelectedStudentIds([]);
+      setShowAddStudentsModal(false);
+      setStudentModalSearch("");
+      fetchRoster(selectedBatch.id);
+    } catch (err: unknown) {
+      console.error("Failed to enroll students:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to enroll students.");
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
+
+  const toggleModalStudentSelection = (studentId: string) => {
+    setSelectedStudentIds((prev) =>
+      prev.includes(studentId) ? prev.filter((id) => id !== studentId) : [...prev, studentId],
+    );
+  };
 
   const filteredBatches = useMemo(() => {
     const q = searchQuery.toLowerCase();
@@ -439,6 +492,13 @@ export function InstructorMyBatchesPage() {
                   Total: {roster.length}
                 </span>
                 <button
+                  onClick={() => setShowAddStudentsModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-purple-500/20 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 text-xs font-semibold transition cursor-pointer"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  Add Students
+                </button>
+                <button
                   onClick={() => fetchRoster(selectedBatch.id)}
                   disabled={isRosterLoading}
                   className="p-1.5 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-muted-foreground hover:text-foreground transition cursor-pointer disabled:opacity-50"
@@ -530,6 +590,117 @@ export function InstructorMyBatchesPage() {
                 </table>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {showAddStudentsModal && selectedBatch && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-md p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] shadow-2xl space-y-5 animate-scale-in flex flex-col max-h-[85vh]">
+            <div className="flex justify-between items-start shrink-0">
+              <div>
+                <h3 className="text-xl font-bold tracking-tight text-foreground font-display flex items-center gap-2">
+                  <UserPlus className="h-5 w-5 text-purple-400" />
+                  Add Students
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Enroll system students into {selectedBatch.name}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAddStudentsModal(false)}
+                className="p-1.5 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-muted-foreground hover:text-foreground hover:bg-[var(--surface)] transition cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="relative shrink-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/70" />
+              <input
+                type="text"
+                value={studentModalSearch}
+                onChange={(e) => setStudentModalSearch(e.target.value)}
+                placeholder="Filter students by name/email..."
+                className="w-full pl-9 pr-4 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-xs placeholder:text-muted-foreground/60 focus:outline-none focus:border-purple-500 transition text-foreground"
+              />
+            </div>
+
+            <div className="flex-1 border border-[var(--hairline)] rounded-lg bg-[var(--surface-2)]/30 overflow-y-auto p-2 space-y-1 scrollbar-thin">
+              {filteredModalStudents.length === 0 ? (
+                <div className="p-4 text-center text-xs text-muted-foreground">
+                  {studentModalSearch
+                    ? "No matching students found."
+                    : "All registered students are already enrolled."}
+                </div>
+              ) : (
+                filteredModalStudents.map((student) => {
+                  const isSelected = selectedStudentIds.includes(student.id);
+                  return (
+                    <div
+                      key={student.id}
+                      onClick={() => toggleModalStudentSelection(student.id)}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition select-none ${
+                        isSelected
+                          ? "bg-purple-500/10 border border-purple-500/20 text-purple-300"
+                          : "hover:bg-[var(--surface-2)] border border-transparent text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <div
+                        className={`h-4 w-4 rounded border flex items-center justify-center shrink-0 transition ${
+                          isSelected
+                            ? "bg-purple-500 border-purple-500 text-white"
+                            : "border-muted-foreground/50 bg-[var(--surface)]"
+                        }`}
+                      >
+                        {isSelected && <Check className="h-3 w-3 stroke-[3px]" />}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-semibold truncate">
+                          {student.name || "Unnamed Student"}
+                        </div>
+                        <div className="text-[10px] opacity-70 truncate">{student.email}</div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="flex items-center justify-between shrink-0">
+              <span className="text-xs font-medium text-muted-foreground">
+                Selected:{" "}
+                <span className="font-bold text-foreground font-mono">
+                  {selectedStudentIds.length}
+                </span>
+              </span>
+              {selectedStudentIds.length > 0 && (
+                <button
+                  onClick={() => setSelectedStudentIds([])}
+                  className="text-[11px] text-muted-foreground hover:text-foreground transition underline cursor-pointer"
+                >
+                  Clear Selections
+                </button>
+              )}
+            </div>
+
+            <button
+              onClick={handleEnrollStudents}
+              disabled={selectedStudentIds.length === 0 || isEnrolling}
+              className="w-full shrink-0 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm text-white bg-[image:var(--gradient-primary)] shadow-[var(--shadow-primary)] hover:brightness-110 active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none cursor-pointer"
+            >
+              {isEnrolling ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  Enrolling...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-4 w-4" />
+                  Enroll Selected Students
+                </>
+              )}
+            </button>
           </div>
         </div>
       )}

@@ -17,6 +17,7 @@ import {
   ExternalLink,
   ChevronDown,
   User,
+  Play,
 } from "lucide-react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import {
@@ -74,6 +75,7 @@ export function LiveClassesPage() {
   const [formDuration, setFormDuration] = useState(60);
   const [formBatchId, setFormBatchId] = useState("");
   const [formAudience, setFormAudience] = useState<"ALL_BATCH" | "CUSTOM_STUDENTS">("ALL_BATCH");
+  const [formMeetingMode, setFormMeetingMode] = useState<"SCHEDULE" | "IMMEDIATE">("SCHEDULE");
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [studentFilter, setStudentFilter] = useState("");
 
@@ -257,13 +259,30 @@ export function LiveClassesPage() {
     }
   };
 
+  const handleStartMeeting = async (meeting: LiveSession) => {
+    try {
+      await liveClassesService.updateStatus(meeting.id, "LIVE");
+      toast.success("Meeting is now LIVE.");
+      await fetchAllMeetings();
+      await handleJoinMeeting({ ...meeting, status: "LIVE" });
+    } catch (err) {
+      console.error("Failed to start meeting:", err);
+      toast.error("Failed to start the meeting.");
+    }
+  };
+
   // Form submission
   const handleCreateMeetingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
-    if (!formTitle || !formDate || !formTime || !formDuration || !formBatchId) {
+    if (!formTitle || !formDuration || !formBatchId) {
       toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    if (formMeetingMode === "SCHEDULE" && (!formDate || !formTime)) {
+      toast.error("Please provide date and time for scheduled session.");
       return;
     }
 
@@ -274,9 +293,12 @@ export function LiveClassesPage() {
 
     setIsSubmitting(true);
     try {
-      const combinedDateTime = new Date(`${formDate}T${formTime}:00`).toISOString();
+      const combinedDateTime =
+        formMeetingMode === "IMMEDIATE"
+          ? new Date().toISOString()
+          : new Date(`${formDate}T${formTime}:00`).toISOString();
 
-      await liveClassesService.scheduleMeeting({
+      const createdMeeting = await liveClassesService.scheduleMeeting({
         title: formTitle,
         description: formDescription,
         startTime: combinedDateTime,
@@ -287,7 +309,14 @@ export function LiveClassesPage() {
         customStudentIds: formAudience === "CUSTOM_STUDENTS" ? selectedStudentIds : undefined,
       });
 
-      toast.success(`Live Class "${formTitle}" scheduled successfully!`);
+      if (formMeetingMode === "IMMEDIATE") {
+        await liveClassesService.updateStatus(createdMeeting.id, "LIVE");
+        toast.success(`Live Class "${formTitle}" started!`);
+        await fetchAllMeetings();
+        await handleJoinMeeting({ ...createdMeeting, status: "LIVE" });
+      } else {
+        toast.success(`Live Class "${formTitle}" scheduled successfully!`);
+      }
 
       // Reset form
       setFormTitle("");
@@ -560,29 +589,40 @@ export function LiveClassesPage() {
                   </button>
                 ) : meeting.status === "UPCOMING" ? (
                   <>
-                    <button
-                      onClick={() =>
-                        toast.info(
-                          "Edit Live Class is currently simulated. Use Cancel to recreate.",
-                          {
-                            description:
-                              "To change meeting parameters, cancel the current class and schedule a new session.",
-                            duration: 4000,
-                          },
-                        )
-                      }
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)] text-xs font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer"
-                    >
-                      <Edit2 className="h-3.5 w-3.5" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleCancelMeeting(meeting.id, meeting.title)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-xs font-semibold text-rose-400 hover:text-rose-300 transition cursor-pointer"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Cancel
-                    </button>
+                    <div className="flex w-full flex-col gap-2">
+                      <button
+                        onClick={() => handleStartMeeting(meeting)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 transition active:scale-[0.98] cursor-pointer"
+                      >
+                        <Play className="h-4 w-4" />
+                        Start Meeting
+                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() =>
+                            toast.info(
+                              "Edit Live Class is currently simulated. Use Cancel to recreate.",
+                              {
+                                description:
+                                  "To change meeting parameters, cancel the current class and schedule a new session.",
+                                duration: 4000,
+                              },
+                            )
+                          }
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)] text-xs font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleCancelMeeting(meeting.id, meeting.title)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-xs font-semibold text-rose-400 hover:text-rose-300 transition cursor-pointer"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
                   </>
                 ) : (
                   <div className="w-full text-center text-xs text-muted-foreground italic py-1 border border-dashed border-[var(--hairline)] rounded-lg">
@@ -624,6 +664,30 @@ export function LiveClassesPage() {
               onSubmit={handleCreateMeetingSubmit}
               className="space-y-4 overflow-y-auto flex-1 pr-1 scrollbar-thin"
             >
+              {/* Mode Toggle */}
+              <div className="flex gap-4 mb-2">
+                <label className="flex items-center gap-2 text-sm font-semibold text-foreground cursor-pointer select-none">
+                  <input
+                    type="radio"
+                    name="meetingMode"
+                    checked={formMeetingMode === "SCHEDULE"}
+                    onChange={() => setFormMeetingMode("SCHEDULE")}
+                    className="accent-blue-500"
+                  />
+                  <span>Schedule Session</span>
+                </label>
+                <label className="flex items-center gap-2 text-sm font-semibold text-foreground cursor-pointer select-none">
+                  <input
+                    type="radio"
+                    name="meetingMode"
+                    checked={formMeetingMode === "IMMEDIATE"}
+                    onChange={() => setFormMeetingMode("IMMEDIATE")}
+                    className="accent-blue-500"
+                  />
+                  <span className="text-emerald-400">Start Immediate Class</span>
+                </label>
+              </div>
+
               {/* Title */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Class Title *</label>
@@ -651,27 +715,33 @@ export function LiveClassesPage() {
 
               {/* Date, Time & Duration Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Date *</label>
-                  <input
-                    type="date"
-                    required
-                    value={formDate}
-                    onChange={(e) => setFormDate(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm focus:outline-none focus:border-blue-500 transition text-foreground"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Time *</label>
-                  <input
-                    type="time"
-                    required
-                    value={formTime}
-                    onChange={(e) => setFormTime(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm focus:outline-none focus:border-blue-500 transition text-foreground"
-                  />
-                </div>
-                <div className="space-y-1.5">
+                {formMeetingMode === "SCHEDULE" && (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">Date *</label>
+                      <input
+                        type="date"
+                        required
+                        value={formDate}
+                        onChange={(e) => setFormDate(e.target.value)}
+                        className="w-full px-3.5 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm focus:outline-none focus:border-blue-500 transition text-foreground"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">Time *</label>
+                      <input
+                        type="time"
+                        required
+                        value={formTime}
+                        onChange={(e) => setFormTime(e.target.value)}
+                        className="w-full px-3.5 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm focus:outline-none focus:border-blue-500 transition text-foreground"
+                      />
+                    </div>
+                  </>
+                )}
+                <div
+                  className={`space-y-1.5 ${formMeetingMode === "IMMEDIATE" ? "sm:col-span-3" : ""}`}
+                >
                   <label className="text-xs font-semibold text-muted-foreground">
                     Duration (mins) *
                   </label>
@@ -837,9 +907,28 @@ export function LiveClassesPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting || accessibleBatches.length === 0}
-                  className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white bg-[image:var(--gradient-primary)] shadow-[var(--shadow-primary)] hover:brightness-110 active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm text-white shadow-md hover:brightness-110 active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+                    formMeetingMode === "IMMEDIATE"
+                      ? "bg-emerald-600 shadow-emerald-600/20"
+                      : "bg-[image:var(--gradient-primary)] shadow-[var(--shadow-primary)]"
+                  }`}
                 >
-                  {isSubmitting ? "Scheduling..." : "Create Live Session"}
+                  {isSubmitting ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      {formMeetingMode === "IMMEDIATE" ? "Starting..." : "Scheduling..."}
+                    </>
+                  ) : formMeetingMode === "IMMEDIATE" ? (
+                    <>
+                      <Play className="h-4 w-4" />
+                      Start Immediate Class Now
+                    </>
+                  ) : (
+                    <>
+                      <Video className="h-4 w-4" />
+                      Schedule Live Class
+                    </>
+                  )}
                 </button>
               </div>
             </form>

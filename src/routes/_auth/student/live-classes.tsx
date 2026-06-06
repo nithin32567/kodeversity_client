@@ -44,6 +44,13 @@ export function StudentLiveClassesPage() {
   useEffect(() => {
     if (isAuthLoading || !user) return;
     void fetchLiveClasses();
+
+    // Poll for status updates every 10 seconds
+    const interval = setInterval(() => {
+      void fetchLiveClasses(false);
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, [isAuthLoading, user]);
 
   // Split sessions into Live and Upcoming
@@ -150,9 +157,9 @@ export function StudentLiveClassesPage() {
 
                       <button
                         onClick={() => handleJoinClass(meeting.id)}
-                        className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-500 shadow-md shadow-red-600/20 active:scale-[0.98] transition cursor-pointer"
+                        className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-500 shadow-md shadow-red-600/20 active:scale-[0.98] transition cursor-pointer animate-pulse"
                       >
-                        <span>Join Class</span>
+                        <span>Join Class Now</span>
                         <ExternalLink className="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -206,6 +213,12 @@ export function StudentLiveClassesPage() {
                           <Clock className="h-3.5 w-3.5 text-muted-foreground/80" />
                           <span>{meeting.duration} mins</span>
                         </div>
+                        <button
+                          disabled
+                          className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-muted-foreground text-xs font-semibold cursor-not-allowed"
+                        >
+                          Waiting for Host to Start...
+                        </button>
                       </div>
                     </div>
 

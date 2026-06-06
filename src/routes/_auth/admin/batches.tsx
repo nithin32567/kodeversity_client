@@ -19,10 +19,13 @@ import {
   RefreshCw,
   Clock,
   UserPlus,
+  Edit2,
+  PauseCircle,
+  PlayCircle,
 } from "lucide-react";
 import { managementService } from "@/infrastructure/admin/managementService";
 import type { Batch, BatchStudent } from "@/infrastructure/admin/managementService";
-import type { Course } from "@/domain/course";
+import type { Course, Instructor } from "@/domain/course";
 import type { User } from "@/domain/user";
 import { toast } from "sonner";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
@@ -40,6 +43,7 @@ export function AdminBatchesPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [students, setStudents] = useState<User[]>([]);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [roster, setRoster] = useState<BatchStudent[]>([]);
 
@@ -49,6 +53,7 @@ export function AdminBatchesPage() {
   const [isError, setIsError] = useState(false);
   const [isCreatingBatch, setIsCreatingBatch] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [isAssigningInstructor, setIsAssigningInstructor] = useState(false);
 
   // Search & Selection States
   const [searchQuery, setSearchQuery] = useState("");
@@ -62,21 +67,35 @@ export function AdminBatchesPage() {
   const [formStartDate, setFormStartDate] = useState("");
   const [formCourseId, setFormCourseId] = useState("");
 
+  // Edit Form State
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isUpdatingBatch, setIsUpdatingBatch] = useState(false);
+  const [editBatchId, setEditBatchId] = useState("");
+  const [editFormName, setEditFormName] = useState("");
+  const [editFormCode, setEditFormCode] = useState("");
+  const [editFormStartDate, setEditFormStartDate] = useState("");
+  const [editFormEndDate, setEditFormEndDate] = useState("");
+  const [editFormCourseId, setEditFormCourseId] = useState("");
+  const [editFormStatus, setEditFormStatus] = useState<Batch["status"]>("ACTIVE");
+
   // Fetch all initial data
   const fetchData = useCallback(async () => {
     if (isAuthLoading || !isAuthenticated) return;
     setIsLoading(true);
     setIsError(false);
     try {
-      const [fetchedBatches, fetchedCourses, fetchedStudents] = await Promise.all([
-        managementService.getBatches(),
-        managementService.getCourses(),
-        managementService.getStudents(),
-      ]);
+      const [fetchedBatches, fetchedCourses, fetchedStudents, fetchedInstructors] =
+        await Promise.all([
+          managementService.getBatches(),
+          managementService.getCourses(),
+          managementService.getStudents(),
+          managementService.getInstructors(),
+        ]);
 
       setBatches(fetchedBatches);
       setCourses(fetchedCourses);
       setStudents(fetchedStudents);
+      setInstructors(fetchedInstructors);
     } catch (err) {
       console.error("Failed to load Batch data:", err);
       setIsError(true);
@@ -221,6 +240,25 @@ export function AdminBatchesPage() {
     }
   };
 
+  const handleAssignInstructor = async (instructorId: string) => {
+    if (!selectedBatch) return;
+    setIsAssigningInstructor(true);
+    try {
+      const updatedBatch = await managementService.assignInstructorToBatch(
+        selectedBatch.id,
+        instructorId || null,
+      );
+      toast.success("Instructor assigned successfully.");
+      setSelectedBatch((prev) => (prev ? { ...prev, instructorId: instructorId || null } : null));
+      await fetchData();
+    } catch (err: unknown) {
+      console.error("Failed to assign instructor:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to assign instructor.");
+    } finally {
+      setIsAssigningInstructor(false);
+    }
+  };
+
   // Remove student handler
   const handleRemoveStudent = async (studentId: string, studentName: string) => {
     if (!selectedBatch) return;
@@ -248,6 +286,104 @@ export function AdminBatchesPage() {
     );
   };
 
+  const openEditModal = (batch: Batch) => {
+    setEditBatchId(batch.id);
+    setEditFormName(batch.name);
+    setEditFormCode(batch.code);
+    setEditFormStartDate(new Date(batch.startDate).toISOString().split("T")[0]);
+    setEditFormEndDate(batch.endDate ? new Date(batch.endDate).toISOString().split("T")[0] : "");
+    setEditFormCourseId(batch.courseId);
+    setEditFormStatus(batch.status);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateBatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editFormName || !editFormCode || !editFormStartDate || !editFormCourseId) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    setIsUpdatingBatch(true);
+    try {
+      await managementService.updateBatch(editBatchId, {
+        name: editFormName,
+        code: editFormCode,
+        startDate: editFormStartDate,
+        endDate: editFormEndDate || null,
+        courseId: editFormCourseId,
+      });
+
+      if (selectedBatch && selectedBatch.status !== editFormStatus) {
+        await managementService.updateBatchStatus(editBatchId, editFormStatus);
+      }
+
+      toast.success("Batch updated successfully.");
+      setShowEditModal(false);
+
+      if (selectedBatch?.id === editBatchId) {
+        setSelectedBatch((prev) =>
+          prev
+            ? {
+                ...prev,
+                name: editFormName,
+                code: editFormCode,
+                startDate: editFormStartDate,
+                endDate: editFormEndDate || null,
+                courseId: editFormCourseId,
+                status: editFormStatus,
+                course: (() => {
+                  const foundCourse = courses.find((c) => c.id === editFormCourseId);
+                  return foundCourse ? { name: foundCourse.title } : prev.course;
+                })(),
+              }
+            : null,
+        );
+      }
+
+      await fetchData();
+    } catch (err: unknown) {
+      console.error("Failed to update batch:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to update batch.");
+    } finally {
+      setIsUpdatingBatch(false);
+    }
+  };
+
+  const handleDeleteBatch = async (batchId: string, batchName: string) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete batch "${batchName}"? This action cannot be undone.`,
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await managementService.deleteBatch(batchId);
+      toast.success("Batch deleted successfully.");
+      if (selectedBatch?.id === batchId) {
+        setSelectedBatch(null);
+      }
+      await fetchData();
+    } catch (err: unknown) {
+      console.error("Failed to delete batch:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to delete batch.");
+    }
+  };
+
+  const handleToggleSuspend = async (batchId: string, currentStatus: string) => {
+    const newStatus = currentStatus === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
+    try {
+      await managementService.updateBatchStatus(batchId, newStatus);
+      toast.success(`Batch ${newStatus.toLowerCase()} successfully.`);
+      if (selectedBatch?.id === batchId) {
+        setSelectedBatch((prev) => (prev ? { ...prev, status: newStatus } : null));
+      }
+      await fetchData();
+    } catch (err: unknown) {
+      console.error("Failed to change batch status:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to change batch status.");
+    }
+  };
+
   // Get status badge colors
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -270,6 +406,13 @@ export function AdminBatchesPage() {
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/5 text-muted-foreground border border-white/10">
             <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
             Completed
+          </span>
+        );
+      case "SUSPENDED":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+            Suspended
           </span>
         );
       default:
@@ -510,10 +653,72 @@ export function AdminBatchesPage() {
                     Code: {selectedBatch.code}
                   </span>
                 </div>
-                {getStatusBadge(selectedBatch.status)}
+                <div className="flex flex-col items-end gap-2">
+                  {getStatusBadge(selectedBatch.status)}
+                  {!isInstructor && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <button
+                        onClick={() => openEditModal(selectedBatch)}
+                        className="p-1.5 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)] text-muted-foreground hover:text-blue-400 transition"
+                        title="Edit Batch"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleToggleSuspend(selectedBatch.id, selectedBatch.status)}
+                        className="p-1.5 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)] text-muted-foreground hover:text-amber-400 transition"
+                        title={
+                          selectedBatch.status === "SUSPENDED" ? "Activate Batch" : "Suspend Batch"
+                        }
+                      >
+                        {selectedBatch.status === "SUSPENDED" ? (
+                          <PlayCircle className="h-4 w-4" />
+                        ) : (
+                          <PauseCircle className="h-4 w-4" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteBatch(selectedBatch.id, selectedBatch.name)}
+                        className="p-1.5 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)] text-muted-foreground hover:text-rose-400 transition"
+                        title="Delete Batch"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-3.5 pt-4 border-t border-[var(--hairline)]">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground flex items-center gap-2">
+                    <UserPlus className="h-4 w-4 text-emerald-400 shrink-0" />
+                    Instructor
+                  </span>
+                  {!isInstructor ? (
+                    <div className="relative">
+                      <select
+                        value={selectedBatch.instructorId || ""}
+                        onChange={(e) => handleAssignInstructor(e.target.value)}
+                        disabled={isAssigningInstructor}
+                        className="pl-3 pr-8 py-1.5 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-xs focus:outline-none focus:border-blue-500 transition text-foreground appearance-none cursor-pointer disabled:opacity-50"
+                      >
+                        <option value="">Unassigned</option>
+                        {instructors.map((inst) => (
+                          <option key={inst.id} value={inst.id}>
+                            {inst.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                    </div>
+                  ) : (
+                    <span className="font-semibold text-foreground">
+                      {instructors.find((i) => i.id === selectedBatch.instructorId)?.name ||
+                        "Unassigned"}
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground flex items-center gap-2">
                     <BookOpen className="h-4 w-4 text-blue-400 shrink-0" />
@@ -875,6 +1080,148 @@ export function AdminBatchesPage() {
                   className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white bg-[image:var(--gradient-primary)] shadow-[var(--shadow-primary)] hover:brightness-110 active:scale-[0.98] transition disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isCreatingBatch ? "Creating..." : "Save Batch"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* EDIT BATCH MODAL DIALOG */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          {/* Modal Container */}
+          <div className="relative w-full max-w-md p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] shadow-2xl space-y-5 animate-scale-in">
+            {/* Header */}
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-xl font-bold tracking-tight text-foreground font-display flex items-center gap-2">
+                  <Edit2 className="h-5 w-5 text-blue-400" />
+                  Edit Batch
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Update the batch details and settings.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="p-1.5 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-muted-foreground hover:text-foreground hover:bg-[var(--surface)] transition cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleUpdateBatch} className="space-y-4">
+              {/* Batch Name */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Batch Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., Fullstack Web June Cohort"
+                  value={editFormName}
+                  onChange={(e) => setEditFormName(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-blue-500 transition text-foreground"
+                />
+              </div>
+
+              {/* Unique Code */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Unique Batch Code *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., FS-WEB-JUN-2026"
+                  value={editFormCode}
+                  onChange={(e) => setEditFormCode(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-blue-500 transition text-foreground font-mono"
+                />
+              </div>
+
+              {/* Start Date */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Start Date *</label>
+                <input
+                  type="date"
+                  required
+                  value={editFormStartDate}
+                  onChange={(e) => setEditFormStartDate(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm focus:outline-none focus:border-blue-500 transition text-foreground"
+                />
+              </div>
+
+              {/* End Date */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">End Date</label>
+                <input
+                  type="date"
+                  value={editFormEndDate}
+                  onChange={(e) => setEditFormEndDate(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm focus:outline-none focus:border-blue-500 transition text-foreground"
+                />
+              </div>
+
+              {/* Course Select */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Select Course *
+                </label>
+                <div className="relative">
+                  <select
+                    required
+                    value={editFormCourseId}
+                    onChange={(e) => setEditFormCourseId(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm focus:outline-none focus:border-blue-500 transition text-foreground appearance-none cursor-pointer"
+                  >
+                    <option value="" disabled>
+                      -- Choose Mapped Course --
+                    </option>
+                    {courses.map((course) => (
+                      <option key={course.id} value={course.id}>
+                        {course.title}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Status Select */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Status *</label>
+                <div className="relative">
+                  <select
+                    required
+                    value={editFormStatus}
+                    onChange={(e) => setEditFormStatus(e.target.value as Batch["status"])}
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm focus:outline-none focus:border-blue-500 transition text-foreground appearance-none cursor-pointer"
+                  >
+                    <option value="UPCOMING">Upcoming</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="SUSPENDED">Suspended</option>
+                    <option value="COMPLETED">Completed</option>
+                  </select>
+                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)] hover:bg-[var(--surface-2)]/80 text-sm font-semibold text-foreground hover:text-white transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingBatch}
+                  className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white bg-[image:var(--gradient-primary)] shadow-[var(--shadow-primary)] hover:brightness-110 active:scale-[0.98] transition disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {isUpdatingBatch ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>

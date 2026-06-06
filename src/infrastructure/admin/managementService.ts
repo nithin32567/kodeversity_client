@@ -9,13 +9,14 @@ export interface Batch {
   code: string;
   startDate: string;
   endDate?: string | null;
-  status: "UPCOMING" | "ACTIVE" | "COMPLETED";
+  status: "UPCOMING" | "ACTIVE" | "COMPLETED" | "SUSPENDED";
   courseId: string;
   course?: {
     name: string;
   };
   createdAt: string;
   updatedAt: string;
+  instructorId?: string | null;
 }
 
 export interface BatchStudent {
@@ -156,6 +157,33 @@ export const managementService = {
   }): Promise<Batch> => {
     return await apiClient.post<Batch>(endpoints.admin.batches, batchData);
   },
+  updateBatch: async (
+    batchId: string,
+    batchData: {
+      name?: string;
+      code?: string;
+      courseId?: string;
+      startDate?: string;
+      endDate?: string | null;
+      instructorId?: string | null;
+    },
+  ): Promise<Batch> => {
+    return await apiClient.put<Batch>(endpoints.admin.updateBatch(batchId), batchData);
+  },
+  updateBatchStatus: async (
+    batchId: string,
+    status: "UPCOMING" | "ACTIVE" | "COMPLETED" | "SUSPENDED",
+  ): Promise<Batch> => {
+    return await apiClient.put<Batch>(endpoints.admin.updateBatchStatus(batchId), { status });
+  },
+  assignInstructorToBatch: async (batchId: string, instructorId: string | null): Promise<Batch> => {
+    return await apiClient.put<Batch>(endpoints.admin.assignInstructorBatch(batchId), {
+      instructorId,
+    });
+  },
+  deleteBatch: async (batchId: string): Promise<void> => {
+    await apiClient.del<unknown>(endpoints.admin.deleteBatch(batchId));
+  },
   addStudentsToBatch: async (batchId: string, studentIds: string[]): Promise<BatchStudent[]> => {
     return await apiClient.post<BatchStudent[]>(endpoints.admin.batchStudents(batchId), {
       studentIds,
@@ -178,7 +206,10 @@ export const managementService = {
       return [];
     }
   },
-  updateUserStatus: async (userId: string, status: "ACTIVE" | "SUSPENDED"): Promise<void> => {
+  updateUserStatus: async (
+    userId: string,
+    status: "ACTIVE" | "SUSPENDED" | "DELETED",
+  ): Promise<void> => {
     await apiClient.patch<unknown>(endpoints.admin.updateUserStatus(userId), { status });
   },
   deleteUser: async (userId: string): Promise<void> => {

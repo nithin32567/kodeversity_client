@@ -64,6 +64,11 @@ export const endpoints = {
     students: `${AUTH_URL}/api/auth/students`,
     instructors: `${AUTH_URL}/api/auth/instructors`,
     batches: `${COURSE_URL}/api/batches`,
+    updateBatch: (batchId: string) => `${COURSE_URL}/api/batches/${batchId}`,
+    updateBatchStatus: (batchId: string) => `${COURSE_URL}/api/batches/${batchId}/status`,
+    assignInstructorBatch: (batchId: string) =>
+      `${COURSE_URL}/api/admin/batches/${batchId}/assign-instructor`,
+    deleteBatch: (batchId: string) => `${COURSE_URL}/api/batches/${batchId}`,
     batchStudents: (batchId: string) => `${COURSE_URL}/api/batches/${batchId}/students`,
     removeStudentFromBatch: (batchId: string, studentId: string) =>
       `${COURSE_URL}/api/batches/${batchId}/students/${studentId}`,

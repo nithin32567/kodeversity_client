@@ -25,6 +25,7 @@ import {
   PenTool,
   LogOut,
   Sparkles,
+  ShieldOff,
 } from "lucide-react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 
@@ -59,6 +60,7 @@ export const adminFinance: NavItem[] = [
 ];
 export const adminSystem: NavItem[] = [
   { label: "Users", icon: UserCog },
+  { label: "Inactive Users", icon: ShieldOff, to: "/admin/inactive-users" },
   { label: "Roles & Permissions", icon: ShieldCheck },
   { label: "Settings", icon: Settings },
 ];

@@ -49,31 +49,27 @@ export function ActionModal({
     }
   };
 
-  const title = isDelete
-    ? "Delete User"
-    : isSuspend
-    ? "Suspend User"
-    : "Activate User";
+  const title = isDelete ? "Delete User" : isSuspend ? "Suspend User" : "Activate User";
 
   const description = isDelete
     ? "This action is permanent and cannot be undone."
     : isSuspend
-    ? "Are you sure you want to suspend this user? They will lose immediate access to the platform."
-    : "Are you sure you want to activate this user? They will regain access to the platform.";
+      ? "Are you sure you want to suspend this user? They will lose immediate access to the platform."
+      : "Are you sure you want to activate this user? They will regain access to the platform.";
 
   const buttonText = isDelete
     ? "Delete Permanently"
     : isSuspend
-    ? "Suspend Account"
-    : "Activate Account";
+      ? "Suspend Account"
+      : "Activate Account";
 
   const Icon = isDelete ? ShieldAlert : AlertTriangle;
   const iconColor = isDelete ? "text-rose-500" : isSuspend ? "text-amber-500" : "text-emerald-500";
   const buttonClass = isDelete
     ? "bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-500/20"
     : isSuspend
-    ? "bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white border border-amber-500/20"
-    : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white border border-emerald-500/20";
+      ? "bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white border border-amber-500/20"
+      : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white border border-emerald-500/20";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">

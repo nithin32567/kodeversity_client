@@ -84,11 +84,13 @@ export function AdminInstructorsPage() {
 
     Promise.all([managementService.getInstructors(), managementService.getSuspendedUsers()])
       .then(([activeList, suspendedList]) => {
-        setInstructors((activeList as ExtendedInstructor[]).filter((i) => i.status !== "SUSPENDED"));
+        setInstructors(
+          (activeList as ExtendedInstructor[]).filter((i) => i.status !== "SUSPENDED"),
+        );
         setSuspendedInstructors(
           (suspendedList as any[]).filter(
-            (u) => u.role === "INSTRUCTOR" || u.role === "instructor"
-          )
+            (u) => u.role === "INSTRUCTOR" || u.role === "instructor",
+          ),
         );
         setIsLoading(false);
       })
@@ -258,19 +260,19 @@ export function AdminInstructorsPage() {
                     <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
                   </div>
                 )}
-                
+
                 <div className="flex items-center gap-4 mb-4">
                   <div className="relative">
                     {instructor.avatarUrl ? (
                       <img
                         src={instructor.avatarUrl}
                         alt={instructor.name}
-                        className={`h-14 w-14 rounded-full object-cover border border-[var(--hairline)] ${activeTab === 'SUSPENDED' ? 'grayscale opacity-60' : ''}`}
+                        className={`h-14 w-14 rounded-full object-cover border border-[var(--hairline)] ${activeTab === "SUSPENDED" ? "grayscale opacity-60" : ""}`}
                       />
                     ) : (
                       <div
-                        className={`h-14 w-14 rounded-full grid place-items-center text-white text-base font-semibold border border-[var(--hairline)] ${activeTab === 'SUSPENDED' ? 'bg-zinc-700' : ''}`}
-                        style={activeTab === 'ACTIVE' ? { background: "var(--grad-cta)" } : {}}
+                        className={`h-14 w-14 rounded-full grid place-items-center text-white text-base font-semibold border border-[var(--hairline)] ${activeTab === "SUSPENDED" ? "bg-zinc-700" : ""}`}
+                        style={activeTab === "ACTIVE" ? { background: "var(--grad-cta)" } : {}}
                       >
                         {(instructor.name || "UN").slice(0, 2).toUpperCase()}
                       </div>
@@ -319,7 +321,7 @@ export function AdminInstructorsPage() {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="mt-auto pt-4 border-t border-[var(--hairline)]">
                   <div className="flex items-start gap-2 mb-4">
                     <FileText className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
@@ -327,7 +329,7 @@ export function AdminInstructorsPage() {
                       {instructor.bio || "No biography provided."}
                     </p>
                   </div>
-                  
+
                   <div className="flex justify-end">
                     <button
                       onClick={() => openActionModal("DELETE", instructor)}

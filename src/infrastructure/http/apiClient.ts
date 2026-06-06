@@ -132,7 +132,16 @@ export async function apiRequest<T = unknown>(path: string, init: ApiRequestInit
     }
 
     if (shouldRefresh) {
-      const fresh = await refreshToken();
+      let fresh = accessToken;
+
+      // If the global token has changed since we sent this request,
+      // someone else already refreshed it. Just use the new one.
+      if (token === accessToken && refreshPromise) {
+        fresh = await refreshPromise;
+      } else if (token === accessToken) {
+        fresh = await refreshToken();
+      }
+
       if (fresh) {
         res = await exec(fresh);
       }

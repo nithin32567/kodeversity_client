@@ -41,6 +41,7 @@ import { Route as AuthAdminStudentsRouteImport } from './routes/_auth/admin/stud
 import { Route as AuthAdminLoginRouteImport } from './routes/_auth/admin/login'
 import { Route as AuthAdminLiveClassesRouteImport } from './routes/_auth/admin/live-classes'
 import { Route as AuthAdminInstructorsRouteImport } from './routes/_auth/admin/instructors'
+import { Route as AuthAdminInactiveUsersRouteImport } from './routes/_auth/admin/inactive-users'
 import { Route as AuthAdminCoursesRouteImport } from './routes/_auth/admin/courses'
 import { Route as AuthAdminBatchesRouteImport } from './routes/_auth/admin/batches'
 import { Route as AuthInstructorCoursesIndexRouteImport } from './routes/_auth/instructor/courses/index'
@@ -210,6 +211,11 @@ const AuthAdminInstructorsRoute = AuthAdminInstructorsRouteImport.update({
   path: '/instructors',
   getParentRoute: () => AuthAdminRoute,
 } as any)
+const AuthAdminInactiveUsersRoute = AuthAdminInactiveUsersRouteImport.update({
+  id: '/inactive-users',
+  path: '/inactive-users',
+  getParentRoute: () => AuthAdminRoute,
+} as any)
 const AuthAdminCoursesRoute = AuthAdminCoursesRouteImport.update({
   id: '/courses',
   path: '/courses',
@@ -277,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/courses/': typeof CoursesIndexRoute
   '/admin/batches': typeof AuthAdminBatchesRoute
   '/admin/courses': typeof AuthAdminCoursesRouteWithChildren
+  '/admin/inactive-users': typeof AuthAdminInactiveUsersRoute
   '/admin/instructors': typeof AuthAdminInstructorsRoute
   '/admin/live-classes': typeof AuthAdminLiveClassesRoute
   '/admin/login': typeof AuthAdminLoginRoute
@@ -317,6 +324,7 @@ export interface FileRoutesByTo {
   '/courses/$slug': typeof CoursesSlugRoute
   '/courses': typeof CoursesIndexRoute
   '/admin/batches': typeof AuthAdminBatchesRoute
+  '/admin/inactive-users': typeof AuthAdminInactiveUsersRoute
   '/admin/instructors': typeof AuthAdminInstructorsRoute
   '/admin/live-classes': typeof AuthAdminLiveClassesRoute
   '/admin/login': typeof AuthAdminLoginRoute
@@ -360,6 +368,7 @@ export interface FileRoutesById {
   '/courses/': typeof CoursesIndexRoute
   '/_auth/admin/batches': typeof AuthAdminBatchesRoute
   '/_auth/admin/courses': typeof AuthAdminCoursesRouteWithChildren
+  '/_auth/admin/inactive-users': typeof AuthAdminInactiveUsersRoute
   '/_auth/admin/instructors': typeof AuthAdminInstructorsRoute
   '/_auth/admin/live-classes': typeof AuthAdminLiveClassesRoute
   '/_auth/admin/login': typeof AuthAdminLoginRoute
@@ -404,6 +413,7 @@ export interface FileRouteTypes {
     | '/courses/'
     | '/admin/batches'
     | '/admin/courses'
+    | '/admin/inactive-users'
     | '/admin/instructors'
     | '/admin/live-classes'
     | '/admin/login'
@@ -444,6 +454,7 @@ export interface FileRouteTypes {
     | '/courses/$slug'
     | '/courses'
     | '/admin/batches'
+    | '/admin/inactive-users'
     | '/admin/instructors'
     | '/admin/live-classes'
     | '/admin/login'
@@ -486,6 +497,7 @@ export interface FileRouteTypes {
     | '/courses/'
     | '/_auth/admin/batches'
     | '/_auth/admin/courses'
+    | '/_auth/admin/inactive-users'
     | '/_auth/admin/instructors'
     | '/_auth/admin/live-classes'
     | '/_auth/admin/login'
@@ -752,6 +764,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAdminInstructorsRouteImport
       parentRoute: typeof AuthAdminRoute
     }
+    '/_auth/admin/inactive-users': {
+      id: '/_auth/admin/inactive-users'
+      path: '/inactive-users'
+      fullPath: '/admin/inactive-users'
+      preLoaderRoute: typeof AuthAdminInactiveUsersRouteImport
+      parentRoute: typeof AuthAdminRoute
+    }
     '/_auth/admin/courses': {
       id: '/_auth/admin/courses'
       path: '/courses'
@@ -834,6 +853,7 @@ const AuthAdminCoursesRouteWithChildren =
 interface AuthAdminRouteChildren {
   AuthAdminBatchesRoute: typeof AuthAdminBatchesRoute
   AuthAdminCoursesRoute: typeof AuthAdminCoursesRouteWithChildren
+  AuthAdminInactiveUsersRoute: typeof AuthAdminInactiveUsersRoute
   AuthAdminInstructorsRoute: typeof AuthAdminInstructorsRoute
   AuthAdminLiveClassesRoute: typeof AuthAdminLiveClassesRoute
   AuthAdminLoginRoute: typeof AuthAdminLoginRoute
@@ -844,6 +864,7 @@ interface AuthAdminRouteChildren {
 const AuthAdminRouteChildren: AuthAdminRouteChildren = {
   AuthAdminBatchesRoute: AuthAdminBatchesRoute,
   AuthAdminCoursesRoute: AuthAdminCoursesRouteWithChildren,
+  AuthAdminInactiveUsersRoute: AuthAdminInactiveUsersRoute,
   AuthAdminInstructorsRoute: AuthAdminInstructorsRoute,
   AuthAdminLiveClassesRoute: AuthAdminLiveClassesRoute,
   AuthAdminLoginRoute: AuthAdminLoginRoute,

@@ -94,8 +94,8 @@ export function AdminStudentsPage() {
         setStudents((activeList as Student[]).filter((s) => s.status !== "SUSPENDED"));
         setSuspendedStudents(
           (suspendedList as Student[]).filter(
-            (s) => s.role === "STUDENT" || (s as any).role === "student"
-          )
+            (s) => s.role === "STUDENT" || (s as any).role === "student",
+          ),
         );
         setIsLoading(false);
       })
@@ -270,19 +270,19 @@ export function AdminStudentsPage() {
                     <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
                   </div>
                 )}
-                
+
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     {student.avatarUrl ? (
                       <img
                         src={student.avatarUrl}
                         alt={student.name}
-                        className={`h-12 w-12 rounded-full object-cover border border-[var(--hairline)] ${activeTab === 'SUSPENDED' ? 'grayscale opacity-60' : ''}`}
+                        className={`h-12 w-12 rounded-full object-cover border border-[var(--hairline)] ${activeTab === "SUSPENDED" ? "grayscale opacity-60" : ""}`}
                       />
                     ) : (
                       <div
-                        className={`h-12 w-12 rounded-full grid place-items-center text-white text-sm font-semibold border border-[var(--hairline)] ${activeTab === 'SUSPENDED' ? 'bg-zinc-700' : ''}`}
-                        style={activeTab === 'ACTIVE' ? { background: "var(--grad-purple)" } : {}}
+                        className={`h-12 w-12 rounded-full grid place-items-center text-white text-sm font-semibold border border-[var(--hairline)] ${activeTab === "SUSPENDED" ? "bg-zinc-700" : ""}`}
+                        style={activeTab === "ACTIVE" ? { background: "var(--grad-purple)" } : {}}
                       >
                         {(student.name || "UN").slice(0, 2).toUpperCase()}
                       </div>
@@ -356,7 +356,7 @@ export function AdminStudentsPage() {
                       <BookOpen className="h-3.5 w-3.5" />
                       <span>Enrolled Courses: {student.enrolledCourses?.length || 0}</span>
                     </div>
-                    
+
                     <button
                       onClick={() => openActionModal("DELETE", student)}
                       className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-500 hover:text-white px-2 py-1 rounded border border-rose-500/30 hover:bg-rose-500 transition cursor-pointer"
