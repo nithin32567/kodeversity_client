@@ -47,9 +47,11 @@ export function StudentProfilePage() {
         const matchedStudent = students.find((s) => s.id === user.id);
         if (matchedStudent) {
           setProfileDetail({
-            phone: (matchedStudent as any).phone || null,
-            highestQualification: (matchedStudent as any).highestQualification || null,
-            createdAt: (matchedStudent as any).createdAt,
+            phone: (matchedStudent as { phone?: string | null }).phone || null,
+            highestQualification:
+              (matchedStudent as { highestQualification?: string | null }).highestQualification ||
+              null,
+            createdAt: (matchedStudent as { createdAt?: string }).createdAt,
           });
           setEnrollments(matchedStudent.enrolledCourses || []);
         } else {

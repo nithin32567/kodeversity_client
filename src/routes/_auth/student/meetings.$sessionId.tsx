@@ -52,9 +52,11 @@ export function EmbeddedClassroomPage() {
         } else {
           throw new Error("Invalid response token payload from meeting-service.");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Failed to join Dyte meeting room:", err);
-        setError(err.message || "Failed to retrieve meeting token from the backend.");
+        setError(
+          err instanceof Error ? err.message : "Failed to retrieve meeting token from the backend.",
+        );
         toast.error("Failed to connect to the live meeting session.");
       } finally {
         setLoading(false);
@@ -157,7 +159,7 @@ export function EmbeddedClassroomPage() {
                   screenshare: {
                     allowShare: false, // Prevent students from sharing/capturing screen by default
                   },
-                } as any
+                } as Record<string, unknown>
               }
             />
           </div>

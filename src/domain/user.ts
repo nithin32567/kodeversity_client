@@ -6,6 +6,7 @@ export interface User {
   name: string;
   role: UserRole;
   avatarUrl?: string;
+  status?: "ACTIVE" | "SUSPENDED";
 }
 
 export interface UserProfile extends User {

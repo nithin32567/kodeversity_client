@@ -84,10 +84,11 @@ export function InstructorDashboardPage() {
         />
         <div className="relative z-10 space-y-2">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-display">
-            Welcome back, {user?.name || "Instructor"}! 
+            Welcome back, {user?.name || "Instructor"}!
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground max-w-xl">
-            Manage your courses, coordinate cohorts, organize interactive live sessions, and track student success metrics from a single dashboard.
+            Manage your courses, coordinate cohorts, organize interactive live sessions, and track
+            student success metrics from a single dashboard.
           </p>
         </div>
       </div>
@@ -140,7 +141,9 @@ export function InstructorDashboardPage() {
           <div className="space-y-4">
             <div>
               <h3 className="text-base font-bold text-white font-display">LMS Core Actions</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Quick shortcuts to manage curriculum operations.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Quick shortcuts to manage curriculum operations.
+              </p>
             </div>
 
             <div className="space-y-2.5">
@@ -200,7 +203,9 @@ export function InstructorDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-white font-display">Assigned Bootcamps</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Your registered curriculum programs.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Your registered curriculum programs.
+                </p>
               </div>
               <Link to="/instructor/courses" className="text-xs text-purple-400 hover:underline">
                 View All
@@ -211,7 +216,9 @@ export function InstructorDashboardPage() {
               <div className="flex flex-col items-center justify-center p-8 rounded-xl border border-dashed border-[var(--hairline)] bg-[var(--surface-2)]/10 text-center">
                 <BookOpen className="h-10 w-10 text-muted-foreground/40 mb-2" />
                 <h4 className="font-semibold text-sm text-foreground/80">No courses assigned</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">Reach out to administration to assign curriculum pieces.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Reach out to administration to assign curriculum pieces.
+                </p>
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 max-h-[220px] overflow-y-auto pr-1">
@@ -222,7 +229,9 @@ export function InstructorDashboardPage() {
                   >
                     <div>
                       <h4 className="font-bold text-xs text-white line-clamp-1">{c.title}</h4>
-                      <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{c.subtitle || "Expert engineering track"}</p>
+                      <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
+                        {c.subtitle || "Expert engineering track"}
+                      </p>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] px-2 py-0.5 rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-400 uppercase font-semibold">
@@ -230,7 +239,12 @@ export function InstructorDashboardPage() {
                       </span>
                       <Link
                         to="/instructor/courses/$slug"
-                        params={{ slug: c.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") }}
+                        params={{
+                          slug: c.title
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, "-")
+                            .replace(/^-+|-+$/g, ""),
+                        }}
                         className="text-[10px] text-muted-foreground hover:text-white flex items-center gap-1"
                       >
                         Builder <ExternalLink className="h-3 w-3" />
@@ -275,7 +289,9 @@ function StatCard({
       </div>
       <div className="space-y-1">
         <h3 className="text-3xl font-extrabold text-white font-mono">{value}</h3>
-        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">{desc}</p>
+        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+          {desc}
+        </p>
       </div>
     </MagicBentoCard>
   );

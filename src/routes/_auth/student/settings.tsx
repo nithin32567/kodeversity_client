@@ -29,7 +29,8 @@ export function SettingsPage() {
             Account Settings
           </h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Manage your account details, security settings, active sessions, notification preferences, and subscription invoicing here.
+            Manage your account details, security settings, active sessions, notification
+            preferences, and subscription invoicing here.
           </p>
         </div>
       </MagicBentoCard>

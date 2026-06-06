@@ -4,6 +4,7 @@ export type ChapterType = "VIDEO" | "DOCUMENT" | "QUIZ";
 export interface Instructor {
   id: string;
   name: string;
+  email: string;
   avatarUrl: string | null;
   designation: string;
   bio: string;

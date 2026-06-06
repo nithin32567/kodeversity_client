@@ -60,12 +60,16 @@ export const endpoints = {
     courses: `${COURSE_URL}/api/courses`,
     users: `${ADMIN_URL}/api/admin/users`,
     createUser: `${AUTH_URL}/api/admin/users/create`,
+    updateUser: (id: string) => `${AUTH_URL}/api/admin/users/${id}`,
     students: `${AUTH_URL}/api/auth/students`,
     instructors: `${AUTH_URL}/api/auth/instructors`,
     batches: `${COURSE_URL}/api/batches`,
     batchStudents: (batchId: string) => `${COURSE_URL}/api/batches/${batchId}/students`,
     removeStudentFromBatch: (batchId: string, studentId: string) =>
       `${COURSE_URL}/api/batches/${batchId}/students/${studentId}`,
+    suspendedUsers: `${AUTH_URL}/api/admin/users/suspended`,
+    updateUserStatus: (id: string) => `${AUTH_URL}/api/admin/users/${id}/status`,
+    deleteUser: (id: string) => `${AUTH_URL}/api/admin/users/${id}`,
   },
   instructor: {
     // Dedicated instructor-scoped endpoints (backend filters by JWT's instructorId)

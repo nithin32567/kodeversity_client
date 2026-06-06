@@ -67,9 +67,9 @@ function unwrap<T>(response: { success?: boolean; data?: T } | T): T {
     response !== null &&
     typeof response === "object" &&
     "data" in (response as object) &&
-    (response as any).data !== undefined
+    (response as { data?: T }).data !== undefined
   ) {
-    return (response as any).data as T;
+    return (response as { data?: T }).data as T;
   }
   return response as T;
 }
@@ -84,14 +84,14 @@ export const instructorService = {
    */
   getMyCourses: async (): Promise<Course[]> => {
     try {
-      const response = await apiClient.get<any>(endpoints.instructor.myCourses);
-      return unwrap<Course[]>(response) ?? [];
+      const response = await apiClient.get<unknown>(endpoints.instructor.myCourses);
+      return unwrap<Course[]>(response as Course[]) ?? [];
     } catch {
       // Fallback: fetch all courses (admin endpoint), return as-is.
       // The page component further filters by instructorId client-side.
       try {
-        const response = await apiClient.get<any>(endpoints.admin.courses);
-        const courses = unwrap<Course[]>(response);
+        const response = await apiClient.get<unknown>(endpoints.admin.courses);
+        const courses = unwrap<Course[]>(response as Course[]);
         return Array.isArray(courses) ? courses : [];
       } catch {
         return [];
@@ -105,12 +105,12 @@ export const instructorService = {
    */
   getMyBatches: async (): Promise<InstructorBatch[]> => {
     try {
-      const response = await apiClient.get<any>(endpoints.instructor.myBatches);
-      return unwrap<InstructorBatch[]>(response) ?? [];
+      const response = await apiClient.get<unknown>(endpoints.instructor.myBatches);
+      return unwrap<InstructorBatch[]>(response as InstructorBatch[]) ?? [];
     } catch {
       try {
-        const response = await apiClient.get<any>(endpoints.admin.batches);
-        const batches = unwrap<InstructorBatch[]>(response);
+        const response = await apiClient.get<unknown>(endpoints.admin.batches);
+        const batches = unwrap<InstructorBatch[]>(response as InstructorBatch[]);
         return Array.isArray(batches) ? batches : [];
       } catch {
         return [];
@@ -121,8 +121,8 @@ export const instructorService = {
   /** Get the student roster for a specific batch. */
   getBatchRoster: async (batchId: string): Promise<InstructorBatchStudent[]> => {
     try {
-      const response = await apiClient.get<any>(endpoints.instructor.batchRoster(batchId));
-      return unwrap<InstructorBatchStudent[]>(response) ?? [];
+      const response = await apiClient.get<unknown>(endpoints.instructor.batchRoster(batchId));
+      return unwrap<InstructorBatchStudent[]>(response as InstructorBatchStudent[]) ?? [];
     } catch {
       return [];
     }
@@ -130,21 +130,21 @@ export const instructorService = {
 
   /** Create a new course (instructor-owned). */
   createCourse: async (payload: CreateCoursePayload): Promise<Course> => {
-    const response = await apiClient.post<any>(endpoints.instructor.createCourse, payload);
-    return unwrap<Course>(response);
+    const response = await apiClient.post<unknown>(endpoints.instructor.createCourse, payload);
+    return unwrap<Course>(response as Course);
   },
 
   /** Add a module to a course. */
-  createModule: async (courseId: string, title: string): Promise<any> => {
-    const response = await apiClient.post<any>(endpoints.instructor.createModule(courseId), {
+  createModule: async (courseId: string, title: string): Promise<unknown> => {
+    const response = await apiClient.post<unknown>(endpoints.instructor.createModule(courseId), {
       title,
     });
     return unwrap(response);
   },
 
   /** Update a module's title. */
-  updateModule: async (moduleId: string, title: string): Promise<any> => {
-    const response = await apiClient.patch<any>(endpoints.instructor.updateModule(moduleId), {
+  updateModule: async (moduleId: string, title: string): Promise<unknown> => {
+    const response = await apiClient.patch<unknown>(endpoints.instructor.updateModule(moduleId), {
       title,
     });
     return unwrap(response);
@@ -152,18 +152,24 @@ export const instructorService = {
 
   /** Delete a module. */
   deleteModule: async (moduleId: string): Promise<void> => {
-    await apiClient.del<any>(endpoints.instructor.deleteModule(moduleId));
+    await apiClient.del<unknown>(endpoints.instructor.deleteModule(moduleId));
   },
 
   /** Add a chapter/lesson to a module. */
-  createChapter: async (moduleId: string, data: CreateChapterPayload): Promise<any> => {
-    const response = await apiClient.post<any>(endpoints.instructor.createChapter(moduleId), data);
+  createChapter: async (moduleId: string, data: CreateChapterPayload): Promise<unknown> => {
+    const response = await apiClient.post<unknown>(
+      endpoints.instructor.createChapter(moduleId),
+      data,
+    );
     return unwrap(response);
   },
 
   /** Update a chapter/lesson. */
-  updateChapter: async (chapterId: string, data: Partial<CreateChapterPayload>): Promise<any> => {
-    const response = await apiClient.patch<any>(
+  updateChapter: async (
+    chapterId: string,
+    data: Partial<CreateChapterPayload>,
+  ): Promise<unknown> => {
+    const response = await apiClient.patch<unknown>(
       endpoints.instructor.updateChapter(chapterId),
       data,
     );
@@ -172,6 +178,6 @@ export const instructorService = {
 
   /** Delete a chapter/lesson. */
   deleteChapter: async (chapterId: string): Promise<void> => {
-    await apiClient.del<any>(endpoints.instructor.deleteChapter(chapterId));
+    await apiClient.del<unknown>(endpoints.instructor.deleteChapter(chapterId));
   },
 };

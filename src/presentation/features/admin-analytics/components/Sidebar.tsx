@@ -159,10 +159,11 @@ export function Sidebar() {
       {/* Role badge */}
       <div className="px-5 pb-2 shrink-0">
         <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${isInstructor
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${
+            isInstructor
               ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
               : "bg-blue-500/10 text-blue-400 border-blue-500/20"
-            }`}
+          }`}
         >
           <span
             className={`h-1.5 w-1.5 rounded-full ${isInstructor ? "bg-purple-400" : "bg-blue-400"}`}

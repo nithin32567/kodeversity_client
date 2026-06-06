@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Play, BookOpen, Clock, ExternalLink } from "lucide-react";
 
-
 export const Route = createFileRoute("/_auth/student/challenges")({
   head: () => ({
     meta: [
@@ -110,85 +109,85 @@ const levelClasses: Record<Level, string> = {
 function ChallengesPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
-        <div className="mx-auto max-w-[1600px] px-6 py-8">
-          <header className="mb-6">
-            <h1 className="font-display text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              Docker Challenges
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm text-muted-foreground md:text-base">
-              Learn containerization with Docker. Master basic commands, images, networking,
-              storage, and Docker Compose for multi-container applications.
-            </p>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground">
-                <BookOpen className="h-3.5 w-3.5" /> 9 Labs
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground">
-                <Clock className="h-3.5 w-3.5" /> 6–10 hours
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-rose-500/15 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-rose-300 ring-1 ring-rose-400/30">
-                beginner
-              </span>
-            </div>
-          </header>
-
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {labs.map((lab) => (
-              <article
-                key={lab.title}
-                className="group relative flex flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-[0_0_30px_-10px_var(--primary)]"
-              >
-                <div className="mb-4 flex items-start justify-between">
-                  <button
-                    aria-label={`Start ${lab.title}`}
-                    className="grid h-10 w-10 place-items-center rounded-lg bg-background/60 ring-1 ring-border transition group-hover:bg-[image:var(--gradient-primary)] group-hover:ring-transparent"
-                  >
-                    <Play className="h-4 w-4 translate-x-0.5 fill-current text-foreground" />
-                  </button>
-                  <span
-                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold ${levelClasses[lab.level]}`}
-                  >
-                    {lab.level}
-                  </span>
-                </div>
-
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-base font-semibold text-foreground">{lab.title}</h3>
-                  <span className="text-xs text-muted-foreground">{lab.duration}</span>
-                </div>
-
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {lab.description}
-                </p>
-
-                <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5" /> {lab.duration}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <ExternalLink className="h-3.5 w-3.5" /> Interactive
-                  </span>
-                </div>
-
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  {lab.tags.map((t) => (
-                    <span
-                      key={t}
-                      className="rounded-md border border-border bg-background/40 px-2 py-1 text-[11px] font-medium text-foreground/80"
-                    >
-                      #{t}
-                    </span>
-                  ))}
-                  {lab.extra > 0 && (
-                    <span className="rounded-md border border-border bg-background/40 px-2 py-1 text-[11px] font-medium text-muted-foreground">
-                      +{lab.extra}
-                    </span>
-                  )}
-                </div>
-              </article>
-            ))}
+      <div className="mx-auto max-w-[1600px] px-6 py-8">
+        <header className="mb-6">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+            Docker Challenges
+          </h1>
+          <p className="mt-2 max-w-3xl text-sm text-muted-foreground md:text-base">
+            Learn containerization with Docker. Master basic commands, images, networking, storage,
+            and Docker Compose for multi-container applications.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground">
+              <BookOpen className="h-3.5 w-3.5" /> 9 Labs
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground">
+              <Clock className="h-3.5 w-3.5" /> 6–10 hours
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-rose-500/15 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-rose-300 ring-1 ring-rose-400/30">
+              beginner
+            </span>
           </div>
+        </header>
+
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {labs.map((lab) => (
+            <article
+              key={lab.title}
+              className="group relative flex flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-[0_0_30px_-10px_var(--primary)]"
+            >
+              <div className="mb-4 flex items-start justify-between">
+                <button
+                  aria-label={`Start ${lab.title}`}
+                  className="grid h-10 w-10 place-items-center rounded-lg bg-background/60 ring-1 ring-border transition group-hover:bg-[image:var(--gradient-primary)] group-hover:ring-transparent"
+                >
+                  <Play className="h-4 w-4 translate-x-0.5 fill-current text-foreground" />
+                </button>
+                <span
+                  className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold ${levelClasses[lab.level]}`}
+                >
+                  {lab.level}
+                </span>
+              </div>
+
+              <div className="flex items-baseline gap-2">
+                <h3 className="text-base font-semibold text-foreground">{lab.title}</h3>
+                <span className="text-xs text-muted-foreground">{lab.duration}</span>
+              </div>
+
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {lab.description}
+              </p>
+
+              <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" /> {lab.duration}
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <ExternalLink className="h-3.5 w-3.5" /> Interactive
+                </span>
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {lab.tags.map((t) => (
+                  <span
+                    key={t}
+                    className="rounded-md border border-border bg-background/40 px-2 py-1 text-[11px] font-medium text-foreground/80"
+                  >
+                    #{t}
+                  </span>
+                ))}
+                {lab.extra > 0 && (
+                  <span className="rounded-md border border-border bg-background/40 px-2 py-1 text-[11px] font-medium text-muted-foreground">
+                    +{lab.extra}
+                  </span>
+                )}
+              </div>
+            </article>
+          ))}
         </div>
-      </main>
+      </div>
+    </main>
   );
 }

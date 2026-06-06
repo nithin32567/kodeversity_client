@@ -316,7 +316,9 @@ export function MyBatchesPage() {
                                 <div
                                   className="h-8 w-8 rounded-full grid place-items-center text-white text-[11px] font-bold"
                                   style={{
-                                    background: isMe ? "var(--gradient-primary)" : "var(--gradient-primary-soft)",
+                                    background: isMe
+                                      ? "var(--gradient-primary)"
+                                      : "var(--gradient-primary-soft)",
                                   }}
                                 >
                                   {classMateInitials}

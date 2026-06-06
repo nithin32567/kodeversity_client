@@ -295,8 +295,9 @@ function CourseDetailPage() {
                           {[0, 1, 2, 3, 4].map((i) => (
                             <Star
                               key={i}
-                              className={`h-3.5 w-3.5 ${i < Math.round(averageRating) ? "fill-current" : ""
-                                }`}
+                              className={`h-3.5 w-3.5 ${
+                                i < Math.round(averageRating) ? "fill-current" : ""
+                              }`}
                             />
                           ))}
                         </div>
@@ -395,10 +396,11 @@ function CourseDetailPage() {
                     <button
                       key={t}
                       onClick={() => setActiveTab(cleanedTab)}
-                      className={`relative -mb-px py-3 text-sm transition-colors ${active
+                      className={`relative -mb-px py-3 text-sm transition-colors ${
+                        active
                           ? "font-semibold text-foreground"
                           : "text-muted-foreground hover:text-foreground"
-                        }`}
+                      }`}
                     >
                       {t}
                       {active && (
@@ -642,8 +644,9 @@ function CourseDetailPage() {
                                     {[0, 1, 2, 3, 4].map((i) => (
                                       <Star
                                         key={i}
-                                        className={`h-3.5 w-3.5 ${i < rev.rating ? "fill-current" : ""
-                                          }`}
+                                        className={`h-3.5 w-3.5 ${
+                                          i < rev.rating ? "fill-current" : ""
+                                        }`}
                                       />
                                     ))}
                                   </div>
@@ -740,8 +743,9 @@ function CourseDetailPage() {
                                 {[0, 1, 2, 3, 4].map((i) => (
                                   <Star
                                     key={i}
-                                    className={`h-3.5 w-3.5 ${i < rev.rating ? "fill-current" : ""
-                                      }`}
+                                    className={`h-3.5 w-3.5 ${
+                                      i < rev.rating ? "fill-current" : ""
+                                    }`}
                                   />
                                 ))}
                               </div>

@@ -212,7 +212,8 @@ function CreateCourseModal({ onClose, onCreated }: { onClose: () => void; onCrea
 
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-muted-foreground">
-              URL Slug * <span className="text-muted-foreground/50 font-normal">(auto-generated)</span>
+              URL Slug *{" "}
+              <span className="text-muted-foreground/50 font-normal">(auto-generated)</span>
             </label>
             <input
               required
@@ -273,7 +274,8 @@ function CreateCourseModal({ onClose, onCreated }: { onClose: () => void; onCrea
 
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-muted-foreground">
-              Cover Image URL <span className="text-muted-foreground/50 font-normal">(optional)</span>
+              Cover Image URL{" "}
+              <span className="text-muted-foreground/50 font-normal">(optional)</span>
             </label>
             <input
               type="url"

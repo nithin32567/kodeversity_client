@@ -1,40 +1,44 @@
 import React, { useState, useEffect } from "react";
-import { X, UserPlus, Mail, User, ShieldAlert, ChevronDown } from "lucide-react";
+import { X, UserCheck, Mail, User, ShieldAlert, ChevronDown, Lock } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import { tokenStore } from "@/infrastructure/http/apiClient";
 import { endpoints } from "@/infrastructure/http/endpoints";
 import { toast } from "sonner";
 
-interface CreateUserModalProps {
+export interface EditUserPayload {
+  id: string;
+  name: string;
+  email: string;
+  role: "STUDENT" | "INSTRUCTOR" | "ADMIN";
+}
+
+interface EditUserModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmitSuccess?: () => void;
-  defaultRole?: "STUDENT" | "INSTRUCTOR";
+  user: EditUserPayload | null;
 }
 
-export function CreateUserModal({
-  isOpen,
-  onClose,
-  onSubmitSuccess,
-  defaultRole = "STUDENT",
-}: CreateUserModalProps) {
+export function EditUserModal({ isOpen, onClose, onSubmitSuccess, user }: EditUserModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"STUDENT" | "INSTRUCTOR">("STUDENT");
+  const [role, setRole] = useState<"STUDENT" | "INSTRUCTOR" | "ADMIN">("STUDENT");
+  const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Set default role when modal opens
+  // Set initial data when modal opens or user prop changes
   useEffect(() => {
-    if (isOpen) {
-      setRole(defaultRole);
-      setName("");
-      setEmail("");
+    if (isOpen && user) {
+      setName(user.name || "");
+      setEmail(user.email || "");
+      setRole(user.role || "STUDENT");
+      setPassword(""); // Always clear password on open
       setValidationError(null);
     }
-  }, [isOpen, defaultRole]);
+  }, [isOpen, user]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !user) return null;
 
   const handleValidation = (): boolean => {
     setValidationError(null);
@@ -70,38 +74,40 @@ export function CreateUserModal({
 
     try {
       const token = tokenStore.get();
-      const response = await axios.post(
-        endpoints.admin.createUser,
-        {
-          name: name.trim(),
-          email: email.trim().toLowerCase(),
-          role,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          withCredentials: true,
-        },
-      );
+      const payload: Record<string, string> = {
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        role: role.toUpperCase(),
+      };
 
-      // Extract details from envelope if returned as { success: true, data: ... }
-      const payload = response.data;
-      if (payload && payload.success === false) {
-        throw new Error(payload.error || payload.message || "Failed to create user.");
+      if (password.trim() !== "") {
+        payload.password = password.trim();
       }
 
-      toast.success("User created successfully! Login credentials sent to their email.");
+      const response = await axios.put(endpoints.admin.updateUser(user.id), payload, {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        withCredentials: true,
+      });
+
+      // Extract details from envelope if returned as { success: true, data: ... }
+      const data = response.data;
+      if (data && data.success === false) {
+        throw new Error(data.error || data.message || "Failed to update user.");
+      }
+
+      toast.success("User profile updated successfully!");
       onSubmitSuccess?.();
       onClose();
     } catch (err: unknown) {
-      console.error("User creation failed:", err);
+      console.error("User update failed:", err);
       const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
       const errMsg =
         axiosErr.response?.data?.error ||
         axiosErr.response?.data?.message ||
-        (err instanceof Error ? err.message : "Failed to create user.");
+        (err instanceof Error ? err.message : "Failed to update user.");
       toast.error(errMsg);
     } finally {
       setIsSubmitting(false);
@@ -115,8 +121,10 @@ export function CreateUserModal({
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--hairline)] bg-[var(--surface-2)]/60">
           <div className="flex items-center gap-2">
-            <UserPlus className="h-5 w-5 text-indigo-400" />
-            <h2 className="text-lg font-semibold font-display text-foreground">Onboard New User</h2>
+            <UserCheck className="h-5 w-5 text-indigo-400" />
+            <h2 className="text-lg font-semibold font-display text-foreground">
+              Edit User Profile
+            </h2>
           </div>
           <button
             type="button"
@@ -185,13 +193,35 @@ export function CreateUserModal({
             <div className="relative">
               <select
                 value={role}
-                onChange={(e) => setRole(e.target.value as "STUDENT" | "INSTRUCTOR")}
+                onChange={(e) => setRole(e.target.value as "STUDENT" | "INSTRUCTOR" | "ADMIN")}
                 className="w-full appearance-none px-3 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm focus:outline-none focus:border-indigo-500 transition cursor-pointer text-foreground"
               >
                 <option value="STUDENT">Student</option>
                 <option value="INSTRUCTOR">Instructor</option>
+                <option value="ADMIN">Admin</option>
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Reset Password */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex justify-between">
+              <span>Reset Password</span>
+              <span className="text-[10px] text-muted-foreground/60">(Optional)</span>
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setValidationError(null);
+                }}
+                placeholder="Leave blank to keep existing password"
+                className="w-full pl-10 pr-3 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-indigo-500 transition text-foreground"
+              />
             </div>
           </div>
 
@@ -201,7 +231,7 @@ export function CreateUserModal({
               <div className="flex flex-col items-center justify-center p-3 text-center space-y-2.5">
                 <div className="h-6 w-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                 <p className="text-xs text-indigo-400 font-medium animate-pulse">
-                  Registering user and sending secure credentials via email...
+                  Updating user profile securely...
                 </p>
               </div>
             ) : (
@@ -217,8 +247,8 @@ export function CreateUserModal({
                   type="submit"
                   className="px-5 py-2 text-sm font-semibold rounded-lg bg-[image:var(--grad-cta)] text-white hover:opacity-95 active:scale-[0.98] transition flex items-center gap-2 cursor-pointer shadow-md shadow-indigo-500/10"
                 >
-                  <UserPlus className="h-4 w-4" />
-                  <span>Onboard User</span>
+                  <UserCheck className="h-4 w-4" />
+                  <span>Save Changes</span>
                 </button>
               </div>
             )}

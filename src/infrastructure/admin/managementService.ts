@@ -78,32 +78,32 @@ export const managementService = {
       return ["BEGINNER", "INTERMEDIATE", "ADVANCED", "BEGINNER_TO_ADVANCED"];
     }
   },
-  assignInstructor: async (courseId: string, instructorId: string | null): Promise<any> => {
-    return await apiClient.patch<any>(endpoints.course.assignInstructor(courseId), {
+  assignInstructor: async (courseId: string, instructorId: string | null): Promise<unknown> => {
+    return await apiClient.patch<unknown>(endpoints.course.assignInstructor(courseId), {
       instructorId,
     });
   },
-  getEnrolledStudents: async (courseId: string): Promise<any[]> => {
+  getEnrolledStudents: async (courseId: string): Promise<unknown[]> => {
     try {
-      return await apiClient.get<any[]>(endpoints.course.enrolledStudents(courseId));
+      return await apiClient.get<unknown[]>(endpoints.course.enrolledStudents(courseId));
     } catch {
       return [];
     }
   },
-  createModule: async (courseId: string, title: string): Promise<any> => {
-    return await apiClient.post<any>(endpoints.course.createModule(courseId), { title });
+  createModule: async (courseId: string, title: string): Promise<unknown> => {
+    return await apiClient.post<unknown>(endpoints.course.createModule(courseId), { title });
   },
-  updateModule: async (moduleId: string, title: string): Promise<any> => {
-    return await apiClient.patch<any>(endpoints.course.updateModule(moduleId), { title });
+  updateModule: async (moduleId: string, title: string): Promise<unknown> => {
+    return await apiClient.patch<unknown>(endpoints.course.updateModule(moduleId), { title });
   },
-  deleteModule: async (moduleId: string): Promise<any> => {
-    return await apiClient.del<any>(endpoints.course.deleteModule(moduleId));
+  deleteModule: async (moduleId: string): Promise<unknown> => {
+    return await apiClient.del<unknown>(endpoints.course.deleteModule(moduleId));
   },
   reorderModules: async (
     courseId: string,
     modules: { id: string; sortOrder: number }[],
-  ): Promise<any> => {
-    return await apiClient.patch<any>(endpoints.course.reorderModules(courseId), { modules });
+  ): Promise<unknown> => {
+    return await apiClient.patch<unknown>(endpoints.course.reorderModules(courseId), { modules });
   },
   createChapter: async (
     moduleId: string,
@@ -125,20 +125,20 @@ export const managementService = {
           }[]
         | null;
     },
-  ): Promise<any> => {
-    return await apiClient.post<any>(endpoints.course.createChapter(moduleId), chapterData);
+  ): Promise<unknown> => {
+    return await apiClient.post<unknown>(endpoints.course.createChapter(moduleId), chapterData);
   },
-  updateChapter: async (chapterId: string, chapterData: any): Promise<any> => {
-    return await apiClient.patch<any>(endpoints.course.updateChapter(chapterId), chapterData);
+  updateChapter: async (chapterId: string, chapterData: unknown): Promise<unknown> => {
+    return await apiClient.patch<unknown>(endpoints.course.updateChapter(chapterId), chapterData);
   },
-  deleteChapter: async (chapterId: string): Promise<any> => {
-    return await apiClient.del<any>(endpoints.course.deleteChapter(chapterId));
+  deleteChapter: async (chapterId: string): Promise<unknown> => {
+    return await apiClient.del<unknown>(endpoints.course.deleteChapter(chapterId));
   },
   reorderChapters: async (
     moduleId: string,
     chapters: { id: string; sortOrder: number }[],
-  ): Promise<any> => {
-    return await apiClient.patch<any>(endpoints.course.reorderChapters(moduleId), { chapters });
+  ): Promise<unknown> => {
+    return await apiClient.patch<unknown>(endpoints.course.reorderChapters(moduleId), { chapters });
   },
   getBatches: async (): Promise<Batch[]> => {
     try {
@@ -169,6 +169,19 @@ export const managementService = {
     }
   },
   removeStudentFromBatch: async (batchId: string, studentId: string): Promise<void> => {
-    await apiClient.del<any>(endpoints.admin.removeStudentFromBatch(batchId, studentId));
+    await apiClient.del<unknown>(endpoints.admin.removeStudentFromBatch(batchId, studentId));
+  },
+  getSuspendedUsers: async (): Promise<User[]> => {
+    try {
+      return await apiClient.get<User[]>(endpoints.admin.suspendedUsers);
+    } catch {
+      return [];
+    }
+  },
+  updateUserStatus: async (userId: string, status: "ACTIVE" | "SUSPENDED"): Promise<void> => {
+    await apiClient.patch<unknown>(endpoints.admin.updateUserStatus(userId), { status });
+  },
+  deleteUser: async (userId: string): Promise<void> => {
+    await apiClient.del<unknown>(endpoints.admin.deleteUser(userId));
   },
 };

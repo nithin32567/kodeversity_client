@@ -1465,7 +1465,10 @@ function EditDetailsTab({
       {isInstructor && (
         <div className="p-3 rounded-xl border border-blue-500/10 bg-blue-500/5 text-blue-400 text-xs flex gap-2.5">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          <span>Course metadata is managed by admins. To modify titles or prices, please contact support.</span>
+          <span>
+            Course metadata is managed by admins. To modify titles or prices, please contact
+            support.
+          </span>
         </div>
       )}
 

@@ -117,8 +117,8 @@ export function AdminBatchesPage() {
     if (!isInstructor || !user?.id) return null;
     const ids = new Set(
       courses
-        .filter((c: any) => c.instructorId === user.id || c.instructor?.id === user.id)
-        .map((c: any) => c.id),
+        .filter((c: Course) => c.instructorId === user.id || c.instructor?.id === user.id)
+        .map((c: Course) => c.id),
     );
     return ids;
   }, [isInstructor, user, courses]);
@@ -185,9 +185,11 @@ export function AdminBatchesPage() {
 
       // Refresh data
       await fetchData();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to create batch:", err);
-      toast.error(err.message || "Failed to create batch. Ensure the code is unique.");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to create batch. Ensure the code is unique.",
+      );
     } finally {
       setIsCreatingBatch(false);
     }
@@ -211,9 +213,9 @@ export function AdminBatchesPage() {
       setSelectedStudentIds([]);
       setStudentSearchQuery("");
       toast.success(`Successfully enrolled ${selectedStudentIds.length} student(s).`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to enroll students:", err);
-      toast.error(err.message || "Failed to enroll students.");
+      toast.error(err instanceof Error ? err.message : "Failed to enroll students.");
     } finally {
       setIsEnrolling(false);
     }
@@ -233,9 +235,9 @@ export function AdminBatchesPage() {
       toast.success("Student removed from batch successfully.");
       // Refresh roster
       await fetchRoster(selectedBatch.id);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to remove student:", err);
-      toast.error(err.message || "Failed to remove student.");
+      toast.error(err instanceof Error ? err.message : "Failed to remove student.");
     }
   };
 

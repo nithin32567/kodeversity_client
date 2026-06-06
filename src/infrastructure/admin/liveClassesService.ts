@@ -65,12 +65,12 @@ export const liveClassesService = {
     type: MeetingType;
     customStudentIds?: string[];
   }): Promise<LiveSession> => {
-    const response = await apiClient.post<any>(base, payload);
+    const response = await apiClient.post<LiveSession | { data: LiveSession }>(base, payload);
     // Unbox `{ success: true, data: result }` if returned that way
     if (response && typeof response === "object" && "data" in response) {
       return response.data;
     }
-    return response;
+    return response as LiveSession;
   },
 
   joinSession: async (
@@ -81,18 +81,25 @@ export const liveClassesService = {
       role: "host" | "participant";
     },
   ): Promise<{ token: string; dyteMeetingId: string; sessionTitle: string }> => {
-    const response = await apiClient.post<any>(`${base}/${id}/join`, payload);
+    type JoinRes = { token: string; dyteMeetingId: string; sessionTitle: string };
+    const response = await apiClient.post<JoinRes | { data: JoinRes }>(
+      `${base}/${id}/join`,
+      payload,
+    );
     if (response && typeof response === "object" && "data" in response) {
       return response.data;
     }
-    return response;
+    return response as JoinRes;
   },
 
   updateStatus: async (id: string, status: MeetingStatus): Promise<LiveSession> => {
-    const response = await apiClient.patch<any>(`${base}/${id}/status`, { status });
+    const response = await apiClient.patch<LiveSession | { data: LiveSession }>(
+      `${base}/${id}/status`,
+      { status },
+    );
     if (response && typeof response === "object" && "data" in response) {
       return response.data;
     }
-    return response;
+    return response as LiveSession;
   },
 };

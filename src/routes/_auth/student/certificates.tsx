@@ -29,7 +29,8 @@ export function CertificatesPage() {
             Student Certificates
           </h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Your earned credentials, verified course completion badges, and printable PDF certificates will be available right here upon course completion.
+            Your earned credentials, verified course completion badges, and printable PDF
+            certificates will be available right here upon course completion.
           </p>
         </div>
       </MagicBentoCard>

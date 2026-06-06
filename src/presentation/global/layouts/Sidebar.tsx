@@ -89,7 +89,15 @@ export const studentSandbox: NavItem[] = [
   { label: "Settings", icon: Settings, to: "/student/settings" },
 ];
 
-function Group({ title, items, onClose }: { title: string; items: NavItem[]; onClose?: () => void }) {
+function Group({
+  title,
+  items,
+  onClose,
+}: {
+  title: string;
+  items: NavItem[];
+  onClose?: () => void;
+}) {
   return (
     <div className="mt-5">
       <div className="px-3 mb-2 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground/70 uppercase">
@@ -200,8 +208,8 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
             isAdmin
               ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
               : isInstructor
-              ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
-              : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
           }`}
         >
           <span
@@ -276,8 +284,8 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
                 background: isAdmin
                   ? "var(--grad-blue)"
                   : isInstructor
-                  ? "var(--grad-purple)"
-                  : "var(--grad-orange)",
+                    ? "var(--grad-purple)"
+                    : "var(--grad-orange)",
               }}
             >
               {initials}

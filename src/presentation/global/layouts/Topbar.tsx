@@ -118,7 +118,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         <IconBtn badge={1} badgeColor="bg-blue-500">
           <MessageSquare className="h-[18px] w-[18px]" />
         </IconBtn>
-        
+
         <div className="h-8 w-[1px] bg-[var(--hairline)] mx-1" />
 
         <div className="relative flex items-center gap-2">
@@ -129,8 +129,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                 background: isAdmin
                   ? "var(--grad-blue)"
                   : isInstructor
-                  ? "var(--grad-purple)"
-                  : "var(--grad-orange)",
+                    ? "var(--grad-purple)"
+                    : "var(--grad-orange)",
               }}
               title={name}
             >
