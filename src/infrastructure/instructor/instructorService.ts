@@ -21,6 +21,7 @@ export interface InstructorBatch {
   status: "UPCOMING" | "ACTIVE" | "COMPLETED";
   courseId: string;
   course?: { name: string };
+  instructorId?: string | null;
   createdAt: string;
   updatedAt: string;
 }

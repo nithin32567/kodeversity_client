@@ -118,11 +118,11 @@ export function InstructorMyBatchesPage() {
             .filter((c) => c.instructorId === user.id || c.instructor?.id === user.id)
             .map((c) => c.id),
         );
-        if (instructorCourseIds.size > 0) {
-          const clientFiltered = fetchedBatches.filter((b) => instructorCourseIds.has(b.courseId));
-          if (clientFiltered.length < fetchedBatches.length) {
-            filteredBatches = clientFiltered;
-          }
+        const clientFiltered = fetchedBatches.filter(
+          (b) => b.instructorId === user.id || instructorCourseIds.has(b.courseId)
+        );
+        if (clientFiltered.length < fetchedBatches.length) {
+          filteredBatches = clientFiltered;
         }
       }
 
