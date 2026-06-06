@@ -25,6 +25,7 @@ import {
   type Batch,
   type BatchStudent,
 } from "@/infrastructure/admin/managementService";
+import { instructorService } from "@/infrastructure/instructor/instructorService";
 import type { Course } from "@/domain/course";
 import {
   liveClassesService,
@@ -85,10 +86,10 @@ export function LiveClassesPage() {
     setIsLoading(true);
     try {
       const [fetchedBatches, fetchedCourses] = await Promise.all([
-        managementService.getBatches(),
-        managementService.getCourses(),
+        isAdmin ? managementService.getBatches() : instructorService.getMyBatches(),
+        isAdmin ? managementService.getCourses() : instructorService.getMyCourses(),
       ]);
-      setBatches(fetchedBatches);
+      setBatches(fetchedBatches as Batch[]);
       setCourses(fetchedCourses);
     } catch (err) {
       console.error("Failed to load initial data:", err);
@@ -96,7 +97,7 @@ export function LiveClassesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthLoading, isAuthenticated]);
+  }, [isAuthLoading, isAuthenticated, isAdmin]);
 
   useEffect(() => {
     fetchInitialData();
@@ -118,10 +119,10 @@ export function LiveClassesPage() {
     if (isAdmin) {
       return batches;
     }
-    // If instructor, filter by batches where the batch's course belongs to the instructor
+    // If instructor, filter by batches where the batch's course belongs to the instructor, or the batch is assigned to the instructor explicitly
     return batches.filter((b) => {
       const instructorId = courseInstructorMap.get(b.courseId);
-      return instructorId === user?.id;
+      return instructorId === user?.id || b.instructorId === user?.id;
     });
   }, [batches, isAdmin, courseInstructorMap, user]);
 
@@ -164,10 +165,13 @@ export function LiveClassesPage() {
   useEffect(() => {
     if (formBatchId && formAudience === "CUSTOM_STUDENTS") {
       setIsRosterLoading(true);
-      managementService
-        .getBatchRoster(formBatchId)
+      const fetchRoster = isAdmin 
+        ? managementService.getBatchRoster(formBatchId) 
+        : instructorService.getBatchRoster(formBatchId);
+      
+      fetchRoster
         .then((data) => {
-          setRoster(data);
+          setRoster(data as BatchStudent[]);
           setSelectedStudentIds([]);
         })
         .catch((err) => {
@@ -181,7 +185,7 @@ export function LiveClassesPage() {
       setRoster([]);
       setSelectedStudentIds([]);
     }
-  }, [formBatchId, formAudience]);
+  }, [formBatchId, formAudience, isAdmin]);
 
   // Categorize and filter meetings based on search & activeTab
   const filteredMeetings = useMemo(() => {
