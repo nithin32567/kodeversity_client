@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   Search,
@@ -13,29 +13,20 @@ import {
 } from "lucide-react";
 import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
-import { AppShell } from "@/presentation/global/AppShell";
-import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import { useCourses } from "@/presentation/features/student-learning/hooks/useCourses";
-import { authStore } from "@/presentation/features/auth/hooks/authStore";
 import type { Course } from "@/domain/course";
 
-export const Route = createFileRoute("/courses/")({
-  beforeLoad: () => {
-    const { isAuthenticated, user } = authStore.get();
-    if (isAuthenticated && user?.role === "STUDENT") {
-      throw redirect({ to: "/student/courses" });
-    }
-  },
+export const Route = createFileRoute("/_auth/student/courses")({
   head: () => ({
     meta: [
       { title: "All Courses — Kodeversity" },
       {
         name: "description",
-        content: "Choose from 200+ industry-focused courses and start your learning journey.",
+        content: "Browse and discover industry-focused courses for your student workspace.",
       },
     ],
   }),
-  component: AllCoursesPage,
+  component: StudentCoursesPage,
 });
 
 const categories = [
@@ -86,14 +77,11 @@ function formatPrice(price: number, currency: string): string {
   return `$${price.toFixed(2)}`;
 }
 
-function AllCoursesPage() {
-  const { user, isAuthenticated } = useAuth();
+export function StudentCoursesPage() {
   const [activeCategory, setActiveCategory] = useState("All Courses");
   const [query, setQuery] = useState("");
   const glow = useAccentRgb();
   const { data: courses, isLoading, isError } = useCourses();
-
-  const isStudent = isAuthenticated && user?.role === "STUDENT";
 
   const filtered = useMemo(() => {
     if (!courses) return [];
@@ -103,15 +91,21 @@ function AllCoursesPage() {
     });
   }, [courses, query]);
 
-  const content = (
-    <div className="px-4 py-8 md:px-8 md:py-10">
-      <h1 className="font-display text-3xl font-bold md:text-4xl">All Courses</h1>
+  return (
+    <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 overflow-y-auto max-w-[1400px] mx-auto w-full">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <BookOpen className="h-6 w-6 text-indigo-400" />
+            All Courses
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Choose from industry-focused courses and enroll to upgrade your skills.
+          </p>
+        </div>
+      </div>
 
-      <p className="mt-2 text-sm text-muted-foreground md:text-base">
-        Choose from industry-focused courses and start your learning journey
-      </p>
-
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -126,7 +120,7 @@ function AllCoursesPage() {
         </button>
       </div>
 
-      <div className="mt-5 flex items-center gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {categories.map((cat) => {
           const active = cat === activeCategory;
           return (
@@ -148,7 +142,7 @@ function AllCoursesPage() {
         </button>
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <span className="text-sm text-muted-foreground">
           {isLoading ? "Loading courses…" : `Showing ${filtered.length} courses`}
         </span>
@@ -159,7 +153,7 @@ function AllCoursesPage() {
       </div>
 
       {isError && (
-        <div className="mt-10 flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-10 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-10 text-center">
           <AlertCircle className="h-10 w-10 text-rose-400" />
           <p className="text-sm font-medium text-foreground">Unable to load courses</p>
           <p className="text-xs text-muted-foreground">
@@ -169,7 +163,7 @@ function AllCoursesPage() {
       )}
 
       {isLoading && (
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <CourseCardSkeleton key={i} />
           ))}
@@ -178,7 +172,7 @@ function AllCoursesPage() {
 
       {!isLoading && !isError && (
         <MagicBentoSection
-          className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
           glowColor={glow}
           spotlightRadius={400}
         >
@@ -189,34 +183,13 @@ function AllCoursesPage() {
       )}
 
       {!isLoading && !isError && filtered.length === 0 && (
-        <div className="mt-16 flex flex-col items-center gap-2 text-center">
+        <div className="flex flex-col items-center gap-2 text-center py-10">
           <p className="text-base font-semibold text-foreground">No courses found</p>
           <p className="text-sm text-muted-foreground">Try a different search term.</p>
         </div>
       )}
-
-      {!isLoading && !isError && filtered.length > 0 && (
-        <div className="mt-10 flex items-center justify-center gap-2">
-          <button className="grid h-9 w-9 place-items-center rounded-md border border-border text-muted-foreground hover:text-foreground">
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          {[1].map((n) => (
-            <button
-              key={n}
-              className="h-9 min-w-9 rounded-md bg-[image:var(--gradient-primary)] px-3 text-sm font-medium text-primary-foreground"
-            >
-              {n}
-            </button>
-          ))}
-          <button className="grid h-9 w-9 place-items-center rounded-md border border-border text-muted-foreground hover:text-foreground">
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-    </div>
+    </main>
   );
-
-  return <AppShell activeTop="Courses">{content}</AppShell>;
 }
 
 function CourseCardSkeleton() {
@@ -308,6 +281,7 @@ function CourseGridCard({ course, index }: { course: Course; index: number }) {
       </div>
 
       <div className="flex flex-1 flex-col p-4">
+        {/* We keep the link pointing to the public details page */}
         <Link
           to="/courses/$slug"
           params={{ slug: course.slug }}

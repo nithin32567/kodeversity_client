@@ -33,8 +33,6 @@ import {
 import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
 import { AppShell } from "@/presentation/global/AppShell";
-import { StudentLayout } from "@/presentation/global/layouts/StudentLayout";
-import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
 import type { Course, Chapter } from "@/domain/course";
 
@@ -122,16 +120,6 @@ function formatPrice(price: number, currency: string): string {
 }
 
 function CourseDetailPage() {
-  const { user, isAuthenticated } = useAuth();
-  const isStudent = isAuthenticated && user?.role === "STUDENT";
-
-  const wrapLayout = (children: React.ReactNode) => {
-    if (isStudent) {
-      return <StudentLayout>{children}</StudentLayout>;
-    }
-    return <AppShell activeTop="Courses">{children}</AppShell>;
-  };
-
   const { slug } = Route.useLoaderData();
   const { data: course, isLoading, isError } = useCourse(slug);
   const [activeTab, setActiveTab] = useState("Overview");
@@ -156,59 +144,63 @@ function CourseDetailPage() {
   }, [reviews, totalReviews]);
 
   if (isLoading) {
-    return wrapLayout(
-      <main className="relative min-h-screen bg-background text-foreground animate-pulse">
-        <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
-          <div className="mb-5 h-4 w-48 rounded bg-foreground/10" />
-          <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="flex flex-col gap-3">
-                  <div className="h-6 w-24 rounded bg-foreground/10" />
-                  <div className="h-10 w-3/4 rounded bg-foreground/10" />
-                  <div className="h-4 w-full rounded bg-foreground/10" />
-                  <div className="h-4 w-5/6 rounded bg-foreground/10" />
-                  <div className="mt-4 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-foreground/10" />
-                    <div className="h-4 w-28 rounded bg-foreground/10" />
+    return (
+      <AppShell activeTop="Courses">
+        <main className="relative min-h-screen bg-background text-foreground animate-pulse">
+          <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
+            <div className="mb-5 h-4 w-48 rounded bg-foreground/10" />
+            <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="flex flex-col gap-3">
+                    <div className="h-6 w-24 rounded bg-foreground/10" />
+                    <div className="h-10 w-3/4 rounded bg-foreground/10" />
+                    <div className="h-4 w-full rounded bg-foreground/10" />
+                    <div className="h-4 w-5/6 rounded bg-foreground/10" />
+                    <div className="mt-4 flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-full bg-foreground/10" />
+                      <div className="h-4 w-28 rounded bg-foreground/10" />
+                    </div>
                   </div>
+                  <div className="aspect-video rounded-xl bg-foreground/10" />
                 </div>
-                <div className="aspect-video rounded-xl bg-foreground/10" />
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="h-14 rounded-lg bg-foreground/10" />
+                  ))}
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-14 rounded-lg bg-foreground/10" />
-                ))}
-              </div>
+              <div className="h-[400px] rounded-2xl bg-foreground/10" />
             </div>
-            <div className="h-[400px] rounded-2xl bg-foreground/10" />
           </div>
-        </div>
-      </main>
+        </main>
+      </AppShell>
     );
   }
 
   if (isError || !course) {
-    return wrapLayout(
-      <main className="relative min-h-screen bg-background text-foreground">
-        <div className="mx-auto max-w-7xl px-4 py-16 md:px-8 text-center flex flex-col items-center justify-center min-h-[500px]">
-          <AlertCircle className="h-16 w-16 text-rose-500 mb-4 animate-bounce" />
-          <h1 className="font-display text-2xl font-bold md:text-3xl text-foreground">
-            Course Not Found
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground max-w-md">
-            The course with slug "{slug}" does not exist, or could not be loaded from the backend.
-          </p>
-          <div className="mt-6">
-            <Link
-              to="/courses"
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
-            >
-              Back to Catalog
-            </Link>
+    return (
+      <AppShell activeTop="Courses">
+        <main className="relative min-h-screen bg-background text-foreground">
+          <div className="mx-auto max-w-7xl px-4 py-16 md:px-8 text-center flex flex-col items-center justify-center min-h-[500px]">
+            <AlertCircle className="h-16 w-16 text-rose-500 mb-4 animate-bounce" />
+            <h1 className="font-display text-2xl font-bold md:text-3xl text-foreground">
+              Course Not Found
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground max-w-md">
+              The course with slug "{slug}" does not exist, or could not be loaded from the backend.
+            </p>
+            <div className="mt-6">
+              <Link
+                to="/courses"
+                className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
+              >
+                Back to Catalog
+              </Link>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </AppShell>
     );
   }
 
@@ -238,8 +230,9 @@ function CourseDetailPage() {
     "FAQs",
   ];
 
-  return wrapLayout(
-    <main className="relative min-h-screen bg-background text-foreground">
+  return (
+    <AppShell activeTop="Courses">
+      <main className="relative min-h-screen bg-background text-foreground">
         <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
           <nav className="mb-5 flex items-center gap-2 text-sm text-muted-foreground">
             <Home className="h-4 w-4" />
@@ -302,9 +295,8 @@ function CourseDetailPage() {
                           {[0, 1, 2, 3, 4].map((i) => (
                             <Star
                               key={i}
-                              className={`h-3.5 w-3.5 ${
-                                i < Math.round(averageRating) ? "fill-current" : ""
-                              }`}
+                              className={`h-3.5 w-3.5 ${i < Math.round(averageRating) ? "fill-current" : ""
+                                }`}
                             />
                           ))}
                         </div>
@@ -403,11 +395,10 @@ function CourseDetailPage() {
                     <button
                       key={t}
                       onClick={() => setActiveTab(cleanedTab)}
-                      className={`relative -mb-px py-3 text-sm transition-colors ${
-                        active
+                      className={`relative -mb-px py-3 text-sm transition-colors ${active
                           ? "font-semibold text-foreground"
                           : "text-muted-foreground hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       {t}
                       {active && (
@@ -651,9 +642,8 @@ function CourseDetailPage() {
                                     {[0, 1, 2, 3, 4].map((i) => (
                                       <Star
                                         key={i}
-                                        className={`h-3.5 w-3.5 ${
-                                          i < rev.rating ? "fill-current" : ""
-                                        }`}
+                                        className={`h-3.5 w-3.5 ${i < rev.rating ? "fill-current" : ""
+                                          }`}
                                       />
                                     ))}
                                   </div>
@@ -750,9 +740,8 @@ function CourseDetailPage() {
                                 {[0, 1, 2, 3, 4].map((i) => (
                                   <Star
                                     key={i}
-                                    className={`h-3.5 w-3.5 ${
-                                      i < rev.rating ? "fill-current" : ""
-                                    }`}
+                                    className={`h-3.5 w-3.5 ${i < rev.rating ? "fill-current" : ""
+                                      }`}
                                   />
                                 ))}
                               </div>
@@ -876,8 +865,9 @@ function CourseDetailPage() {
           </MagicBentoSection>
         </div>
       </main>
-    );
-  }
+    </AppShell>
+  );
+}
 
 function StatBox({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
   const glow = useAccentRgb();

@@ -19,10 +19,8 @@ import {
   Menu,
   X,
   Shield,
-  Layers,
-  Video,
 } from "lucide-react";
-import { useState, useMemo, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import kodeversityLogo from "@/assets/kodeversity-logo.png";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 
@@ -37,7 +35,7 @@ const sidebarNav = [
 ];
 
 const learnSidebarNav = [
-  { icon: DashIcon, label: "Student Dashboard", to: "/dashboard" as const },
+  { icon: DashIcon, label: "Dashboard", to: "/dashboard" as const },
   { icon: BookOpenCheck, label: "My Course", to: "/courses" as const },
   { icon: Trophy, label: "Challenges", to: "/challenges" as const },
   { icon: FileText, label: "Notes", to: "/dashboard" as const },
@@ -94,28 +92,13 @@ export function AppShell({
   activeTop?: string;
   variant?: "default" | "learn";
 }) {
-  const { isAuthenticated, user, logout } = useAuth();
-  const navigate = useNavigate();
-
   const isLearn = variant === "learn";
-  const navItems = useMemo(() => {
-    if (isLearn) return learnSidebarNav;
-    if (isAuthenticated && user?.role === "STUDENT") {
-      return [
-        { icon: DashIcon, label: "Dashboard", to: "/dashboard" as const },
-        { icon: Home, label: "Home", to: "/" as const },
-        { icon: BookOpenCheck, label: "Courses", to: "/courses" as const },
-        { icon: Layers, label: "My Batches", to: "/my-batches" as const },
-        { icon: Video, label: "Live Classes", to: "/live-classes" as const },
-        { icon: Award, label: "Certificates", to: "/certificates" as const },
-        { icon: Settings, label: "Settings", to: "/settings" as const },
-      ];
-    }
-    return sidebarNav;
-  }, [isLearn, isAuthenticated, user]);
-
+  const navItems = isLearn ? learnSidebarNav : sidebarNav;
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     setSigningOut(true);
@@ -276,7 +259,7 @@ export function AppShell({
                   key={label}
                   to={to}
                   onClick={() => setMenuOpen(false)}
-                  activeOptions={{ exact: to === "/" }}
+                  activeOptions={{ exact: true }}
                   className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground data-[status=active]:bg-primary-soft data-[status=active]:text-foreground data-[status=active]:ring-1 data-[status=active]:ring-primary/40"
                 >
                   <Icon className="h-4 w-4" />
@@ -307,7 +290,7 @@ export function AppShell({
               <Link
                 key={label}
                 to={to}
-                activeOptions={{ exact: to === "/" }}
+                activeOptions={{ exact: true }}
                 className="flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground data-[status=active]:bg-primary-soft data-[status=active]:text-foreground data-[status=active]:ring-1 data-[status=active]:ring-primary/40"
               >
                 <Icon className="h-5 w-5" />
