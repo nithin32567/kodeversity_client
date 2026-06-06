@@ -73,9 +73,9 @@ export function StudentLiveClassesPage() {
     );
   }
 
-  const handleJoinClass = (sessionId: string) => {
+  const handleJoinClass = (meetingId: string) => {
     toast.success("Connecting to classroom session...");
-    void navigate({ to: "/meetings/$sessionId", params: { sessionId } });
+    void navigate({ to: "/meetings/$meetingId", params: { meetingId } });
   };
 
   return (

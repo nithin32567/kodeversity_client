@@ -40,15 +40,30 @@ interface ApiEnvelope<T> {
 
 /** Parse the response body for error details before throwing. */
 async function extractError(res: Response): Promise<Error> {
+  let rawBody = "";
   try {
-    const payload = (await res.clone().json()) as ApiEnvelope<unknown>;
+    rawBody = await res.clone().text();
+    const payload = JSON.parse(rawBody) as ApiEnvelope<unknown>;
+    
+    console.error("====== API CLIENT ERROR ======");
+    console.error("URL:", res.url);
+    console.error("Status:", res.status);
+    console.error("Payload:", payload);
+    console.error("==============================");
+
     // Prefer the structured error code / message from the envelope.
     const msg = payload.error ?? payload.message ?? `Request failed: ${res.status}`;
     const err = new Error(msg);
     // Attach the raw error code so callers can branch on it.
     (err as Error & { code?: string }).code = payload.error;
     return err;
-  } catch {
+  } catch (parseError) {
+    console.error("====== API CLIENT PARSE ERROR ======");
+    console.error("URL:", res.url);
+    console.error("Status:", res.status);
+    console.error("Raw Body:", rawBody);
+    console.error("Parse Error:", parseError);
+    console.error("====================================");
     return new Error(`Request failed: ${res.status}`);
   }
 }
@@ -115,7 +130,8 @@ export async function apiRequest<T = unknown>(path: string, init: ApiRequestInit
       body: body === undefined ? undefined : JSON.stringify(body),
     });
 
-  let res = await exec(accessToken);
+  const initialToken = accessToken;
+  let res = await exec(initialToken);
 
   // ---- 401 handling: attempt silent token refresh -------------------------
   if (res.status === 401 && !skipAuthRefresh) {
@@ -136,9 +152,9 @@ export async function apiRequest<T = unknown>(path: string, init: ApiRequestInit
 
       // If the global token has changed since we sent this request,
       // someone else already refreshed it. Just use the new one.
-      if (token === accessToken && refreshPromise) {
+      if (initialToken === accessToken && refreshPromise) {
         fresh = await refreshPromise;
-      } else if (token === accessToken) {
+      } else if (initialToken === accessToken) {
         fresh = await refreshToken();
       }
 

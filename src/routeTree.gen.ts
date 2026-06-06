@@ -19,6 +19,7 @@ import { Route as CommunityRouteImport } from './routes/community'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CoursesIndexRouteImport } from './routes/courses/index'
+import { Route as MeetingsMeetingIdRouteImport } from './routes/meetings.$meetingId'
 import { Route as CoursesSlugRouteImport } from './routes/courses/$slug'
 import { Route as AuthStudentRouteImport } from './routes/_auth/student'
 import { Route as AuthInstructorRouteImport } from './routes/_auth/instructor'
@@ -47,7 +48,6 @@ import { Route as AuthAdminBatchesRouteImport } from './routes/_auth/admin/batch
 import { Route as AuthInstructorCoursesIndexRouteImport } from './routes/_auth/instructor/courses/index'
 import { Route as AuthAdminCoursesIndexRouteImport } from './routes/_auth/admin/courses/index'
 import { Route as AuthStudentPlaygroundSlugRouteImport } from './routes/_auth/student/playground.$slug'
-import { Route as AuthStudentMeetingsSessionIdRouteImport } from './routes/_auth/student/meetings.$sessionId'
 import { Route as AuthStudentLearnSlugRouteImport } from './routes/_auth/student/learn.$slug'
 import { Route as AuthInstructorCoursesSlugRouteImport } from './routes/_auth/instructor/courses/$slug'
 import { Route as AuthAdminCoursesSlugRouteImport } from './routes/_auth/admin/courses/$slug'
@@ -99,6 +99,11 @@ const IndexRoute = IndexRouteImport.update({
 const CoursesIndexRoute = CoursesIndexRouteImport.update({
   id: '/courses/',
   path: '/courses/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeetingsMeetingIdRoute = MeetingsMeetingIdRouteImport.update({
+  id: '/meetings/$meetingId',
+  path: '/meetings/$meetingId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoursesSlugRoute = CoursesSlugRouteImport.update({
@@ -243,12 +248,6 @@ const AuthStudentPlaygroundSlugRoute =
     path: '/playground/$slug',
     getParentRoute: () => AuthStudentRoute,
   } as any)
-const AuthStudentMeetingsSessionIdRoute =
-  AuthStudentMeetingsSessionIdRouteImport.update({
-    id: '/meetings/$sessionId',
-    path: '/meetings/$sessionId',
-    getParentRoute: () => AuthStudentRoute,
-  } as any)
 const AuthStudentLearnSlugRoute = AuthStudentLearnSlugRouteImport.update({
   id: '/learn/$slug',
   path: '/learn/$slug',
@@ -280,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/instructor': typeof AuthInstructorRouteWithChildren
   '/student': typeof AuthStudentRouteWithChildren
   '/courses/$slug': typeof CoursesSlugRoute
+  '/meetings/$meetingId': typeof MeetingsMeetingIdRoute
   '/courses/': typeof CoursesIndexRoute
   '/admin/batches': typeof AuthAdminBatchesRoute
   '/admin/courses': typeof AuthAdminCoursesRouteWithChildren
@@ -304,7 +304,6 @@ export interface FileRoutesByFullPath {
   '/admin/courses/$slug': typeof AuthAdminCoursesSlugRoute
   '/instructor/courses/$slug': typeof AuthInstructorCoursesSlugRoute
   '/student/learn/$slug': typeof AuthStudentLearnSlugRoute
-  '/student/meetings/$sessionId': typeof AuthStudentMeetingsSessionIdRoute
   '/student/playground/$slug': typeof AuthStudentPlaygroundSlugRoute
   '/admin/courses/': typeof AuthAdminCoursesIndexRoute
   '/instructor/courses/': typeof AuthInstructorCoursesIndexRoute
@@ -322,6 +321,7 @@ export interface FileRoutesByTo {
   '/instructor': typeof AuthInstructorRouteWithChildren
   '/student': typeof AuthStudentRouteWithChildren
   '/courses/$slug': typeof CoursesSlugRoute
+  '/meetings/$meetingId': typeof MeetingsMeetingIdRoute
   '/courses': typeof CoursesIndexRoute
   '/admin/batches': typeof AuthAdminBatchesRoute
   '/admin/inactive-users': typeof AuthAdminInactiveUsersRoute
@@ -344,7 +344,6 @@ export interface FileRoutesByTo {
   '/admin/courses/$slug': typeof AuthAdminCoursesSlugRoute
   '/instructor/courses/$slug': typeof AuthInstructorCoursesSlugRoute
   '/student/learn/$slug': typeof AuthStudentLearnSlugRoute
-  '/student/meetings/$sessionId': typeof AuthStudentMeetingsSessionIdRoute
   '/student/playground/$slug': typeof AuthStudentPlaygroundSlugRoute
   '/admin/courses': typeof AuthAdminCoursesIndexRoute
   '/instructor/courses': typeof AuthInstructorCoursesIndexRoute
@@ -365,6 +364,7 @@ export interface FileRoutesById {
   '/_auth/instructor': typeof AuthInstructorRouteWithChildren
   '/_auth/student': typeof AuthStudentRouteWithChildren
   '/courses/$slug': typeof CoursesSlugRoute
+  '/meetings/$meetingId': typeof MeetingsMeetingIdRoute
   '/courses/': typeof CoursesIndexRoute
   '/_auth/admin/batches': typeof AuthAdminBatchesRoute
   '/_auth/admin/courses': typeof AuthAdminCoursesRouteWithChildren
@@ -389,7 +389,6 @@ export interface FileRoutesById {
   '/_auth/admin/courses/$slug': typeof AuthAdminCoursesSlugRoute
   '/_auth/instructor/courses/$slug': typeof AuthInstructorCoursesSlugRoute
   '/_auth/student/learn/$slug': typeof AuthStudentLearnSlugRoute
-  '/_auth/student/meetings/$sessionId': typeof AuthStudentMeetingsSessionIdRoute
   '/_auth/student/playground/$slug': typeof AuthStudentPlaygroundSlugRoute
   '/_auth/admin/courses/': typeof AuthAdminCoursesIndexRoute
   '/_auth/instructor/courses/': typeof AuthInstructorCoursesIndexRoute
@@ -410,6 +409,7 @@ export interface FileRouteTypes {
     | '/instructor'
     | '/student'
     | '/courses/$slug'
+    | '/meetings/$meetingId'
     | '/courses/'
     | '/admin/batches'
     | '/admin/courses'
@@ -434,7 +434,6 @@ export interface FileRouteTypes {
     | '/admin/courses/$slug'
     | '/instructor/courses/$slug'
     | '/student/learn/$slug'
-    | '/student/meetings/$sessionId'
     | '/student/playground/$slug'
     | '/admin/courses/'
     | '/instructor/courses/'
@@ -452,6 +451,7 @@ export interface FileRouteTypes {
     | '/instructor'
     | '/student'
     | '/courses/$slug'
+    | '/meetings/$meetingId'
     | '/courses'
     | '/admin/batches'
     | '/admin/inactive-users'
@@ -474,7 +474,6 @@ export interface FileRouteTypes {
     | '/admin/courses/$slug'
     | '/instructor/courses/$slug'
     | '/student/learn/$slug'
-    | '/student/meetings/$sessionId'
     | '/student/playground/$slug'
     | '/admin/courses'
     | '/instructor/courses'
@@ -494,6 +493,7 @@ export interface FileRouteTypes {
     | '/_auth/instructor'
     | '/_auth/student'
     | '/courses/$slug'
+    | '/meetings/$meetingId'
     | '/courses/'
     | '/_auth/admin/batches'
     | '/_auth/admin/courses'
@@ -518,7 +518,6 @@ export interface FileRouteTypes {
     | '/_auth/admin/courses/$slug'
     | '/_auth/instructor/courses/$slug'
     | '/_auth/student/learn/$slug'
-    | '/_auth/student/meetings/$sessionId'
     | '/_auth/student/playground/$slug'
     | '/_auth/admin/courses/'
     | '/_auth/instructor/courses/'
@@ -535,6 +534,7 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   RoadmapsRoute: typeof RoadmapsRoute
   CoursesSlugRoute: typeof CoursesSlugRoute
+  MeetingsMeetingIdRoute: typeof MeetingsMeetingIdRoute
   CoursesIndexRoute: typeof CoursesIndexRoute
 }
 
@@ -608,6 +608,13 @@ declare module '@tanstack/react-router' {
       path: '/courses'
       fullPath: '/courses/'
       preLoaderRoute: typeof CoursesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meetings/$meetingId': {
+      id: '/meetings/$meetingId'
+      path: '/meetings/$meetingId'
+      fullPath: '/meetings/$meetingId'
+      preLoaderRoute: typeof MeetingsMeetingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses/$slug': {
@@ -806,13 +813,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthStudentPlaygroundSlugRouteImport
       parentRoute: typeof AuthStudentRoute
     }
-    '/_auth/student/meetings/$sessionId': {
-      id: '/_auth/student/meetings/$sessionId'
-      path: '/meetings/$sessionId'
-      fullPath: '/student/meetings/$sessionId'
-      preLoaderRoute: typeof AuthStudentMeetingsSessionIdRouteImport
-      parentRoute: typeof AuthStudentRoute
-    }
     '/_auth/student/learn/$slug': {
       id: '/_auth/student/learn/$slug'
       path: '/learn/$slug'
@@ -919,7 +919,6 @@ interface AuthStudentRouteChildren {
   AuthStudentProfileRoute: typeof AuthStudentProfileRoute
   AuthStudentSettingsRoute: typeof AuthStudentSettingsRoute
   AuthStudentLearnSlugRoute: typeof AuthStudentLearnSlugRoute
-  AuthStudentMeetingsSessionIdRoute: typeof AuthStudentMeetingsSessionIdRoute
   AuthStudentPlaygroundSlugRoute: typeof AuthStudentPlaygroundSlugRoute
 }
 
@@ -933,7 +932,6 @@ const AuthStudentRouteChildren: AuthStudentRouteChildren = {
   AuthStudentProfileRoute: AuthStudentProfileRoute,
   AuthStudentSettingsRoute: AuthStudentSettingsRoute,
   AuthStudentLearnSlugRoute: AuthStudentLearnSlugRoute,
-  AuthStudentMeetingsSessionIdRoute: AuthStudentMeetingsSessionIdRoute,
   AuthStudentPlaygroundSlugRoute: AuthStudentPlaygroundSlugRoute,
 }
 
@@ -968,6 +966,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   RoadmapsRoute: RoadmapsRoute,
   CoursesSlugRoute: CoursesSlugRoute,
+  MeetingsMeetingIdRoute: MeetingsMeetingIdRoute,
   CoursesIndexRoute: CoursesIndexRoute,
 }
 export const routeTree = rootRouteImport

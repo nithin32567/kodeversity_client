@@ -126,7 +126,8 @@ export function StudentDashboard() {
           </div>
           {activeLiveNow.length > 0 && (
             <Link
-              to="/student/live-classes"
+              to="/meetings/$meetingId"
+              params={{ meetingId: activeLiveNow[0].id }}
               className="flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-500 shadow-lg shadow-red-600/10 active:scale-[0.98] transition cursor-pointer"
             >
               <span className="h-2.5 w-2.5 rounded-full bg-white animate-pulse" />

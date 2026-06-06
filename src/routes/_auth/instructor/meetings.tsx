@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Video,
@@ -235,6 +235,8 @@ export function LiveClassesPage() {
     }
   };
 
+  const navigate = useNavigate();
+
   // Handle Join as Host
   const handleJoinMeeting = async (meeting: LiveSession) => {
     if (!user) {
@@ -243,19 +245,11 @@ export function LiveClassesPage() {
     }
 
     try {
-      const joinData = await liveClassesService.joinSession(meeting.id, {
-        userId: user.id,
-        name: user.name || "Host Instructor",
-        role: "host",
+      toast.success("Navigating to meeting room...");
+      navigate({
+        to: "/meetings/$meetingId",
+        params: { meetingId: meeting.id },
       });
-
-      toast.success("Joining meeting as host!");
-      console.log("Dyte Host Token:", joinData.token);
-
-      // Simulate launching or show alert with details
-      alert(
-        `[Dyte Integration] Initiating Dyte Meeting.\nMeeting ID: ${joinData.dyteMeetingId}\nHost Token: ${joinData.token.substring(0, 30)}...\n\nIn a full production environment, this token would load the <DyteMeeting> component in the UI.`,
-      );
     } catch (err) {
       const error = err as Error;
       console.error("Failed to join meeting:", error);
@@ -584,13 +578,22 @@ export function LiveClassesPage() {
               {/* Actions Footer */}
               <div className="flex items-center gap-2 mt-2">
                 {meeting.status === "LIVE" ? (
-                  <button
-                    onClick={() => handleJoinMeeting(meeting)}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-500 shadow-md shadow-red-600/20 transition active:scale-[0.98] cursor-pointer"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Join as Host
-                  </button>
+                  <div className="flex w-full flex-col gap-2">
+                    <button
+                      onClick={() => handleJoinMeeting(meeting)}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-500 shadow-md shadow-red-600/20 transition active:scale-[0.98] cursor-pointer"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Join as Host
+                    </button>
+                    <button
+                      onClick={() => handleCancelMeeting(meeting.id, meeting.title)}
+                      className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-xs font-semibold text-rose-400 hover:text-rose-300 transition cursor-pointer"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Cancel Session
+                    </button>
+                  </div>
                 ) : meeting.status === "UPCOMING" ? (
                   <>
                     <div className="flex w-full flex-col gap-2">
