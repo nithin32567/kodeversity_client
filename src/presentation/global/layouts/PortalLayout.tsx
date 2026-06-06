@@ -41,7 +41,10 @@ export function PortalLayout() {
       {/* ── MAIN CONTENT CONTAINER ── */}
       <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
         <Topbar onMenuClick={() => setMobileMenuOpen(true)} />
-        <div className="flex-1 min-h-0 overflow-y-auto bg-background/50">
+        <div
+          data-lenis-prevent="true"
+          className="flex-1 min-h-0 overflow-y-auto bg-background/50"
+        >
           <Outlet />
         </div>
       </div>
