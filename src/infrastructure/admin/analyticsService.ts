@@ -146,10 +146,24 @@ const mockTopCourses: TopCourse[] = [
   },
 ];
 
+const iconMap: Record<string, any> = {
+  "Total Students": Users,
+  "Total Courses": BookOpen,
+  "Total Instructors": GraduationCap,
+  "Total Revenue": Wallet,
+  "Active Enrollments": UserCheck,
+};
+
 export const analyticsService = {
   getDashboardAnalytics: async (): Promise<DashboardAnalytics> => {
     try {
       const data = await apiClient.get<DashboardAnalytics>(endpoints.admin.analytics);
+      if (data && Array.isArray(data.kpis)) {
+        data.kpis = data.kpis.map((k) => ({
+          ...k,
+          icon: iconMap[k.label] || Users,
+        }));
+      }
       return data;
     } catch {
       // Fallback to rich, mock data when API is unavailable.

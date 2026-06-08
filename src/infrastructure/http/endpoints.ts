@@ -56,7 +56,7 @@ export const endpoints = {
     submit: (id: string) => `${CHALLENGE_URL}/challenges/${id}/submit`,
   },
   admin: {
-    analytics: `${ADMIN_URL}/api/admin/analytics`,
+    analytics: `${COURSE_URL}/api/admin/analytics`,
     courses: `${COURSE_URL}/api/courses`,
     users: `${ADMIN_URL}/api/admin/users`,
     createUser: `${AUTH_URL}/api/admin/users/create`,
