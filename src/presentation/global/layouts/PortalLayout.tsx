@@ -6,8 +6,9 @@ import { Topbar } from "./Topbar";
 
 export function PortalLayout() {
   const location = useLocation();
-  const { isLoading } = useAuth();
+  const { isLoading, user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isStudent = user?.role === "STUDENT";
 
   // Skip rendering layout wrappers for login / registration pages
   const isLoginPage =
@@ -31,7 +32,9 @@ export function PortalLayout() {
   return (
     <div className="admin-theme min-h-screen bg-background text-foreground lg:flex">
       {/* ── DESKTOP SIDEBAR ── */}
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:max-h-screen w-[248px] shrink-0">
+      <div
+        className={`hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:max-h-screen shrink-0 transition-all duration-300 ${isStudent ? "w-20" : "w-[248px]"}`}
+      >
         <Sidebar />
       </div>
 

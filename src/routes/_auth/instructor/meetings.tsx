@@ -165,10 +165,10 @@ export function LiveClassesPage() {
   useEffect(() => {
     if (formBatchId && formAudience === "CUSTOM_STUDENTS") {
       setIsRosterLoading(true);
-      const fetchRoster = isAdmin 
-        ? managementService.getBatchRoster(formBatchId) 
+      const fetchRoster = isAdmin
+        ? managementService.getBatchRoster(formBatchId)
         : instructorService.getBatchRoster(formBatchId);
-      
+
       fetchRoster
         .then((data) => {
           setRoster(data as BatchStudent[]);

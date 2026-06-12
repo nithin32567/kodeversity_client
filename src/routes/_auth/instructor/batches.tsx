@@ -119,7 +119,7 @@ export function InstructorMyBatchesPage() {
             .map((c) => c.id),
         );
         const clientFiltered = fetchedBatches.filter(
-          (b) => b.instructorId === user.id || instructorCourseIds.has(b.courseId)
+          (b) => b.instructorId === user.id || instructorCourseIds.has(b.courseId),
         );
         if (clientFiltered.length < fetchedBatches.length) {
           filteredBatches = clientFiltered;

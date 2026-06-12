@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import {
@@ -20,6 +20,7 @@ export const Route = createFileRoute("/meetings/$meetingId")({
 export function MeetingRoom() {
   const { meetingId } = Route.useParams();
   const { user, isLoading: isAuthLoading } = useAuth();
+  const router = useRouter();
 
   const [meeting, initMeeting] = useRealtimeKitClient();
   const [error, setError] = useState<string | null>(null);
@@ -107,6 +108,30 @@ export function MeetingRoom() {
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [user, meeting]);
+
+  useEffect(() => {
+    if (!meeting || !user) return;
+
+    const handleRoomLeft = () => {
+      if (window.history.length > 2) {
+        router.history.back();
+      } else {
+        if (user.role === "ADMIN") {
+          router.navigate({ to: "/admin/live-classes" });
+        } else if (user.role === "INSTRUCTOR") {
+          router.navigate({ to: "/instructor/meetings" });
+        } else {
+          router.navigate({ to: "/student/live-classes" });
+        }
+      }
+    };
+
+    meeting.self.on("roomLeft", handleRoomLeft);
+
+    return () => {
+      meeting.self.removeListener("roomLeft", handleRoomLeft);
+    };
+  }, [meeting, user, router]);
 
   if (isAuthLoading || (!meeting && !error)) {
     return (

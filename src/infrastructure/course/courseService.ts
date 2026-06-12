@@ -3,12 +3,6 @@ import { apiClient } from "@/infrastructure/http/apiClient";
 import { endpoints } from "@/infrastructure/http/endpoints";
 
 export const courseService = {
-  getCourses: (): Promise<Course[]> =>
-    apiClient.get<Course[]>(endpoints.course.list, { skipAuthRefresh: true }),
-
-  getCourseBySlug: (slug: string): Promise<Course> =>
-    apiClient.get<Course>(endpoints.course.bySlug(slug), { skipAuthRefresh: true }),
-
   list: (): Promise<Course[]> =>
     apiClient.get<Course[]>(endpoints.course.list, { skipAuthRefresh: true }),
 

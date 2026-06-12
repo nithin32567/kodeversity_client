@@ -145,6 +145,54 @@ function Group({
   );
 }
 
+function StudentGroup({
+  title,
+  items,
+  onClose,
+}: {
+  title: string;
+  items: NavItem[];
+  onClose?: () => void;
+}) {
+  return (
+    <div className="mt-5 lg:mt-5 px-2 lg:px-0">
+      <div className="px-3 lg:px-1 mb-2 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground/70 uppercase lg:text-center">
+        {title}
+      </div>
+      <nav className="flex flex-col gap-1">
+        {items.map((it) => (
+          <div key={it.label}>
+            {it.to ? (
+              <Link
+                to={it.to}
+                onClick={onClose}
+                activeOptions={{ exact: true }}
+                className="flex lg:flex-col items-center gap-3 lg:gap-1 rounded-lg lg:rounded-xl px-3 lg:px-1 py-2.5 lg:py-2 text-sm lg:text-[10px] font-medium text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground data-[status=active]:bg-primary-soft data-[status=active]:text-foreground data-[status=active]:ring-1 data-[status=active]:ring-primary/40"
+              >
+                <it.icon className="h-[18px] w-[18px] lg:h-5 lg:w-5 shrink-0" />
+                <span className="leading-tight lg:text-center">{it.label}</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => e.preventDefault()}
+                className="w-full flex lg:flex-col items-center gap-3 lg:gap-1 rounded-lg lg:rounded-xl px-3 lg:px-1 py-2.5 lg:py-2 text-sm lg:text-[10px] font-medium text-muted-foreground transition-colors opacity-50 cursor-not-allowed text-left"
+                title="Coming soon"
+              >
+                <it.icon className="h-[18px] w-[18px] lg:h-5 lg:w-5 shrink-0" />
+                <span className="leading-tight lg:text-center">{it.label}</span>
+                <span className="ml-auto lg:ml-0 lg:mt-0.5 text-[8px] font-semibold bg-white/[0.05] border border-[var(--hairline)] px-1.5 py-0.5 rounded-full text-muted-foreground/60">
+                  Soon
+                </span>
+              </button>
+            )}
+          </div>
+        ))}
+      </nav>
+    </div>
+  );
+}
+
 function getInitials(email: string, name?: string): string {
   if (name && name.trim()) {
     return name
@@ -183,15 +231,21 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   return (
     <aside className="flex h-full w-full flex-col border-r border-[var(--hairline)] bg-[var(--surface)]/60 backdrop-blur-sm">
       {/* Logo */}
-      <div className="flex items-center justify-between px-5 py-5 shrink-0">
+      <div
+        className={`flex items-center justify-between py-5 shrink-0 ${isStudent ? "px-5 lg:px-0 lg:justify-center" : "px-5"}`}
+      >
         <div className="flex items-center gap-2">
           <div
-            className="h-9 w-9 rounded-lg grid place-items-center text-white font-bold"
+            className="h-9 w-9 rounded-lg grid place-items-center text-white font-bold shrink-0"
             style={{ background: "var(--grad-cta)" }}
           >
             K
           </div>
-          <span className="text-[17px] font-semibold tracking-tight">Kodeversity</span>
+          <span
+            className={`text-[17px] font-semibold tracking-tight ${isStudent ? "lg:hidden" : ""}`}
+          >
+            Kodeversity
+          </span>
         </div>
         {onClose && (
           <button
@@ -204,7 +258,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
       </div>
 
       {/* Role badge */}
-      <div className="px-5 pb-2 shrink-0">
+      <div className={`px-5 pb-2 shrink-0 ${isStudent ? "lg:hidden" : ""}`}>
         <span
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${
             isAdmin
@@ -270,14 +324,16 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
 
         {isStudent && (
           <>
-            <Group title="WORKSPACE" items={studentWorkspace} onClose={onClose} />
-            <Group title="SANDBOX" items={studentSandbox} onClose={onClose} />
+            <StudentGroup title="WORKSPACE" items={studentWorkspace} onClose={onClose} />
+            <StudentGroup title="SANDBOX" items={studentSandbox} onClose={onClose} />
           </>
         )}
       </nav>
 
       {/* User profile & logout footer */}
-      <div className="p-3 shrink-0 border-t border-[var(--hairline)] space-y-2">
+      <div
+        className={`p-3 shrink-0 border-t border-[var(--hairline)] space-y-2 ${isStudent ? "lg:hidden" : ""}`}
+      >
         <div className="p-3 rounded-lg bg-[var(--surface-2)] border border-[var(--hairline)] flex items-center gap-3">
           <div className="relative">
             <div
@@ -313,6 +369,18 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
           <span>Secure Logout</span>
         </button>
       </div>
+
+      {isStudent && (
+        <div className="p-2 shrink-0 mt-auto hidden lg:block">
+          <button
+            onClick={handleLogout}
+            className="w-full flex flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer"
+          >
+            <LogOut className="h-5 w-5" />
+            <span>Sign out</span>
+          </button>
+        </div>
+      )}
     </aside>
   );
 }

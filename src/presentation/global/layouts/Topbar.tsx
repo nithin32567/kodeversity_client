@@ -102,14 +102,14 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             placeholder={searchPlaceholder}
             className="w-full h-10 pl-9 pr-14 rounded-md bg-[var(--surface)] border border-[var(--hairline)] text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
           />
-          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 rounded border border-[var(--hairline)] bg-white/[0.03] px-1.5 py-0.5 text-[11px] text-muted-foreground hidden md:inline-block">
+          {/* <kbd className="absolute right-3 top-1/2 -translate-y-1/2 rounded border border-[var(--hairline)] bg-white/[0.03] px-1.5 py-0.5 text-[11px] text-muted-foreground hidden md:inline-block">
             Ctrl K
-          </kbd>
+          </kbd> */}
         </div>
       </div>
 
       <div className="flex items-center gap-2 shrink-0 ml-auto">
-        <IconBtn>
+        {/* <IconBtn>
           <Sun className="h-[18px] w-[18px]" />
         </IconBtn>
         <IconBtn badge={3} badgeColor="bg-rose-500">
@@ -117,12 +117,12 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         </IconBtn>
         <IconBtn badge={1} badgeColor="bg-blue-500">
           <MessageSquare className="h-[18px] w-[18px]" />
-        </IconBtn>
+        </IconBtn> */}
 
         <div className="h-8 w-[1px] bg-[var(--hairline)] mx-1" />
 
         <div className="relative flex items-center gap-2">
-          <div className="relative">
+          {/* <div className="relative">
             <div
               className="h-10 w-10 rounded-full grid place-items-center text-white font-semibold text-sm cursor-pointer"
               style={{
@@ -137,7 +137,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               {initials}
             </div>
             <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-[var(--background)]" />
-          </div>
+          </div> */}
           <button
             onClick={handleLogout}
             className="grid h-10 w-10 place-items-center rounded-md bg-[var(--surface)] border border-[var(--hairline)] text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
@@ -146,7 +146,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             <LogOut className="h-[18px] w-[18px]" />
           </button>
         </div>
-
+        {/* 
         {isAdmin && (
           <button
             className="hidden sm:inline-flex ml-2 items-center gap-1.5 h-10 px-4 rounded-md text-sm font-medium text-white shadow-lg shadow-indigo-500/25 cursor-pointer"
@@ -172,7 +172,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           >
             <ShoppingCart className="h-4 w-4" /> Catalog
           </button>
-        )}
+        )} */}
       </div>
     </header>
   );

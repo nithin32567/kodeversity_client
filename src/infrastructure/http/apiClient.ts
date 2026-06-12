@@ -4,6 +4,8 @@
 // Safe in a browser SPA (one user per tab); must never run on the server.
 // ---------------------------------------------------------------------------
 
+import { ApiError } from "./ApiError";
+
 let accessToken: string | null = null;
 let onUnauthorized: (() => void) | null = null;
 
@@ -39,12 +41,12 @@ interface ApiEnvelope<T> {
 }
 
 /** Parse the response body for error details before throwing. */
-async function extractError(res: Response): Promise<Error> {
+async function extractError(res: Response): Promise<ApiError> {
   let rawBody = "";
   try {
     rawBody = await res.clone().text();
     const payload = JSON.parse(rawBody) as ApiEnvelope<unknown>;
-    
+
     console.error("====== API CLIENT ERROR ======");
     console.error("URL:", res.url);
     console.error("Status:", res.status);
@@ -52,11 +54,9 @@ async function extractError(res: Response): Promise<Error> {
     console.error("==============================");
 
     // Prefer the structured error code / message from the envelope.
+    const code = payload.error ?? "UNKNOWN_ERROR";
     const msg = payload.error ?? payload.message ?? `Request failed: ${res.status}`;
-    const err = new Error(msg);
-    // Attach the raw error code so callers can branch on it.
-    (err as Error & { code?: string }).code = payload.error;
-    return err;
+    return new ApiError(msg, res.status, code);
   } catch (parseError) {
     console.error("====== API CLIENT PARSE ERROR ======");
     console.error("URL:", res.url);
@@ -64,7 +64,7 @@ async function extractError(res: Response): Promise<Error> {
     console.error("Raw Body:", rawBody);
     console.error("Parse Error:", parseError);
     console.error("====================================");
-    return new Error(`Request failed: ${res.status}`);
+    return new ApiError(`Request failed: ${res.status}`, res.status);
   }
 }
 
@@ -165,7 +165,7 @@ export async function apiRequest<T = unknown>(path: string, init: ApiRequestInit
 
     if (res.status === 401) {
       onUnauthorized?.();
-      throw new Error("Session expired. Please log in again.");
+      throw new ApiError("Session expired. Please log in again.", 401, "SESSION_EXPIRED");
     }
   }
 
@@ -181,9 +181,7 @@ export async function apiRequest<T = unknown>(path: string, init: ApiRequestInit
     const envelope = json as ApiEnvelope<T>;
     if (!envelope.success) {
       const code = envelope.error ?? "UNKNOWN_ERROR";
-      const err = new Error(code);
-      (err as Error & { code?: string }).code = code;
-      throw err;
+      throw new ApiError(code, 0, code);
     }
     // Return data if present, otherwise the whole envelope (some endpoints return {success, message}).
     return (envelope.data ?? json) as T;

@@ -75,7 +75,10 @@ export const liveClassesService = {
       targetType: payload.type === "CUSTOM_STUDENTS" ? "INDIVIDUAL" : "BATCH",
       studentIds: payload.customStudentIds,
     };
-    const response = await apiClient.post<LiveSession | { data: LiveSession }>(base, backendPayload);
+    const response = await apiClient.post<LiveSession | { data: LiveSession }>(
+      base,
+      backendPayload,
+    );
     // Unbox `{ success: true, data: result }` if returned that way
     if (response && typeof response === "object" && "data" in response) {
       return response.data;

@@ -61,24 +61,19 @@ lms-client/
     ├── infrastructure/          # Services communicating with backend services
     │   ├── admin/               # Administrative analytics and management services
     │   ├── auth/                # Identity provider service adapters
-    │   ├── challenge/           # Coding challenge runner and database endpoints
     │   ├── course/              # Catalog and course materials endpoints
     │   ├── http/                # Base client client/network configs
-    │   ├── progress/            # Student module tracking service adapters
-    │   └── user/                # User profile endpoints
+    │   ├── instructor/          # Instructor dashboard service adapters
+    │   └── student/             # Student learning service adapters
     ├── main.tsx                 # Client app entrypoint
     ├── router.tsx               # TanStack Router instance and context
     ├── routeTree.gen.ts         # Router-compiled automatic route tree mapping
     ├── styles.css               # Global CSS files and Tailwind directives
     ├── routes/                  # File-system routing definitions
     └── presentation/            # User Interface & state controls
-        ├── components/          # Reusable components
-        │   ├── admin/           # Administrative panels and metric widgets
-        │   ├── student/         # Student learning UI and visual layouts
-        │   └── ui/              # Styling primitives (shadcn UI, animations)
-        ├── contexts/            # Context providers (e.g. Auth Context)
-        ├── hooks/               # Custom react hooks (Auth, query hooks, mobile detection)
-        ├── layouts/             # Grid page layouts (Admin and Student layouts)
+        ├── core-ui/             # Styling primitives (shadcn UI, animations)
+        ├── features/            # Feature-specific components, hooks, and logic
+        ├── global/              # Global app layouts, shells, and overarching components
         └── lib/                 # Shared helper libraries and utilities
 ```
 
@@ -142,12 +137,12 @@ This layer manages connection to external APIs and maps response models back to 
 | File                            | Functionality                                                                                                                                                                   |
 | :------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `admin/analyticsService.ts`     | Fetches administrative overview metrics from the backend. Integrates a rich mock data fallback for testing KPI metrics and Recharts graphs when the API service is unreachable. |
+| `admin/liveClassesService.ts`   | Manages scheduling, retrieval, and updates for live instructor-led classes within the administrative portal.                                                                    |
 | `admin/managementService.ts`    | Retrieves course directory tables and registered users lists for back-office records management.                                                                                |
 | `auth/authService.ts`           | Exposes identity management actions: credentials sign-in, account creation, sessions termination, session refresh, token validation, and email OTP dispatch/verification.       |
-| `challenge/challengeService.ts` | Handles student coding challenges; retrieves challenge listings/details and posts code solutions for validation and test suite execution.                                       |
 | `course/courseService.ts`       | Manages course catalog fetching; resolves courses by their slugs, fetches associated modules/chapters, and retrieves text/video lesson contents.                                |
-| `progress/progressService.ts`   | Posts student lesson completions, fetches current course progress percentages, and retrieves awarded completion certificates.                                                   |
-| `user/userService.ts`           | Retrieves the profile details of the authenticated user, handles profile updates, and manages avatar file uploads.                                                              |
+| `instructor/instructorService.ts`| Provides dashboard and management endpoints for instructors to manage their assigned batches, track meetings, and update curriculum.                                             |
+| `student/studentService.ts`     | Consolidates student-specific requests, including tracking lesson completions, fetching course progress percentages, and retrieving user profiles or challenges.                |
 
 ---
 
