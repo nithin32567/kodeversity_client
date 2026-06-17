@@ -17,6 +17,7 @@ import {
   ChevronsUpDown,
   ChevronsDownUp,
   Upload,
+  TerminalSquare,
 } from "lucide-react";
 import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
 import { managementService } from "@/infrastructure/admin/managementService";
@@ -29,6 +30,7 @@ import type {
   CourseLevel,
   Instructor,
 } from "@/domain/course";
+import type { PlaygroundConfig } from "@/domain/playground";
 
 // ─── Local Types ──────────────────────────────────────────────────────────────
 
@@ -56,6 +58,7 @@ interface AddChapterForm {
   videoUrl?: string | null;
   duration?: number | null;
   documentUrl?: string | null;
+  playgroundConfig?: PlaygroundConfig | null;
   quizzes?:
     | {
         title: string;
@@ -81,11 +84,13 @@ const CHAPTER_TYPE_COLORS: Record<ChapterType, string> = {
   VIDEO: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   DOCUMENT: "bg-amber-500/10 text-amber-400 border-amber-500/20",
   QUIZ: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  PLAYGROUND: "bg-purple-500/10 text-purple-400 border-purple-500/20",
 };
 
 function ChapterIcon({ type }: { type: ChapterType }) {
   if (type === "VIDEO") return <Video className="h-3.5 w-3.5 shrink-0 text-blue-400" />;
   if (type === "DOCUMENT") return <FileText className="h-3.5 w-3.5 shrink-0 text-amber-400" />;
+  if (type === "PLAYGROUND") return <TerminalSquare className="h-3.5 w-3.5 shrink-0 text-purple-400" />;
   return <HelpCircle className="h-3.5 w-3.5 shrink-0 text-emerald-400" />;
 }
 
@@ -234,6 +239,13 @@ function AddModulePanel({
 
 // ─── Inline "Add Chapter" Form ────────────────────────────────────────────────
 
+const PRESETS = [
+  { id: "1vmpg", name: "Ubuntu 24.04 LTS (1 VM)", pg: "6659f131a9de4f16462740bc", pgname: "1VMPG", playground: "ubuntu2404n1" },
+  { id: "2vmpg", name: "2 VM Network (2 VMs)", pg: "6659f131a9de4f16462740bd", pgname: "2VMPG", playground: "ubuntu2404n2" },
+  { id: "dockerpg", name: "Docker Workspace (1 VM)", pg: "6659f131a9de4f16462740be", pgname: "DOCKERPG", playground: "ubuntu2404n1-docker" },
+  { id: "3ansbl", name: "Ansible Playground (3 VMs)", pg: "6659f131a9de4f16462740bf", pgname: "3ANSBL", playground: "ubuntu2404n3-ansible" },
+];
+
 function AddChapterPanel({
   onAdd,
   onCancel,
@@ -254,6 +266,25 @@ function AddChapterPanel({
   const [fileName, setFileName] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Playground states
+  const [pgTemplate, setPgTemplate] = useState("1vmpg");
+  const [pgId, setPgId] = useState("6659f131a9de4f16462740bc");
+  const [pgName, setPgName] = useState("1VMPG");
+  const [pgPlayground, setPgPlayground] = useState("ubuntu2404n1");
+  const [pgDifficulty, setPgDifficulty] = useState<"easy" | "medium" | "hard" | "expert">("easy");
+  const [pgMaxScore, setPgMaxScore] = useState("100");
+  const [showAdvancedPg, setShowAdvancedPg] = useState(false);
+
+  const handleTemplateChange = (presetId: string) => {
+    setPgTemplate(presetId);
+    const preset = PRESETS.find(p => p.id === presetId);
+    if (preset) {
+      setPgId(preset.pg);
+      setPgName(preset.pgname);
+      setPgPlayground(preset.playground);
+    }
+  };
 
   // Quiz states
   const [quizTitle, setQuizTitle] = useState("");
@@ -327,6 +358,7 @@ function AddChapterPanel({
     if (!title.trim()) return true;
     if (type === "VIDEO" && !videoUrl.trim()) return true;
     if (type === "DOCUMENT" && !documentUrl.trim()) return true;
+    if (type === "PLAYGROUND" && (!pgId.trim() || !pgPlayground.trim() || !pgName.trim())) return true;
     if (type === "QUIZ") {
       const validQuestions = questions.filter((q) => q.questionText.trim());
       if (validQuestions.length === 0) return true;
@@ -356,6 +388,14 @@ function AddChapterPanel({
       payload.duration = duration ? parseInt(duration, 10) : null;
     } else if (type === "DOCUMENT") {
       payload.documentUrl = documentUrl.trim() || null;
+    } else if (type === "PLAYGROUND") {
+      payload.playgroundConfig = {
+        pg: pgId.trim(),
+        pgname: pgName.trim(),
+        playground: pgPlayground.trim(),
+        difficulty: pgDifficulty,
+        maxScore: pgMaxScore ? parseInt(pgMaxScore, 10) : 100,
+      };
     } else if (type === "QUIZ") {
       const finalQuizTitle = quizTitle.trim() || `${title.trim()} Quiz`;
       const formattedQuestions = questions
@@ -398,7 +438,7 @@ function AddChapterPanel({
       </div>
 
       <div className="flex items-center gap-2">
-        {(["VIDEO", "DOCUMENT", "QUIZ"] as ChapterType[]).map((t) => (
+        {(["VIDEO", "DOCUMENT", "QUIZ", "PLAYGROUND"] as ChapterType[]).map((t) => (
           <button
             key={t}
             type="button"
@@ -415,6 +455,118 @@ function AddChapterPanel({
       </div>
 
       {/* Conditional Inputs */}
+      {type === "PLAYGROUND" && (
+        <div className="space-y-4 bg-card/40 border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
+          <div className="flex items-center justify-between border-b border-[var(--hairline)] pb-2">
+            <h4 className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
+              <TerminalSquare className="h-4 w-4 text-purple-400" /> Playground Configuration
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Select Template Preset
+              </label>
+              <select
+                value={pgTemplate}
+                onChange={(e) => handleTemplateChange(e.target.value)}
+                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition cursor-pointer"
+              >
+                {PRESETS.map((preset) => (
+                  <option key={preset.id} value={preset.id}>
+                    {preset.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Difficulty Level
+              </label>
+              <select
+                value={pgDifficulty}
+                onChange={(e) => setPgDifficulty(e.target.value as any)}
+                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition cursor-pointer"
+              >
+                <option value="easy">Easy (1.0x XP)</option>
+                <option value="medium">Medium (1.5x XP)</option>
+                <option value="hard">Hard (2.0x XP)</option>
+                <option value="expert">Expert (3.0x XP)</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Max Score / XP Points
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={pgMaxScore}
+                onChange={(e) => setPgMaxScore(e.target.value)}
+                placeholder="e.g. 100"
+                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+              />
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-[var(--hairline)]">
+            <button
+              type="button"
+              onClick={() => setShowAdvancedPg(!showAdvancedPg)}
+              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+            >
+              {showAdvancedPg ? "Hide Advanced Settings" : "Show Advanced Settings (ZFS Parameters)"}
+            </button>
+
+            {showAdvancedPg && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 pt-3 border-t border-dashed border-[var(--hairline)]">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                    Template Group ID (pg)
+                  </label>
+                  <input
+                    type="text"
+                    value={pgId}
+                    onChange={(e) => setPgId(e.target.value)}
+                    placeholder="Mongo ObjectId"
+                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                    Template Name (pgname)
+                  </label>
+                  <input
+                    type="text"
+                    value={pgName}
+                    onChange={(e) => setPgName(e.target.value)}
+                    placeholder="e.g. UBUNTU2404"
+                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                    VM Template Slug
+                  </label>
+                  <input
+                    type="text"
+                    value={pgPlayground}
+                    onChange={(e) => setPgPlayground(e.target.value)}
+                    placeholder="e.g. ubuntu2404n1"
+                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {type === "VIDEO" && (
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 bg-card/40 border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
           <div className="sm:col-span-8 flex flex-col gap-1.5">
@@ -695,10 +847,33 @@ function EditChapterPanel({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  // Playground states
+  const pgConf = chapter.playgroundConfig;
+  const initialPreset = PRESETS.find(p => p.pg === pgConf?.pg && p.playground === pgConf?.playground)?.id || "1vmpg";
+
+  const [pgTemplate, setPgTemplate] = useState(initialPreset);
+  const [pgId, setPgId] = useState(pgConf?.pg || "6659f131a9de4f16462740bc");
+  const [pgName, setPgName] = useState(pgConf?.pgname || "1VMPG");
+  const [pgPlayground, setPgPlayground] = useState(pgConf?.playground || "ubuntu2404n1");
+  const [pgDifficulty, setPgDifficulty] = useState<"easy" | "medium" | "hard" | "expert">(pgConf?.difficulty || "easy");
+  const [pgMaxScore, setPgMaxScore] = useState(pgConf?.maxScore?.toString() || "100");
+  const [showAdvancedPg, setShowAdvancedPg] = useState(false);
+
+  const handleTemplateChange = (presetId: string) => {
+    setPgTemplate(presetId);
+    const preset = PRESETS.find(p => p.id === presetId);
+    if (preset) {
+      setPgId(preset.pg);
+      setPgName(preset.pgname);
+      setPgPlayground(preset.playground);
+    }
+  };
+
   const isFormInvalid = () => {
     if (!title.trim()) return true;
     if (type === "VIDEO" && !videoUrl.trim()) return true;
     if (type === "DOCUMENT" && !documentUrl.trim()) return true;
+    if (type === "PLAYGROUND" && (!pgId.trim() || !pgPlayground.trim() || !pgName.trim())) return true;
     return false;
   };
 
@@ -716,6 +891,14 @@ function EditChapterPanel({
       payload.duration = duration ? parseInt(duration, 10) : null;
     } else if (type === "DOCUMENT") {
       payload.documentUrl = documentUrl.trim() || null;
+    } else if (type === "PLAYGROUND") {
+      payload.playgroundConfig = {
+        pg: pgId.trim(),
+        pgname: pgName.trim(),
+        playground: pgPlayground.trim(),
+        difficulty: pgDifficulty,
+        maxScore: pgMaxScore ? parseInt(pgMaxScore, 10) : 100,
+      };
     }
 
     onSave(payload);
@@ -747,7 +930,7 @@ function EditChapterPanel({
       </div>
 
       <div className="flex items-center gap-2">
-        {(["VIDEO", "DOCUMENT", "QUIZ"] as ChapterType[]).map((t) => (
+        {(["VIDEO", "DOCUMENT", "QUIZ", "PLAYGROUND"] as ChapterType[]).map((t) => (
           <button
             key={t}
             type="button"
@@ -764,6 +947,118 @@ function EditChapterPanel({
       </div>
 
       {/* Conditional Inputs */}
+      {type === "PLAYGROUND" && (
+        <div className="space-y-4 bg-card/40 border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
+          <div className="flex items-center justify-between border-b border-[var(--hairline)] pb-2">
+            <h4 className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
+              <TerminalSquare className="h-4 w-4 text-purple-400" /> Playground Configuration
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Select Template Preset
+              </label>
+              <select
+                value={pgTemplate}
+                onChange={(e) => handleTemplateChange(e.target.value)}
+                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition cursor-pointer"
+              >
+                {PRESETS.map((preset) => (
+                  <option key={preset.id} value={preset.id}>
+                    {preset.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Difficulty Level
+              </label>
+              <select
+                value={pgDifficulty}
+                onChange={(e) => setPgDifficulty(e.target.value as any)}
+                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition cursor-pointer"
+              >
+                <option value="easy">Easy (1.0x XP)</option>
+                <option value="medium">Medium (1.5x XP)</option>
+                <option value="hard">Hard (2.0x XP)</option>
+                <option value="expert">Expert (3.0x XP)</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Max Score / XP Points
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={pgMaxScore}
+                onChange={(e) => setPgMaxScore(e.target.value)}
+                placeholder="e.g. 100"
+                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+              />
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-[var(--hairline)]">
+            <button
+              type="button"
+              onClick={() => setShowAdvancedPg(!showAdvancedPg)}
+              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+            >
+              {showAdvancedPg ? "Hide Advanced Settings" : "Show Advanced Settings (ZFS Parameters)"}
+            </button>
+
+            {showAdvancedPg && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 pt-3 border-t border-dashed border-[var(--hairline)]">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                    Template Group ID (pg)
+                  </label>
+                  <input
+                    type="text"
+                    value={pgId}
+                    onChange={(e) => setPgId(e.target.value)}
+                    placeholder="Mongo ObjectId"
+                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                    Template Name (pgname)
+                  </label>
+                  <input
+                    type="text"
+                    value={pgName}
+                    onChange={(e) => setPgName(e.target.value)}
+                    placeholder="e.g. UBUNTU2404"
+                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                    VM Template Slug
+                  </label>
+                  <input
+                    type="text"
+                    value={pgPlayground}
+                    onChange={(e) => setPgPlayground(e.target.value)}
+                    placeholder="e.g. ubuntu2404n1"
+                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {type === "VIDEO" && (
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 bg-[var(--surface-2,var(--card))] border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
           <div className="sm:col-span-8 flex flex-col gap-1.5">
@@ -1673,6 +1968,7 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
         duration: form.duration || null,
         documentUrl: form.documentUrl || null,
         quizzes: form.quizzes || null,
+        playgroundConfig: form.playgroundConfig || null,
       });
       setLocalModules((prev) =>
         prev.map((mod) => {
@@ -1725,6 +2021,7 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
           videoUrl: form.type === "VIDEO" ? form.videoUrl : null,
           duration: form.type === "VIDEO" ? form.duration : null,
           documentUrl: form.type === "DOCUMENT" ? form.documentUrl : null,
+          playgroundConfig: form.type === "PLAYGROUND" ? form.playgroundConfig : null,
         });
         setLocalModules((prev) =>
           prev.map((mod) => {

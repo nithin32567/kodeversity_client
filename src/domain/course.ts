@@ -1,5 +1,7 @@
+import type { PlaygroundConfig } from "./playground";
+
 export type CourseLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "BEGINNER_TO_ADVANCED";
-export type ChapterType = "VIDEO" | "DOCUMENT" | "QUIZ";
+export type ChapterType = "VIDEO" | "DOCUMENT" | "QUIZ" | "PLAYGROUND";
 
 export interface Instructor {
   id: string;
@@ -28,6 +30,12 @@ export interface Chapter {
   documentUrl: string | null;
   moduleId: string;
   quizzes: Quiz[];
+  /**
+   * Present only when `type === "PLAYGROUND"`.
+   * Contains the container template parameters needed to provision
+   * an isolated sandbox environment for this lesson.
+   */
+  playgroundConfig?: PlaygroundConfig | null;
 }
 
 export interface Module {

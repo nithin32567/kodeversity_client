@@ -45,7 +45,7 @@ export const levelLabel: Record<string, string> = {
 
 // ─── Chapter icons ─────────────────────────────────────────────────────────
 
-import { Video, FileText, HelpCircle, BookOpen } from "lucide-react";
+import { Video, FileText, HelpCircle, BookOpen, TerminalSquare } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export function getChapterIcon(type: Chapter["type"]): LucideIcon {
@@ -56,6 +56,8 @@ export function getChapterIcon(type: Chapter["type"]): LucideIcon {
       return FileText;
     case "QUIZ":
       return HelpCircle;
+    case "PLAYGROUND":
+      return TerminalSquare;
     default:
       return BookOpen;
   }

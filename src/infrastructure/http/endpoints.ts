@@ -7,6 +7,8 @@ const CHALLENGE_URL =
   (import.meta.env.VITE_CHALLENGE_SERVICE_URL as string) ?? "http://localhost:4005";
 const ADMIN_URL = (import.meta.env.VITE_ADMIN_SERVICE_URL as string) ?? "http://localhost:4002";
 const MEETING_URL = (import.meta.env.VITE_MEETING_SERVICE_URL as string) ?? "http://localhost:4002";
+const PLAYGROUND_URL =
+  (import.meta.env.VITE_PLAYGROUND_SERVICE_URL as string) ?? "http://localhost:3000";
 
 export const endpoints = {
   auth: {
@@ -92,5 +94,33 @@ export const endpoints = {
     // Meetings — instructor creates & joins sessions for accessible batches
     meetings: `${MEETING_URL}/api/meetings`,
     meetingsByBatch: (batchId: string) => `${MEETING_URL}/api/meetings/batch/${batchId}`,
+  },
+  playground: {
+    // Step 1: Generate a unique instance ID for a new playground session.
+    generateId: (pg: string, pgname: string, playground: string, from: string, fromId: string) =>
+      `${PLAYGROUND_URL}/api/v1/generate-id/${pg}/${pgname}/${playground}/${from}/${fromId}`,
+    // Step 2: Signal the backend to physically spin up the container.
+    create: (id: string) => `${PLAYGROUND_URL}/api/v1/playground/${id}`,
+    // Step 3: Poll for container boot readiness.
+    poll: (id: string) => `${PLAYGROUND_URL}/api/v1/pg-poll/${id}`,
+    // Step 4: Get connection IP/ports once the container is ready.
+    getIp: (id: string) => `${PLAYGROUND_URL}/api/v1/get-ip/${id}`,
+    // Step 5: Validate user work against automated tests.
+    checkTestGet: (id: string, vm: string, test: string) =>
+      `${PLAYGROUND_URL}/api/v1/check-test/${id}/${vm}/${test}`,
+    checkTestPost: (id: string, vm: string) =>
+      `${PLAYGROUND_URL}/api/v1/check-test/${id}/${vm}/test`,
+    // Step 6: Record score and XP upon test pass.
+    score: `${PLAYGROUND_URL}/api/v1/admin/score`,
+    xp: `${PLAYGROUND_URL}/api/v1/admin/xp`,
+    // Step 7: Teardown — destroy the container.
+    remove: (id: string) => `${PLAYGROUND_URL}/api/v1/playground/${id}`,
+    // Auxiliary: List active playgrounds & fetch template configuration.
+    active: `${PLAYGROUND_URL}/api/v1/active-playgrounds`,
+    list: `${PLAYGROUND_URL}/api/v1/playground`,
+    templateConfig: (pgid: string) => `${PLAYGROUND_URL}/api/v1/admin/template-config/${pgid}`,
+    // Optional: Open code-server / desktop GUI.
+    openCodeServer: (id: string) => `${PLAYGROUND_URL}/api/v1/open-code-server/${id}`,
+    openDesktopServer: (id: string) => `${PLAYGROUND_URL}/api/v1/open-desktop-server/${id}`,
   },
 } as const;

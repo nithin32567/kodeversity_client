@@ -2,6 +2,7 @@ import { apiClient } from "@/infrastructure/http/apiClient";
 import { endpoints } from "@/infrastructure/http/endpoints";
 import type { Course, Instructor, Module, Chapter } from "@/domain/course";
 import type { User } from "@/domain/user";
+import type { PlaygroundConfig } from "@/domain/playground";
 
 export interface Batch {
   id: string;
@@ -125,6 +126,7 @@ export const managementService = {
       videoUrl?: string | null;
       duration?: number | null;
       documentUrl?: string | null;
+      playgroundConfig?: PlaygroundConfig | null;
       isPreview?: boolean;
       quizzes?:
         | {

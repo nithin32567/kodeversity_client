@@ -54,11 +54,22 @@ export interface CreateModulePayload {
 
 export interface CreateChapterPayload {
   title: string;
-  type: "VIDEO" | "DOCUMENT" | "QUIZ" | "TEXT";
+  type: "VIDEO" | "DOCUMENT" | "QUIZ" | "TEXT" | "PLAYGROUND";
   videoUrl?: string | null;
   duration?: number | null;
   documentUrl?: string | null;
   isPreview?: boolean;
+  /**
+   * Required when `type === "PLAYGROUND"`.
+   * Contains the sandbox template parameters for provisioning.
+   */
+  playgroundConfig?: {
+    pg: string;
+    pgname: string;
+    playground: string;
+    difficulty: "easy" | "medium" | "hard" | "expert";
+    maxScore: number;
+  } | null;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
