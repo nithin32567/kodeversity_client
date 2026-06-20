@@ -61,7 +61,7 @@ function AdminLoginPage() {
 
   return (
     <main className="admin-theme grid min-h-screen place-items-center bg-background px-4 text-foreground relative overflow-hidden">
-      {/* Visual background ambient glow effect */}
+      {}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
       <form

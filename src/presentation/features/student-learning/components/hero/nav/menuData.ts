@@ -18,7 +18,7 @@ export type MenuItem = {
   label: string;
   sub: string;
   icon: LucideIcon;
-  tint: string; // css color
+  tint: string;
 };
 
 export const labsPopular: MenuItem[] = [

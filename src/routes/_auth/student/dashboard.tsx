@@ -72,14 +72,12 @@ export function StudentDashboard() {
     );
   }
 
-  // Aggregate metrics
   const enrolledCount = enrollments.length;
   const activeBatchesCount = batches.length;
   const completedCourses = enrollments.filter(
     (e) => e.isCompleted || e.completedPercent >= 100,
   ).length;
 
-  // Calculate average progress
   const averageProgress =
     enrolledCount > 0
       ? Math.round(
@@ -87,11 +85,9 @@ export function StudentDashboard() {
         )
       : 0;
 
-  // Filter meetings that are upcoming or live
   const activeLiveNow = meetings.filter((m) => m.status === "LIVE");
   const upcomingMeetings = meetings.filter((m) => m.status === "UPCOMING").slice(0, 3);
 
-  // Map courses with student enrollments for display
   const enrolledCoursesList = enrollments
     .map((enroll) => {
       const course = courses.find((c) => c.id === enroll.courseId);
@@ -104,7 +100,7 @@ export function StudentDashboard() {
 
   return (
     <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-8 overflow-y-auto max-w-[1400px] mx-auto w-full">
-      {/* Welcome Banner */}
+      {}
       <MagicBentoCard
         className="relative p-6 sm:p-8 rounded-2xl border border-border bg-card shadow-xl"
         glowColor={glow}
@@ -138,9 +134,9 @@ export function StudentDashboard() {
         </div>
       </MagicBentoCard>
 
-      {/* Grid Metrics Stats */}
+      {}
       <MagicBentoSection className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" glowColor={glow}>
-        {/* Metric 1 */}
+        {}
         <MagicBentoCard
           className="p-5 rounded-2xl border border-border bg-card flex items-center gap-4 animate-fade-in"
           glowColor={glow}
@@ -155,7 +151,7 @@ export function StudentDashboard() {
           </div>
         </MagicBentoCard>
 
-        {/* Metric 2 */}
+        {}
         <MagicBentoCard
           className="p-5 rounded-2xl border border-border bg-card flex items-center gap-4 animate-fade-in"
           glowColor={glow}
@@ -170,7 +166,7 @@ export function StudentDashboard() {
           </div>
         </MagicBentoCard>
 
-        {/* Metric 3 */}
+        {}
         <MagicBentoCard
           className="p-5 rounded-2xl border border-border bg-card flex items-center gap-4 animate-fade-in"
           glowColor={glow}
@@ -185,7 +181,7 @@ export function StudentDashboard() {
           </div>
         </MagicBentoCard>
 
-        {/* Metric 4 */}
+        {}
         <MagicBentoCard
           className="p-5 rounded-2xl border border-border bg-card flex items-center gap-4 animate-fade-in"
           glowColor={glow}
@@ -201,9 +197,9 @@ export function StudentDashboard() {
         </MagicBentoCard>
       </MagicBentoSection>
 
-      {/* Main Grid split */}
+      {}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left column: My Courses */}
+        {}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold tracking-tight font-display flex items-center gap-2">
@@ -276,7 +272,7 @@ export function StudentDashboard() {
           )}
         </div>
 
-        {/* Right column: Upcoming Meetings / Timeline */}
+        {}
         <div className="space-y-4">
           <h3 className="text-lg font-bold tracking-tight font-display flex items-center gap-2">
             <Calendar className="h-5 w-5 text-purple-400" />
@@ -297,7 +293,7 @@ export function StudentDashboard() {
               <div className="space-y-5 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-border">
                 {upcomingMeetings.map((meeting) => (
                   <div key={meeting.id} className="relative pl-7 space-y-1">
-                    {/* Time dot */}
+                    {}
                     <div className="absolute left-[9px] top-1.5 h-2 w-2 rounded-full bg-purple-400 shadow-md ring-4 ring-card" />
 
                     <div className="text-[10px] font-mono text-purple-400 font-bold uppercase tracking-wider">
@@ -324,7 +320,7 @@ export function StudentDashboard() {
               </div>
             )}
 
-            {/* View Full Timeline Button */}
+            {}
             <Link
               to="/student/live-classes"
               className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-border bg-card/30 hover:bg-card/60 text-xs font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer"

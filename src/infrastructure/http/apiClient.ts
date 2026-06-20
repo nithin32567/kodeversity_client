@@ -1,9 +1,3 @@
-// ---------------------------------------------------------------------------
-// apiClient — thin fetch wrapper with Bearer token + silent refresh.
-// CLIENT-SIDE ONLY: accessToken is stored in module memory.
-// Safe in a browser SPA (one user per tab); must never run on the server.
-// ---------------------------------------------------------------------------
-
 import { ApiError } from "./ApiError";
 
 let accessToken: string | null = null;
@@ -25,14 +19,9 @@ export const setUnauthorizedHandler = (fn: (() => void) | null) => {
 
 export interface ApiRequestInit extends Omit<RequestInit, "body"> {
   body?: unknown;
-  /** Skip the automatic 401 → refresh → retry cycle (e.g. login, refresh itself). */
   skipAuthRefresh?: boolean;
 }
 
-// ---------------------------------------------------------------------------
-// Envelope shape returned by the auth-service (and other services).
-// { success: true, data: T }  OR  { success: false, error: string }
-// ---------------------------------------------------------------------------
 interface ApiEnvelope<T> {
   success: boolean;
   data?: T;
@@ -40,7 +29,6 @@ interface ApiEnvelope<T> {
   error?: string;
 }
 
-/** Parse the response body for error details before throwing. */
 async function extractError(res: Response): Promise<ApiError> {
   let rawBody = "";
   try {
@@ -64,7 +52,9 @@ async function extractError(res: Response): Promise<ApiError> {
     console.error("Raw Body:", rawBody);
     console.error("Parse Error:", parseError);
     console.error("====================================");
-    return new ApiError(`Request failed: ${res.status}`, res.status);
+    const msg = rawBody.trim() ? rawBody.trim() : `Request failed: ${res.status}`;
+    const code = res.status === 403 ? "FORBIDDEN" : "UNKNOWN_ERROR";
+    return new ApiError(msg, res.status, code);
   }
 }
 
@@ -83,7 +73,6 @@ async function refreshToken(): Promise<string | null> {
         credentials: "include",
       });
       if (!res.ok) {
-        // Check if the server is telling us the refresh cookie is missing → logout.
         try {
           const payload = (await res.json()) as ApiEnvelope<unknown>;
           if (
@@ -93,7 +82,7 @@ async function refreshToken(): Promise<string | null> {
             onUnauthorized?.();
           }
         } catch {
-          /* ignore */
+          void 0;
         }
         return null;
       }
@@ -133,9 +122,7 @@ export async function apiRequest<T = unknown>(path: string, init: ApiRequestInit
   const initialToken = accessToken;
   let res = await exec(initialToken);
 
-  // ---- 401 handling: attempt silent token refresh -------------------------
   if (res.status === 401 && !skipAuthRefresh) {
-    // Only retry if the server signals an invalid/expired access token.
     let shouldRefresh = false;
     try {
       const clone = (await res.clone().json()) as ApiEnvelope<unknown>;
@@ -147,11 +134,13 @@ export async function apiRequest<T = unknown>(path: string, init: ApiRequestInit
       shouldRefresh = true;
     }
 
+    if (res.url.includes("localhost:3000") || res.url.includes(":3000/api/v1")) {
+      shouldRefresh = true;
+    }
+
     if (shouldRefresh) {
       let fresh = accessToken;
 
-      // If the global token has changed since we sent this request,
-      // someone else already refreshed it. Just use the new one.
       if (initialToken === accessToken && refreshPromise) {
         fresh = await refreshPromise;
       } else if (initialToken === accessToken) {
@@ -175,7 +164,6 @@ export async function apiRequest<T = unknown>(path: string, init: ApiRequestInit
 
   if (res.status === 204) return undefined as T;
 
-  // Unwrap the { success, data } envelope when present.
   const json = (await res.json()) as ApiEnvelope<T> | T;
   if (json !== null && typeof json === "object" && "success" in (json as object)) {
     const envelope = json as ApiEnvelope<T>;
@@ -183,7 +171,7 @@ export async function apiRequest<T = unknown>(path: string, init: ApiRequestInit
       const code = envelope.error ?? "UNKNOWN_ERROR";
       throw new ApiError(code, 0, code);
     }
-    // Return data if present, otherwise the whole envelope (some endpoints return {success, message}).
+
     return (envelope.data ?? json) as T;
   }
 

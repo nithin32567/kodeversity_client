@@ -35,7 +35,7 @@ export function RevealFooter() {
 
   return (
     <>
-      {/* Spacer so the page can scroll to reveal the fixed footer underneath */}
+      {}
       <div aria-hidden style={{ height }} />
 
       <footer
@@ -44,7 +44,7 @@ export function RevealFooter() {
         className="fixed bottom-0 left-0 right-0 z-0 w-full bg-background text-foreground"
       >
         <div className="mx-auto flex max-w-7xl flex-col gap-12 px-6 pt-16 pb-8 md:pt-24">
-          {/* Top: tagline + nav columns */}
+          {}
           <div className="flex flex-col gap-12 md:flex-row md:items-start md:justify-between">
             <div className="max-w-md">
               <p className="font-display text-3xl font-semibold leading-tight tracking-tight md:text-4xl">
@@ -74,7 +74,7 @@ export function RevealFooter() {
             </div>
           </div>
 
-          {/* Giant wordmark */}
+          {}
           <div className="relative w-full overflow-hidden flex justify-center py-2">
             <h2
               aria-hidden
@@ -85,7 +85,7 @@ export function RevealFooter() {
             </h2>
           </div>
 
-          {/* Bottom row */}
+          {}
           <div className="flex flex-col items-start justify-between gap-4 border-t border-border/40 pt-6 text-sm text-muted-foreground md:flex-row md:items-center">
             <span className="font-mono text-xs tracking-widest uppercase">
               © {new Date().getFullYear()} Kodeversity

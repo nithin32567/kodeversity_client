@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import {
@@ -35,20 +36,20 @@ import { useAccentRgb } from "@/presentation/lib/useAccent";
 import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
 import { PlaygroundWorkspace } from "@/presentation/features/playground";
 import type { Chapter, ChapterType } from "@/domain/course";
+import type { PlaygroundConfig } from "@/domain/playground";
 import { TerminalSquare } from "lucide-react";
 
 export const Route = createFileRoute("/_auth/student/learn/$slug")({
   loader: ({ params }) => {
     const course = findCourseBySlug(params.slug);
-    if (!course) throw notFound();
     return { course };
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `Learn: ${loaderData?.course.title ?? "Course"} — Kodeversity` },
+      { title: `Learn: ${loaderData?.course?.title ?? "Course"} — Kodeversity` },
       {
         name: "description",
-        content: `Learning workspace for ${loaderData?.course.title}.`,
+        content: `Learning workspace for ${loaderData?.course?.title ?? "Course"}.`,
       },
     ],
   }),
@@ -56,6 +57,17 @@ export const Route = createFileRoute("/_auth/student/learn/$slug")({
 });
 
 type LessonStatus = "done" | "current" | "locked";
+
+export interface ChapterDisplay {
+  id: string;
+  title: string;
+  duration?: number;
+  status?: string;
+  type?: string;
+  videoUrl?: string;
+  documentUrl?: string;
+  playgroundConfig?: PlaygroundConfig;
+}
 
 const mockModules = [
   {
@@ -79,7 +91,8 @@ const mockModules = [
         duration: 465,
         status: "done" as LessonStatus,
         type: "DOCUMENT" as ChapterType,
-        documentUrl: "https://raw.githubusercontent.com/mdn/beginner-html-site-scripted/master/index.html",
+        documentUrl:
+          "https://raw.githubusercontent.com/mdn/beginner-html-site-scripted/master/index.html",
       },
       {
         id: "chap-3",
@@ -170,20 +183,30 @@ function LearnPage() {
   });
   const glow = useAccentRgb();
 
-  // Resolve course metadata & modules
-  const resolvedModules = realCourse?.modules && realCourse.modules.length > 0 ? realCourse.modules : mockModules;
+  const resolvedModules =
+    realCourse?.modules && realCourse.modules.length > 0 ? realCourse.modules : mockModules;
   const courseTitle = realCourse?.title || staticCourse?.title || "Course Player";
   const courseId = realCourse?.id || "mock-course-id";
 
-  // Flattened chapters to support next/prev navigation
-  const allChapters = (resolvedModules as any[]).flatMap((m) => m.chapters ?? []) as any[];
+  const allChapters = (resolvedModules as { chapters?: unknown[] }[]).flatMap(
+    (m) => (m.chapters ?? []) as ChapterDisplay[],
+  );
 
-  // Track active chapter selection
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
-  const activeChapter = allChapters.find((c) => c.id === selectedChapterId) || allChapters[0] || null;
+  const activeChapter =
+    allChapters.find((c) => c.id === selectedChapterId) || allChapters[0] || null;
 
-  // Track completed chapters
-  const [completedChapters, setCompletedChapters] = useState<Set<string>>(new Set(["chap-1", "chap-2"]));
+  const [playgroundLaunched, setPlaygroundLaunched] = useState(false);
+
+  const prevChapterIdRef = useState<string | null>(null);
+  if (prevChapterIdRef[0] !== (activeChapter?.id ?? null)) {
+    prevChapterIdRef[1](activeChapter?.id ?? null);
+    if (playgroundLaunched) setPlaygroundLaunched(false);
+  }
+
+  const [completedChapters, setCompletedChapters] = useState<Set<string>>(
+    new Set(["chap-1", "chap-2"]),
+  );
 
   const markChapterComplete = (id: string) => {
     setCompletedChapters((prev) => {
@@ -213,16 +236,18 @@ function LearnPage() {
       <main className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-muted-foreground animate-pulse">Loading course player workspace...</p>
+          <p className="text-sm text-muted-foreground animate-pulse">
+            Loading course player workspace...
+          </p>
         </div>
       </main>
     );
   }
 
-  // Calculate stats
   const totalChapters = allChapters.length;
   const completedCount = allChapters.filter((c) => completedChapters.has(c.id)).length;
-  const progressPercentage = totalChapters > 0 ? Math.round((completedCount / totalChapters) * 100) : 0;
+  const progressPercentage =
+    totalChapters > 0 ? Math.round((completedCount / totalChapters) * 100) : 0;
   const totalDurationSeconds = allChapters.reduce((acc, ch) => acc + (ch.duration || 0), 0);
   const totalDurationStr = `${Math.floor(totalDurationSeconds / 3600)}h ${Math.floor((totalDurationSeconds % 3600) / 60)}m`;
 
@@ -232,10 +257,7 @@ function LearnPage() {
         <Link
           to="/courses/$slug"
           params={{
-            slug: staticCourse.title
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, "-")
-              .replace(/^-+|-+$/g, ""),
+            slug: params.slug,
           }}
           className="mb-4 inline-flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
@@ -247,26 +269,37 @@ function LearnPage() {
           glowColor={glow}
           spotlightRadius={400}
         >
-          {/* MAIN */}
+          {}
           <div className="flex flex-col gap-6">
-            {/* Conditional Player */}
+            {}
             {activeChapter ? (
               <>
                 {activeChapter.type === "PLAYGROUND" ? (
                   <div className="rounded-2xl border border-border bg-card overflow-hidden h-[75vh] flex flex-col min-h-[600px] shadow-lg">
-                    {activeChapter.playgroundConfig ? (
+                    {!activeChapter.playgroundConfig ? (
+                      <div className="flex flex-col items-center justify-center h-full p-6 text-center text-muted-foreground">
+                        <TerminalSquare className="h-12 w-12 text-muted-foreground/40 mb-3" />
+                        <p className="text-sm font-medium text-foreground/70 mb-1">
+                          Playground not configured
+                        </p>
+                        <p className="text-xs max-w-xs">
+                          This lesson has no sandbox environment attached yet. Please contact your
+                          instructor.
+                        </p>
+                      </div>
+                    ) : playgroundLaunched ? (
                       <PlaygroundWorkspace
                         config={activeChapter.playgroundConfig}
                         from="course"
                         fromId={courseId}
-                        onStop={() => {}}
+                        onStop={() => setPlaygroundLaunched(false)}
                         onMarkComplete={() => markChapterComplete(activeChapter.id)}
                       />
                     ) : (
-                      <div className="flex flex-col items-center justify-center h-full p-6 text-center text-muted-foreground">
-                        <TerminalSquare className="h-12 w-12 text-muted-foreground/40 mb-3" />
-                        <p className="text-sm">No playground configuration found for this lesson.</p>
-                      </div>
+                      <PlaygroundLaunchGate
+                        chapter={activeChapter}
+                        onLaunch={() => setPlaygroundLaunched(true)}
+                      />
                     )}
                   </div>
                 ) : activeChapter.type === "DOCUMENT" ? (
@@ -277,8 +310,12 @@ function LearnPage() {
                           <FileText className="h-5 w-5 text-amber-500" />
                         </div>
                         <div>
-                          <h2 className="text-lg font-semibold text-foreground">{activeChapter.title}</h2>
-                          <p className="text-xs text-muted-foreground">Document Reading Assignment</p>
+                          <h2 className="text-lg font-semibold text-foreground">
+                            {activeChapter.title}
+                          </h2>
+                          <p className="text-xs text-muted-foreground">
+                            Document Reading Assignment
+                          </p>
                         </div>
                       </div>
                       {activeChapter.documentUrl && (
@@ -295,11 +332,14 @@ function LearnPage() {
                     <div className="flex-1 overflow-y-auto max-h-[500px] text-sm text-foreground/85 leading-relaxed space-y-4 pr-2">
                       <p className="font-semibold text-foreground">Lesson Reference Information:</p>
                       <p>
-                        This lesson contains documentation and instructions designed to help you build practical mastery.
-                        Please read the document carefully and practice the setup/steps described inside.
+                        This lesson contains documentation and instructions designed to help you
+                        build practical mastery. Please read the document carefully and practice the
+                        setup/steps described inside.
                       </p>
                       <div className="rounded-xl bg-background/50 border border-border p-4 space-y-2">
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Included Document Link:</p>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+                          Included Document Link:
+                        </p>
                         <p className="text-xs text-primary hover:underline break-all">
                           {activeChapter.documentUrl || "No URL provided"}
                         </p>
@@ -321,7 +361,8 @@ function LearnPage() {
                     </div>
                     <h2 className="text-xl font-bold text-foreground">Lesson Practice Quiz</h2>
                     <p className="text-sm text-muted-foreground max-w-md">
-                      Test your understanding of the concepts covered in "{activeChapter.title}" to unlock rewards and check your progress.
+                      Test your understanding of the concepts covered in "{activeChapter.title}" to
+                      unlock rewards and check your progress.
                     </p>
                     <button
                       onClick={() => markChapterComplete(activeChapter.id)}
@@ -339,11 +380,22 @@ function LearnPage() {
                   >
                     <div className="relative aspect-[16/9] w-full bg-[#07060f] flex items-center justify-center">
                       {activeChapter.videoUrl ? (
-                        <video
-                          src={activeChapter.videoUrl}
-                          controls
-                          className="w-full h-full object-contain"
-                        />
+                        activeChapter.videoUrl.includes("youtube.com") ||
+                        activeChapter.videoUrl.includes("youtu.be") ? (
+                          <iframe
+                            src={`https://www.youtube.com/embed/${activeChapter.videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/)?.[1]}?autoplay=0&rel=0&controls=1`}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className="w-full h-full border-0"
+                            title={activeChapter.title}
+                          />
+                        ) : (
+                          <video
+                            src={activeChapter.videoUrl}
+                            controls
+                            className="w-full h-full object-contain"
+                          />
+                        )
                       ) : (
                         <div
                           className="relative grid aspect-[16/8] w-full place-items-center"
@@ -360,7 +412,9 @@ function LearnPage() {
                           </button>
 
                           <div className="absolute left-8 top-1/2 max-w-sm -translate-y-1/2">
-                            <p className="text-xs font-semibold text-primary uppercase tracking-wider">Video Lesson</p>
+                            <p className="text-xs font-semibold text-primary uppercase tracking-wider">
+                              Video Lesson
+                            </p>
                             <h1 className="mt-2 font-display text-3xl font-bold text-foreground">
                               {activeChapter.title}
                             </h1>
@@ -390,44 +444,6 @@ function LearnPage() {
                         </div>
                       )}
                     </div>
-
-                    <div className="px-5 pt-4">
-                      <div className="relative h-1 w-full overflow-hidden rounded-full bg-foreground/10">
-                        <div
-                          className="absolute inset-y-0 left-0 rounded-full bg-[image:var(--gradient-primary)]"
-                          style={{ width: "47%" }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between px-5 py-3 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-3">
-                        <button className="hover:text-foreground">
-                          <Play className="h-3.5 w-3.5 fill-current" />
-                        </button>
-                        <button className="hover:text-foreground">
-                          <RotateCcw className="h-3.5 w-3.5" />
-                        </button>
-                        <button className="hover:text-foreground">
-                          <RotateCw className="h-3.5 w-3.5" />
-                        </button>
-                        <button className="hover:text-foreground">
-                          <Volume2 className="h-3.5 w-3.5" />
-                        </button>
-                        <span className="ml-1">{formatDuration(activeChapter.duration)}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button className="text-[10px] font-bold tracking-wider hover:text-foreground">
-                          CC
-                        </button>
-                        <button className="hover:text-foreground">
-                          <Settings className="h-3.5 w-3.5" />
-                        </button>
-                        <button className="hover:text-foreground">
-                          <Maximize className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </div>
                   </MagicBentoCard>
                 )}
               </>
@@ -437,7 +453,7 @@ function LearnPage() {
               </div>
             )}
 
-            {/* Tabs */}
+            {}
             <div className="flex flex-wrap items-center gap-x-7 gap-y-2 border-b border-border">
               {tabs.map((t) => (
                 <button
@@ -457,7 +473,7 @@ function LearnPage() {
               ))}
             </div>
 
-            {/* Overview + Take notes */}
+            {}
             <div className="grid items-stretch gap-5 md:grid-cols-2">
               <MagicBentoCard
                 className="flex h-full flex-col rounded-2xl border border-border bg-card p-5"
@@ -474,21 +490,26 @@ function LearnPage() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-base font-semibold text-foreground">{activeChapter.title}</h3>
+                        <h3 className="text-base font-semibold text-foreground">
+                          {activeChapter.title}
+                        </h3>
                         <span className="rounded-md bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-primary">
                           Current Lesson
                         </span>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">{courseTitle}</p>
                       <p className="mt-2 text-sm text-foreground/80">
-                        Type: {activeChapter.type} lesson. Master real-world cloud/systems capabilities through Kodeversity.
+                        Type: {activeChapter.type} lesson. Master real-world cloud/systems
+                        capabilities through Kodeversity.
                       </p>
                       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <PlayCircle className="h-3.5 w-3.5" /> {formatDuration(activeChapter.duration)}
+                          <PlayCircle className="h-3.5 w-3.5" />{" "}
+                          {formatDuration(activeChapter.duration)}
                         </span>
                         <span className="flex items-center gap-1">
-                          <BarChart3 className="h-3.5 w-3.5" /> {activeChapter.playgroundConfig?.difficulty || "Beginner"}
+                          <BarChart3 className="h-3.5 w-3.5" />{" "}
+                          {activeChapter.playgroundConfig?.difficulty || "Beginner"}
                         </span>
                         <span className="flex items-center gap-1">
                           <FileText className="h-3.5 w-3.5" /> English
@@ -534,7 +555,7 @@ function LearnPage() {
               </MagicBentoCard>
             </div>
 
-            {/* Action tiles */}
+            {}
             <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <ActionTile
                 icon={<FileText className="h-4 w-4 text-emerald-400" />}
@@ -549,10 +570,7 @@ function LearnPage() {
                 cta="Start Quiz"
                 to="/student/playground/$slug"
                 params={{
-                  slug: staticCourse.title
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, "-")
-                    .replace(/^-+|-+$/g, ""),
+                  slug: params.slug,
                 }}
               />
               <ActionTile
@@ -564,7 +582,7 @@ function LearnPage() {
               <ProgressTile />
             </div>
 
-            {/* Bottom motivator */}
+            {}
             <MagicBentoCard
               className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4"
               glowColor={glow}
@@ -590,9 +608,9 @@ function LearnPage() {
             </MagicBentoCard>
           </div>
 
-          {/* SIDEBAR */}
+          {}
           <aside className="flex flex-col gap-4">
-            {/* Your Progress */}
+            {}
             <MagicBentoCard
               className="rounded-2xl border border-border bg-card px-4 py-3"
               glowColor={glow}
@@ -619,7 +637,9 @@ function LearnPage() {
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Course Content</h3>
-                <span className="text-xs text-muted-foreground">{completedCount} / {totalChapters}</span>
+                <span className="text-xs text-muted-foreground">
+                  {completedCount} / {totalChapters}
+                </span>
               </div>
 
               <div className="mt-4 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 [scrollbar-color:color-mix(in_srgb,var(--primary)_45%,transparent)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[color-mix(in_srgb,var(--primary)_45%,transparent)] [&::-webkit-scrollbar-thumb:hover]:bg-[color-mix(in_srgb,var(--primary)_70%,transparent)] [&::-webkit-scrollbar-track]:bg-transparent">
@@ -705,7 +725,11 @@ function LearnPage() {
               <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                 <Stat value={totalChapters.toString()} label="Lessons" />
                 <Stat value={totalDurationStr} label="Time" />
-                <Stat value={progressPercentage >= 100 ? "Unlocked" : "Locked"} label="Certificate" icon={<Award className="h-3 w-3" />} />
+                <Stat
+                  value={progressPercentage >= 100 ? "Unlocked" : "Locked"}
+                  label="Certificate"
+                  icon={<Award className="h-3 w-3" />}
+                />
               </div>
             </MagicBentoCard>
           </aside>
@@ -745,13 +769,7 @@ function ActionTile({
       </div>
       <p className="mt-2 flex-1 text-xs text-muted-foreground">{desc}</p>
       {to ? (
-        <Link
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          to={to as any}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          params={params as any}
-          className={btnClass}
-        >
+        <Link to={to as any} params={params as any} className={btnClass}>
           <Folder className="h-3.5 w-3.5" /> {cta}
         </Link>
       ) : (
@@ -811,6 +829,107 @@ function Stat({ value, label, icon }: { value: string; label: string; icon?: Rea
         {value}
       </div>
       <div className="text-[10px] text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+const DIFFICULTY_META = {
+  easy: { label: "Easy", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+  medium: {
+    label: "Medium",
+    color: "text-amber-400",
+    bg: "bg-amber-500/10 border-amber-500/20",
+  },
+  hard: { label: "Hard", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
+  expert: {
+    label: "Expert",
+    color: "text-purple-400",
+    bg: "bg-purple-500/10 border-purple-500/20",
+  },
+};
+
+function PlaygroundLaunchGate({
+  chapter,
+  onLaunch,
+}: {
+  chapter: ChapterDisplay;
+  onLaunch: () => void;
+}) {
+  const diff = chapter.playgroundConfig?.difficulty ?? "easy";
+  const meta = DIFFICULTY_META[diff] ?? DIFFICULTY_META.easy;
+  const maxScore = chapter.playgroundConfig?.maxScore ?? 100;
+
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#07060f] relative overflow-hidden">
+      {}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-primary/5 blur-[100px]" />
+        <div className="absolute top-1/4 right-1/4 h-[200px] w-[200px] rounded-full bg-violet-500/5 blur-[80px]" />
+      </div>
+
+      {}
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+        }}
+      />
+
+      <div className="relative z-10 flex flex-col items-center text-center max-w-lg w-full">
+        {}
+        <div className="relative mb-6">
+          <div className="h-20 w-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-[0_0_40px_-8px_var(--primary)]">
+            <TerminalSquare className="h-9 w-9 text-primary" />
+          </div>
+          <div className="absolute -inset-1 rounded-2xl border border-primary/10 animate-ping" />
+        </div>
+
+        {}
+        <p className="text-xs font-bold uppercase tracking-widest text-primary/60 mb-2">
+          Interactive Lab
+        </p>
+        <h2 className="text-2xl font-bold text-foreground mb-2 font-display">{chapter.title}</h2>
+        <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+          This lesson includes a live cloud sandbox environment. Click below to provision your
+          isolated workspace — it will be ready in about 60 seconds.
+        </p>
+
+        {}
+        <div className="flex items-center gap-3 mb-8 flex-wrap justify-center">
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold ${meta.bg} ${meta.color}`}
+          >
+            <BarChart3 className="h-3 w-3" />
+            {meta.label}
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-card text-xs font-medium text-muted-foreground">
+            <Award className="h-3 w-3 text-amber-400" />
+            Up to {maxScore} pts
+          </span>
+          {chapter.duration && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-card text-xs font-medium text-muted-foreground">
+              <PlayCircle className="h-3 w-3 text-sky-400" />~{Math.ceil(chapter.duration / 60)} min
+            </span>
+          )}
+        </div>
+
+        {}
+        <button
+          id="launch-playground-btn"
+          onClick={onLaunch}
+          className="group relative inline-flex items-center gap-2.5 px-8 py-3.5 rounded-2xl bg-[image:var(--gradient-primary)] text-primary-foreground font-bold text-sm shadow-[var(--shadow-primary)] hover:scale-[1.03] active:scale-[0.98] transition-transform"
+        >
+          <TerminalSquare className="h-4 w-4" />
+          Launch Lab Environment
+          <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+        </button>
+
+        <p className="mt-4 text-[11px] text-muted-foreground/60">
+          Your environment will be automatically destroyed when you leave this lesson.
+        </p>
+      </div>
     </div>
   );
 }

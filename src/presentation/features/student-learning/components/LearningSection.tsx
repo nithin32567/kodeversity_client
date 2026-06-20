@@ -126,7 +126,7 @@ export function LearningSection() {
       />
 
       <div className="relative mx-auto max-w-7xl px-4 md:px-6">
-        {/* Audience switcher */}
+        {}
         <div className="flex justify-center">
           <div className="relative inline-flex rounded-full border border-border bg-card/60 p-1 backdrop-blur">
             {(["individuals", "business"] as Audience[]).map((opt) => {
@@ -152,7 +152,7 @@ export function LearningSection() {
           </div>
         </div>
 
-        {/* Headline */}
+        {}
         <div className="mx-auto mt-10 max-w-4xl text-center">
           <h2 className="text-balance font-display text-3xl font-bold tracking-tight text-foreground md:text-5xl">
             Learn{" "}
@@ -163,19 +163,19 @@ export function LearningSection() {
           </h2>
         </div>
 
-        {/* Features around a central visual */}
+        {}
         <div className="mt-14 grid items-center gap-10 md:mt-20 md:grid-cols-12 md:gap-8">
-          {/* Left features */}
+          {}
           <div className="flex flex-col gap-10 md:col-span-4">
             {data.left.map((f) => (
               <FeatureBlock key={f.title} f={f} align="left" />
             ))}
           </div>
 
-          {/* Center visual */}
+          {}
           <div className="order-first md:order-none md:col-span-4">
             <div className="relative mx-auto aspect-square w-full max-w-sm">
-              {/* glow ring */}
+              {}
               <div
                 aria-hidden
                 className="absolute inset-0 rounded-full"
@@ -187,7 +187,7 @@ export function LearningSection() {
               <div className="absolute inset-6 rounded-full border border-border/60" />
               <div className="absolute inset-14 rounded-full border border-border/40" />
 
-              {/* terminal card */}
+              {}
               <div className="absolute inset-x-6 top-1/2 -translate-y-1/2 rounded-2xl border border-border bg-card/90 p-4 backdrop-blur-xl shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)]">
                 <div className="mb-3 flex items-center gap-1.5">
                   <span className="size-2.5 rounded-full bg-rose-500/80" />
@@ -216,7 +216,7 @@ api-7c9-xk2     1/1     Running`}
             </div>
           </div>
 
-          {/* Right features */}
+          {}
           <div className="flex flex-col gap-10 md:col-span-4">
             {data.right.map((f) => (
               <FeatureBlock key={f.title} f={f} align="right" />

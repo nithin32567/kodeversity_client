@@ -23,7 +23,6 @@ export interface StudentWithEnrollments {
 }
 
 export const studentService = {
-  /** Get all student records and their course enrollments from the course-service database. */
   getStudents: async (): Promise<StudentWithEnrollments[]> => {
     try {
       const response = await apiClient.get<
@@ -42,20 +41,17 @@ export const studentService = {
     }
   },
 
-  /** Find the student by ID and return their enrollments. */
   getStudentEnrollments: async (studentId: string): Promise<StudentEnrollment[]> => {
     const students = await studentService.getStudents();
     const student = students.find((s) => s.id === studentId);
     return student?.enrolledCourses || [];
   },
 
-  /** Get batches that a student is actively enrolled in. */
   getMyBatches: async (studentId: string) => {
     try {
       const allBatches = await managementService.getBatches();
       const myBatches = [];
 
-      // We run sequential checks of batch rosters to see if the studentId is present
       for (const batch of allBatches) {
         const roster = await managementService.getBatchRoster(batch.id);
         if (roster.some((r) => r.studentId === studentId)) {
@@ -69,7 +65,6 @@ export const studentService = {
     }
   },
 
-  /** Get all live meetings assigned to any of the student's cohorts/batches. */
   getMyLiveClasses: async (studentId: string): Promise<LiveSession[]> => {
     try {
       const myBatches = await studentService.getMyBatches(studentId);
@@ -84,7 +79,6 @@ export const studentService = {
       const allMeetingsNested = await Promise.all(meetingsPromises);
       const allMeetings = allMeetingsNested.flat();
 
-      // Sort meetings by date/time ascending
       allMeetings.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
       return allMeetings;
     } catch (err) {

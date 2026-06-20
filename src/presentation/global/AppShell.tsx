@@ -51,7 +51,6 @@ const topNav = [
   { label: "Resources", to: "/" as const },
 ];
 
-/** Returns initials from an email or name for the avatar. */
 function getInitials(user: { email: string; name?: string }): string {
   if (user.name && user.name.trim()) {
     return user.name
@@ -113,7 +112,7 @@ export function AppShell({
   return (
     <main className="relative min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b border-border/60 bg-background/80 px-3 backdrop-blur-xl sm:h-16 md:h-20 md:px-8">
-        {/* Left: mobile menu + logo */}
+        {}
         <div className="flex items-center gap-2 md:gap-0">
           <button
             type="button"
@@ -175,10 +174,10 @@ export function AppShell({
             <Bell className="h-4 w-4" />
           </button>
 
-          {/* ── Auth-aware section ── */}
+          {}
           {isAuthenticated && user ? (
             <div className="flex items-center gap-2">
-              {/* User info — hidden on very small screens */}
+              {}
               <div className="hidden flex-col items-end gap-0.5 sm:flex">
                 <div className="text-xs font-semibold text-foreground leading-none">
                   {user.name || user.email}
@@ -186,12 +185,12 @@ export function AppShell({
                 <RoleBadge role={user.role} />
               </div>
 
-              {/* Avatar circle */}
+              {}
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-xs font-bold text-primary-foreground">
                 {getInitials(user)}
               </div>
 
-              {/* Logout button */}
+              {}
               <button
                 id="logout-btn"
                 aria-label="Sign out"
@@ -214,7 +213,7 @@ export function AppShell({
         </div>
       </header>
 
-      {/* Mobile drawer */}
+      {}
       {menuOpen && (
         <div className="fixed inset-0 z-40 md:hidden" role="dialog" aria-modal="true">
           <div
@@ -238,7 +237,7 @@ export function AppShell({
               </button>
             </div>
 
-            {/* Mobile user info block */}
+            {}
             {isAuthenticated && user && (
               <div className="mb-4 flex items-center gap-3 rounded-xl border border-border/60 bg-card/60 px-3 py-2.5">
                 <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-xs font-bold text-primary-foreground">
@@ -268,7 +267,7 @@ export function AppShell({
               ))}
             </nav>
 
-            {/* Mobile logout */}
+            {}
             {isAuthenticated && (
               <button
                 onClick={handleLogout}
@@ -299,7 +298,7 @@ export function AppShell({
             ))}
           </nav>
 
-          {/* Sidebar logout icon */}
+          {}
           {isAuthenticated && (
             <button
               id="sidebar-logout-btn"

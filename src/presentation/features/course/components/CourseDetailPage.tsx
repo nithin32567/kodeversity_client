@@ -25,8 +25,6 @@ import { CourseSidebar } from "./CourseSidebar";
 import { CourseCurriculum } from "./CourseCurriculum";
 import { CourseReviews } from "./CourseReviews";
 
-// ─── Static data ────────────────────────────────────────────────────────────
-
 const faqs = [
   {
     q: "When does the course start and finish?",
@@ -41,8 +39,6 @@ const faqs = [
     a: "We would never want you to be unhappy! If you are unsatisfied with your purchase, contact us in the first 30 days and we will give you a full refund.",
   },
 ];
-
-// ─── Loading skeleton ───────────────────────────────────────────────────────
 
 function CourseDetailSkeleton() {
   return (
@@ -79,8 +75,6 @@ function CourseDetailSkeleton() {
   );
 }
 
-// ─── Error state ────────────────────────────────────────────────────────────
-
 function CourseDetailError({ slug }: { slug: string }) {
   return (
     <AppShell activeTop="Courses">
@@ -106,8 +100,6 @@ function CourseDetailError({ slug }: { slug: string }) {
     </AppShell>
   );
 }
-
-// ─── Main page ──────────────────────────────────────────────────────────────
 
 interface CourseDetailPageProps {
   slug: string;
@@ -146,7 +138,7 @@ export function CourseDetailPage({ slug }: CourseDetailPageProps) {
     <AppShell activeTop="Courses">
       <main className="relative min-h-screen bg-background text-foreground">
         <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
-          {/* Breadcrumb */}
+          {}
           <nav className="mb-5 flex items-center gap-2 text-sm text-muted-foreground">
             <Home className="h-4 w-4" />
             <Link to="/courses" className="hover:text-foreground">
@@ -166,7 +158,7 @@ export function CourseDetailPage({ slug }: CourseDetailPageProps) {
             spotlightRadius={400}
           >
             <div className="flex flex-col gap-6">
-              {/* Hero row */}
+              {}
               <div className="grid gap-6 md:grid-cols-2">
                 <section className="flex flex-col">
                   <span className="mb-4 inline-flex w-fit items-center rounded-md bg-emerald-500/15 px-2.5 py-1 text-[11px] font-bold tracking-wider text-emerald-400">
@@ -227,7 +219,7 @@ export function CourseDetailPage({ slug }: CourseDetailPageProps) {
                   </div>
                 </section>
 
-                {/* Video preview card */}
+                {}
                 <MagicBentoCard
                   className="overflow-hidden rounded-xl border border-border bg-card"
                   glowColor={glow}
@@ -274,7 +266,7 @@ export function CourseDetailPage({ slug }: CourseDetailPageProps) {
                 </MagicBentoCard>
               </div>
 
-              {/* Stats row */}
+              {}
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 <StatBox
                   icon={<BarChart3 className="h-4 w-4" />}
@@ -303,7 +295,7 @@ export function CourseDetailPage({ slug }: CourseDetailPageProps) {
                 />
               </div>
 
-              {/* Tab bar */}
+              {}
               <div className="flex flex-wrap gap-x-7 gap-y-2 border-b border-border">
                 {tabsList.map((t) => {
                   const cleanedTab = t.split(" ")[0];
@@ -328,7 +320,7 @@ export function CourseDetailPage({ slug }: CourseDetailPageProps) {
                 })}
               </div>
 
-              {/* Tab content */}
+              {}
               <MagicBentoCard
                 className="rounded-2xl border border-border bg-card p-6 md:p-7"
                 glowColor={glow}
@@ -462,7 +454,7 @@ export function CourseDetailPage({ slug }: CourseDetailPageProps) {
                 )}
               </MagicBentoCard>
 
-              {/* Reviews preview (shown when not on Reviews tab) */}
+              {}
               {activeTab !== "Reviews" && reviews.length > 0 && (
                 <MagicBentoCard
                   className="rounded-2xl border border-border bg-card p-6 md:p-7"
@@ -475,7 +467,7 @@ export function CourseDetailPage({ slug }: CourseDetailPageProps) {
               )}
             </div>
 
-            {/* Sidebar */}
+            {}
             <CourseSidebar course={course} slug={slug} />
           </MagicBentoSection>
         </div>

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -26,6 +27,7 @@ import {
   LogOut,
   Sparkles,
   ShieldOff,
+  Terminal,
 } from "lucide-react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 
@@ -35,14 +37,14 @@ export type NavItem = {
   to?: string;
 };
 
-// ─── Admin Navigation Groups ─────────────────────────────────────────────────
 export const adminManage: NavItem[] = [
   { label: "Courses", icon: BookOpen, to: "/admin/courses" },
+  { label: "Playgrounds", icon: Terminal, to: "/admin/playground" },
   { label: "Students", icon: Users, to: "/admin/students" },
   { label: "Instructors", icon: GraduationCap, to: "/admin/instructors" },
   { label: "Batches", icon: Layers, to: "/admin/batches" },
   { label: "Categories", icon: FolderKanban },
-  { label: "Enrollments", icon: ClipboardList },
+  { label: "Enrollments", icon: ClipboardList, to: "/admin/enrollments" },
   { label: "Certificates", icon: Award },
   { label: "Reviews", icon: Star },
   { label: "Announcements", icon: Megaphone },
@@ -65,7 +67,6 @@ export const adminSystem: NavItem[] = [
   { label: "Settings", icon: Settings },
 ];
 
-// ─── Instructor Navigation Groups ────────────────────────────────────────────
 export const instructorContent: NavItem[] = [
   { label: "My Courses", icon: BookOpen, to: "/instructor/courses" },
   { label: "My Batches", icon: Layers, to: "/instructor/batches" },
@@ -77,7 +78,6 @@ export const instructorTools: NavItem[] = [
   { label: "Resource Library", icon: Library },
 ];
 
-// ─── Student Navigation Groups ───────────────────────────────────────────────
 export const studentWorkspace: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/student/dashboard" },
   { label: "All Courses", icon: BookOpen, to: "/student/courses" },
@@ -230,7 +230,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
 
   return (
     <aside className="flex h-full w-full flex-col border-r border-[var(--hairline)] bg-[var(--surface)]/60 backdrop-blur-sm">
-      {/* Logo */}
+      {}
       <div
         className={`flex items-center justify-between py-5 shrink-0 ${isStudent ? "px-5 lg:px-0 lg:justify-center" : "px-5"}`}
       >
@@ -257,7 +257,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         )}
       </div>
 
-      {/* Role badge */}
+      {}
       <div className={`px-5 pb-2 shrink-0 ${isStudent ? "lg:hidden" : ""}`}>
         <span
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${
@@ -277,12 +277,12 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         </span>
       </div>
 
-      {/* Navigation */}
+      {}
       <nav
         data-lenis-prevent="true"
         className="px-2 pb-6 flex-1 min-h-0 overflow-y-auto overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
-        {/* Dashboard link for Admin / Instructor */}
+        {}
         {!isStudent && (
           <div className="mt-3">
             <Link
@@ -330,7 +330,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         )}
       </nav>
 
-      {/* User profile & logout footer */}
+      {}
       <div
         className={`p-3 shrink-0 border-t border-[var(--hairline)] space-y-2 ${isStudent ? "lg:hidden" : ""}`}
       >

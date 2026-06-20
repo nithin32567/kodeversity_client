@@ -26,7 +26,6 @@ export function AdminCoursesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
-  // Search & Filter
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
   const [levels, setLevels] = useState<string[]>([
@@ -36,10 +35,8 @@ export function AdminCoursesPage() {
     "BEGINNER_TO_ADVANCED",
   ]);
 
-  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Instructors list compiled from courses
   const [instructors, setInstructors] = useState<Instructor[]>([]);
 
   const fetchCourses = useCallback(() => {
@@ -87,7 +84,6 @@ export function AdminCoursesPage() {
     });
   }, [fetchCourses]);
 
-  // Filter courses
   const filteredCourses = useMemo(() => {
     return courses.filter((c) => {
       const matchesSearch =
@@ -103,7 +99,7 @@ export function AdminCoursesPage() {
 
   return (
     <main className="flex-1 px-4 pb-6 sm:px-6 lg:px-8 lg:pb-8 space-y-6 overflow-y-auto max-w-[1400px] mx-auto w-full">
-      {/* Header section */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight md:text-3xl font-display">
@@ -123,7 +119,7 @@ export function AdminCoursesPage() {
         </button>
       </div>
 
-      {/* Search and Filters toolbar */}
+      {}
       <div className="flex flex-col md:flex-row gap-4 p-4 rounded-xl bg-[var(--surface-2)]/40 border border-[var(--hairline)]">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -156,7 +152,7 @@ export function AdminCoursesPage() {
         </div>
       </div>
 
-      {/* Courses display grid */}
+      {}
       {isLoading ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -209,7 +205,7 @@ export function AdminCoursesPage() {
         </div>
       )}
 
-      {/* Creation Modal Backdrop & Overlay */}
+      {}
       <CreateCourseModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Video,
   Calendar,
@@ -26,34 +26,35 @@ export function StudentLiveClassesPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchLiveClasses = async (showPulse = false) => {
-    if (!user) return;
-    if (showPulse) setRefreshing(true);
-    try {
-      const data = await studentService.getMyLiveClasses(user.id);
-      setMeetings(data);
-    } catch (err) {
-      console.error("Failed to load live sessions:", err);
-      toast.error("Failed to fetch live classes schedule.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+  const fetchLiveClasses = useCallback(
+    async (showPulse = false) => {
+      if (!user) return;
+      if (showPulse) setRefreshing(true);
+      try {
+        const data = await studentService.getMyLiveClasses(user.id);
+        setMeetings(data);
+      } catch (err) {
+        console.error("Failed to load live sessions:", err);
+        toast.error("Failed to fetch live classes schedule.");
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [user],
+  );
 
   useEffect(() => {
     if (isAuthLoading || !user) return;
     void fetchLiveClasses();
 
-    // Poll for status updates every 10 seconds
     const interval = setInterval(() => {
       void fetchLiveClasses(false);
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [isAuthLoading, user]);
+  }, [isAuthLoading, user, fetchLiveClasses]);
 
-  // Split sessions into Live and Upcoming
   const liveSessions = useMemo(() => {
     return meetings.filter((m) => m.status === "LIVE");
   }, [meetings]);
@@ -80,7 +81,7 @@ export function StudentLiveClassesPage() {
 
   return (
     <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 overflow-y-auto max-w-[1400px] mx-auto w-full">
-      {/* Title Header */}
+      {}
       <div className="flex items-center justify-between pb-4 border-b border-border">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-white font-display flex items-center gap-2">
@@ -111,7 +112,7 @@ export function StudentLiveClassesPage() {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* ── SECTION 1: LIVE NOW ── */}
+          {}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold tracking-wider text-red-400 uppercase flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
@@ -169,7 +170,7 @@ export function StudentLiveClassesPage() {
             )}
           </div>
 
-          {/* ── SECTION 2: UPCOMING SESSIONS ── */}
+          {}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
               Upcoming Sessions
@@ -183,7 +184,7 @@ export function StudentLiveClassesPage() {
               <div className="p-6 rounded-2xl border border-border bg-card shadow-lg space-y-6 relative before:absolute before:left-8 before:top-6 before:bottom-6 before:w-[1px] before:bg-border">
                 {upcomingSessions.map((meeting) => (
                   <div key={meeting.id} className="relative pl-10 space-y-2 group">
-                    {/* Circle dot */}
+                    {}
                     <div className="absolute left-[26px] top-1.5 h-3.5 w-3.5 rounded-full bg-card/60 border border-border group-hover:border-indigo-400 transition ring-4 ring-card" />
 
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">

@@ -1,10 +1,3 @@
-/**
- * Course module types.
- *
- * Re-exports domain types used by the course feature and defines
- * any presentation-specific interfaces needed by course components.
- */
-
 export type {
   Course,
   Lesson,

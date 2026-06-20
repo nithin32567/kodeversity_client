@@ -10,7 +10,7 @@ export function Hero() {
 
   return (
     <section id="hero" className="relative h-screen w-full overflow-hidden bg-background font-mono">
-      {/* Interactive dot grid background */}
+      {}
       <div className="absolute inset-0 z-0">
         <DotGrid
           key={accent}
@@ -24,7 +24,7 @@ export function Hero() {
         />
       </div>
 
-      {/* Radial vignette + scanlines for terminal feel */}
+      {}
       <div
         className="pointer-events-none absolute inset-0 z-[5]"
         style={{

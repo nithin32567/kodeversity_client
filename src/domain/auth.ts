@@ -14,7 +14,6 @@ export interface OtpPayload {
   email: string;
 }
 
-// Human-readable messages for API error codes from the auth service.
 export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   EMAIL_ALREADY_REGISTERED: "An account with this email already exists.",
   INVALID_CREDENTIALS: "Invalid email or password.",

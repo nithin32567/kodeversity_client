@@ -5,7 +5,6 @@ import { getAuthErrorMessage, UserRole } from "@/domain/auth";
 
 interface LoginSearch {
   redirect?: string;
-  /** Pre-filled email when redirected here from OTP verification success. */
   verified?: string;
 }
 
@@ -58,7 +57,6 @@ function LoginPage() {
     } catch (err) {
       const code = (err as Error).message;
       if (code === "EMAIL_NOT_VERIFIED") {
-        // Redirect to register page OTP view without losing context.
         void navigate({ to: "/register", search: { email, step: "otp" } });
         return;
       }

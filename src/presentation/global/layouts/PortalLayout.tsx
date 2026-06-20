@@ -10,7 +10,6 @@ export function PortalLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isStudent = user?.role === "STUDENT";
 
-  // Skip rendering layout wrappers for login / registration pages
   const isLoginPage =
     location.pathname === "/login" ||
     location.pathname === "/admin/login" ||
@@ -31,14 +30,14 @@ export function PortalLayout() {
 
   return (
     <div className="admin-theme min-h-screen bg-background text-foreground lg:flex">
-      {/* ── DESKTOP SIDEBAR ── */}
+      {}
       <div
         className={`hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:max-h-screen shrink-0 transition-all duration-300 ${isStudent ? "w-20" : "w-[248px]"}`}
       >
         <Sidebar />
       </div>
 
-      {/* ── MOBILE MENU DRAWER ── */}
+      {}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
           <div
@@ -51,7 +50,7 @@ export function PortalLayout() {
         </div>
       )}
 
-      {/* ── MAIN CONTENT CONTAINER ── */}
+      {}
       <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
         <Topbar onMenuClick={() => setMobileMenuOpen(true)} />
         <div data-lenis-prevent="true" className="flex-1 min-h-0 overflow-y-auto bg-background/50">

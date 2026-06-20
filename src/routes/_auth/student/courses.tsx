@@ -281,7 +281,7 @@ function CourseGridCard({ course, index }: { course: Course; index: number }) {
       </div>
 
       <div className="flex flex-1 flex-col p-4">
-        {/* We keep the link pointing to the public details page */}
+        {}
         <Link
           to="/courses/$slug"
           params={{ slug: course.slug }}

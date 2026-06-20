@@ -37,7 +37,7 @@ export function CourseCard({ course }: CourseCardProps) {
 
   return (
     <div className="group flex flex-col rounded-2xl border border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)]/80 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-0.5 transition duration-350 overflow-hidden">
-      {/* Image / Thumbnail placeholder container */}
+      {}
       <div className="relative aspect-[16/10] bg-[var(--surface-2)] border-b border-[var(--hairline)] grid place-items-center overflow-hidden">
         {course.thumbnailUrl ? (
           <img
@@ -51,19 +51,19 @@ export function CourseCard({ course }: CourseCardProps) {
           </div>
         )}
 
-        {/* Level Badge */}
+        {}
         <span className="absolute top-3 left-3 px-2 py-1 rounded-md text-[10px] font-bold tracking-wider bg-black/60 backdrop-blur-sm text-indigo-300 ring-1 ring-white/10 uppercase">
           {levelLabels[course.level] || course.level}
         </span>
 
-        {/* Duration Badge */}
+        {}
         <span className="absolute bottom-3 right-3 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold bg-black/60 backdrop-blur-sm text-slate-300 ring-1 ring-white/10">
           <Clock className="h-3 w-3" />
           {formatDuration(course.totalDuration)}
         </span>
       </div>
 
-      {/* Info Container */}
+      {}
       <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
         <div className="space-y-2">
           <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-indigo-400 transition">
@@ -74,7 +74,7 @@ export function CourseCard({ course }: CourseCardProps) {
           </p>
         </div>
 
-        {/* Key stats row */}
+        {}
         <div className="flex items-center gap-4 text-xs text-muted-foreground border-t border-[var(--hairline)] pt-3">
           <div className="flex items-center gap-1">
             <BookOpen className="h-3.5 w-3.5" />
@@ -88,7 +88,7 @@ export function CourseCard({ course }: CourseCardProps) {
           )}
         </div>
 
-        {/* Price & Instructor Row */}
+        {}
         <div className="flex items-center justify-between border-t border-[var(--hairline)] pt-3">
           <div className="flex items-center gap-2">
             <div className="h-7 w-7 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-semibold grid place-items-center">
@@ -116,14 +116,14 @@ export function CourseCard({ course }: CourseCardProps) {
           </div>
         </div>
 
-        {/* Action Row */}
+        {}
         <div className="pt-3 mt-1 border-t border-[var(--hairline)] flex flex-col gap-2">
           <Link
-            to="/courses/$slug"
+            to="/admin/courses/view/$slug"
             params={{ slug: course.slug }}
             className="flex w-full items-center justify-center rounded-lg bg-[image:var(--gradient-primary)] py-2.5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] transition-transform hover:scale-[1.02]"
           >
-            View Course Details
+            Preview Course Contents
           </Link>
           <Link
             to="/admin/courses/$slug"

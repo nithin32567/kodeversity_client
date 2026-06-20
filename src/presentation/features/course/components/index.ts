@@ -1,5 +1,3 @@
-// Course feature — component barrel exports
-
 export { AllCoursesPage } from "./AllCoursesPage";
 export { CourseDetailPage } from "./CourseDetailPage";
 export { CourseGridCard } from "./CourseGridCard";

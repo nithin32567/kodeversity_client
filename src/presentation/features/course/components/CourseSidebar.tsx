@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import {
   Heart,
   BookOpen,
@@ -47,6 +48,8 @@ interface CourseSidebarProps {
 
 export function CourseSidebar({ course, slug }: CourseSidebarProps) {
   const glow = useAccentRgb();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
 
   const coursePrice = formatPrice(course.price, course.currency);
   const courseOriginalPrice = course.discountPrice
@@ -80,19 +83,40 @@ export function CourseSidebar({ course, slug }: CourseSidebarProps) {
         </div>
         <p className="mt-1 text-xs text-rose-400">Limited time offer! Price will increase soon.</p>
 
-        <Link
-          to="/learn/$slug"
-          params={{ slug }}
-          className="mt-4 block w-full rounded-lg bg-[image:var(--gradient-primary)] py-3 text-center text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] transition-transform hover:scale-[1.01]"
-        >
-          Enroll Now
-        </Link>
-        <button className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-transparent py-3 text-sm font-medium text-foreground hover:bg-foreground/[0.04]">
-          <Heart className="h-4 w-4 text-rose-400" /> Add to Wishlist
-        </button>
-        <button className="mt-2 w-full rounded-lg border border-border bg-transparent py-3 text-sm font-semibold text-foreground hover:bg-foreground/[0.04]">
-          Buy Now
-        </button>
+        {isAdmin ? (
+          <div className="mt-4 flex flex-col gap-2">
+            <Link
+              to="/admin/courses/view/$slug"
+              params={{ slug }}
+              className="block w-full rounded-lg bg-[image:var(--gradient-primary)] py-3 text-center text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] transition-transform hover:scale-[1.01]"
+            >
+              Preview Course Contents
+            </Link>
+            <Link
+              to="/admin/courses/$slug"
+              params={{ slug }}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-transparent py-3 text-sm font-medium text-foreground hover:bg-foreground/[0.04]"
+            >
+              ⚙ Manage Course
+            </Link>
+          </div>
+        ) : (
+          <>
+            <Link
+              to="/learn/$slug"
+              params={{ slug }}
+              className="mt-4 block w-full rounded-lg bg-[image:var(--gradient-primary)] py-3 text-center text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] transition-transform hover:scale-[1.01]"
+            >
+              Enroll Now
+            </Link>
+            <button className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-transparent py-3 text-sm font-medium text-foreground hover:bg-foreground/[0.04]">
+              <Heart className="h-4 w-4 text-rose-400" /> Add to Wishlist
+            </button>
+            <button className="mt-2 w-full rounded-lg border border-border bg-transparent py-3 text-sm font-semibold text-foreground hover:bg-foreground/[0.04]">
+              Buy Now
+            </button>
+          </>
+        )}
 
         <ul className="mt-5 space-y-3 border-t border-border pt-5">
           {sidebarFeatures.map(({ icon: Icon, label }) => (

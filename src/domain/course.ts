@@ -22,6 +22,7 @@ export interface Quiz {
 export interface Chapter {
   id: string;
   title: string;
+  description?: string;
   sortOrder: number;
   isPreview: boolean;
   type: ChapterType;
@@ -30,17 +31,13 @@ export interface Chapter {
   documentUrl: string | null;
   moduleId: string;
   quizzes: Quiz[];
-  /**
-   * Present only when `type === "PLAYGROUND"`.
-   * Contains the container template parameters needed to provision
-   * an isolated sandbox environment for this lesson.
-   */
   playgroundConfig?: PlaygroundConfig | null;
 }
 
 export interface Module {
   id: string;
   title: string;
+  description?: string;
   sortOrder: number;
   courseId: string;
   chapters: Chapter[];
@@ -93,13 +90,18 @@ export interface Course {
   reviews?: Review[];
 }
 
+export type LessonType = "VIDEO" | "QUIZ" | "PLAYGROUND";
+
 export interface Lesson {
   id: string;
   title: string;
+  description?: string;
   duration: string;
   videoUrl?: string;
   content?: string;
   order: number;
+  type?: LessonType;
+  playgroundConfig?: PlaygroundConfig | null;
 }
 
 export interface Challenge {

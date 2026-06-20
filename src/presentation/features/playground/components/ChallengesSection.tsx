@@ -95,9 +95,9 @@ export function ChallengesSection() {
                 </div>
               </div>
 
-              {/* Photo/Illustration Placeholder */}
+              {}
               <div className="relative mb-6 aspect-[16/9] w-full overflow-hidden rounded-xl border border-border/80 bg-gradient-to-br from-[var(--accent-cyan)]/5 to-[var(--accent-violet)]/5 transition-all duration-300 group-hover:border-[var(--accent-cyan)]/30 group-hover:from-[var(--accent-cyan)]/10 group-hover:to-[var(--accent-violet)]/10">
-                {/* Micro-tech dot grid pattern background */}
+                {}
                 <div
                   className="absolute inset-0 opacity-20 mix-blend-overlay"
                   style={{
@@ -106,10 +106,10 @@ export function ChallengesSection() {
                   }}
                 />
 
-                {/* Glow/Light effect in center */}
+                {}
                 <div className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--accent-cyan)]/10 blur-xl transition-all duration-500 group-hover:bg-[var(--accent-cyan)]/25 group-hover:scale-125" />
 
-                {/* Glassmorphic floating challenge badge */}
+                {}
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
                   <div className="flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-background/40 p-4 backdrop-blur-md transition-all duration-300 group-hover:border-white/20 group-hover:bg-background/60 group-hover:scale-105">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--accent-cyan)]/20 to-[var(--accent-violet)]/20 text-[var(--accent-cyan)] group-hover:text-[var(--accent-violet)] transition-colors duration-300">

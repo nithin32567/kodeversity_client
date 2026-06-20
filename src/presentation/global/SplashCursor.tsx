@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-explicit-any */
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useEffect, useRef, useState } from "react";
 
@@ -1140,7 +1139,6 @@ export function SplashCursor({
       return false;
     }
 
-    // Helper to check if client coordinate is inside the Footer boundary
     function isInsideFooter(clientY: number): boolean {
       const mainContent = document.getElementById("main-content");
       if (mainContent) {
@@ -1157,7 +1155,6 @@ export function SplashCursor({
       return false;
     }
 
-    // Named event handlers for proper cleanup
     function handleMouseDown(e: MouseEvent) {
       if (isInsideHero(e.clientY) || isInsideFooter(e.clientY)) return;
       const pointer = pointers[0];
@@ -1212,7 +1209,6 @@ export function SplashCursor({
       }
     }
 
-    // Add event listeners
     window.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("touchstart", handleTouchStart);
@@ -1221,17 +1217,14 @@ export function SplashCursor({
 
     updateFrame();
 
-    // Cleanup function
     return () => {
       isActive = false;
 
-      // Cancel animation frame
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
         animationFrameId.current = null;
       }
 
-      // Remove event listeners
       window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("touchstart", handleTouchStart);

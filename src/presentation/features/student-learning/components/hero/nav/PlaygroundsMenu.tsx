@@ -63,7 +63,7 @@ export function PlaygroundsMenu() {
       style={{ boxShadow: "0 30px 80px -20px rgba(0,0,0,0.6), 0 0 80px -30px var(--accent-cyan)" }}
     >
       <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-10">
-        {/* soft vertical divider */}
+        {}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-y-4 left-1/2 hidden w-px -translate-x-1/2 lg:block"
@@ -73,7 +73,7 @@ export function PlaygroundsMenu() {
           }}
         />
 
-        {/* Hands-on Labs */}
+        {}
         <section className="lg:pr-6">
           <header className="mb-5 flex items-start justify-between gap-4 px-3">
             <div>
@@ -92,7 +92,7 @@ export function PlaygroundsMenu() {
           </div>
         </section>
 
-        {/* Sandbox Environments */}
+        {}
         <section className="lg:pl-6">
           <header className="mb-5 flex items-start justify-between gap-4 px-3">
             <div>

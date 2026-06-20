@@ -10,14 +10,14 @@ export interface LogoItem {
 
 export interface LogoLoopProps {
   logos: LogoItem[];
-  speed?: number; // lower means faster, default is 100
+  speed?: number;
   direction?: "left" | "right" | "up" | "down";
   logoHeight?: number;
   gap?: number;
   hoverSpeed?: number;
   scaleOnHover?: boolean;
   fadeOut?: boolean;
-  fadeOutColor?: string; // e.g. "var(--background)" or "#000000"
+  fadeOutColor?: string;
   ariaLabel?: string;
   useCustomRender?: boolean;
 }
@@ -39,19 +39,15 @@ export default function LogoLoop({
 
   if (!logos || logos.length === 0) return null;
 
-  // Duplicate the list of logos to create the infinite scroll illusion
   const duplicatedLogos = [...logos, ...logos, ...logos, ...logos];
 
   const isVertical = direction === "up" || direction === "down";
 
-  // Calculate animation duration based on speed prop
   const duration = speed > 0 ? `${1200 / speed}s` : "0s";
   const hoverDuration = hoverSpeed > 0 ? `${1200 / hoverSpeed}s` : "0s";
 
-  // Animation name based on direction
   const animationName = `logo-loop-${direction}`;
 
-  // Unique ID to avoid style block collisions
   const styleId = `logo-loop-styles-${direction}`;
 
   return (
@@ -67,7 +63,7 @@ export default function LogoLoop({
         height: isVertical ? "100%" : `${logoHeight + 24}px`,
       }}
     >
-      {/* Inline styles for custom infinite marquee animation */}
+      {}
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -156,7 +152,7 @@ export default function LogoLoop({
         })}
       </div>
 
-      {/* Fade-out edge gradients */}
+      {}
       {fadeOut && !isVertical && (
         <>
           <div

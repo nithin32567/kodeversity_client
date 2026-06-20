@@ -4,7 +4,6 @@ import { PortalLayout } from "@/presentation/global/layouts/PortalLayout";
 
 export const Route = createFileRoute("/_auth")({
   beforeLoad: ({ location }) => {
-    // 1. Skip auth checks for login routes
     if (location.pathname === "/login" || location.pathname === "/admin/login") {
       return;
     }
@@ -13,7 +12,6 @@ export const Route = createFileRoute("/_auth")({
 
     if (isLoading) return;
 
-    // 2. Redirect to correct login path if not authenticated
     if (!isAuthenticated) {
       if (location.pathname.startsWith("/admin") || location.pathname.startsWith("/instructor")) {
         throw redirect({ to: "/admin/login", search: { redirect: location.href } });
@@ -21,7 +19,6 @@ export const Route = createFileRoute("/_auth")({
       throw redirect({ to: "/login", search: { redirect: location.href } });
     }
 
-    // 3. Prevent logged-in users from accessing paths outside their role's scope
     const role = user?.role;
 
     if (location.pathname.startsWith("/admin")) {

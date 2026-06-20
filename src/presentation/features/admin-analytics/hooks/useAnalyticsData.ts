@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { analyticsService, type DashboardAnalytics } from "@/infrastructure/admin/analyticsService";
 
-// Timeline trend data (original mock data from OverviewAnalytics)
 export interface TimelineDataPoint {
   d: string;
   students: number;

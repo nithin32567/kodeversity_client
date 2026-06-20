@@ -43,7 +43,7 @@ export function ActionModal({
       await onConfirm();
       onClose();
     } catch (err) {
-      // Error is handled by caller
+      void 0;
     } finally {
       setIsSubmitting(false);
     }

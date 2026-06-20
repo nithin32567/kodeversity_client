@@ -1,3 +1,4 @@
+import React from "react";
 import { apiClient } from "@/infrastructure/http/apiClient";
 import { endpoints } from "@/infrastructure/http/endpoints";
 import type {
@@ -146,7 +147,7 @@ const mockTopCourses: TopCourse[] = [
   },
 ];
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   "Total Students": Users,
   "Total Courses": BookOpen,
   "Total Instructors": GraduationCap,
@@ -166,7 +167,6 @@ export const analyticsService = {
       }
       return data;
     } catch {
-      // Fallback to rich, mock data when API is unavailable.
       return {
         kpis: mockKpis,
         revenueData: mockRevenueData,

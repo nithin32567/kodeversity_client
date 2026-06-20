@@ -11,10 +11,10 @@ export interface Batch {
   startDate: string;
   endDate?: string | null;
   status: "UPCOMING" | "ACTIVE" | "COMPLETED" | "SUSPENDED";
-  courseId: string;
+  courseId: string | null;
   course?: {
     name: string;
-  };
+  } | null;
   createdAt: string;
   updatedAt: string;
   instructorId?: string | null;
@@ -103,11 +103,17 @@ export const managementService = {
       return [];
     }
   },
-  createModule: async (courseId: string, title: string): Promise<Module> => {
-    return await apiClient.post<Module>(endpoints.course.createModule(courseId), { title });
+  createModule: async (courseId: string, title: string, description?: string): Promise<Module> => {
+    return await apiClient.post<Module>(endpoints.course.createModule(courseId), {
+      title,
+      description,
+    });
   },
-  updateModule: async (moduleId: string, title: string): Promise<Module> => {
-    return await apiClient.patch<Module>(endpoints.course.updateModule(moduleId), { title });
+  updateModule: async (moduleId: string, title: string, description?: string): Promise<Module> => {
+    return await apiClient.patch<Module>(endpoints.course.updateModule(moduleId), {
+      title,
+      description,
+    });
   },
   deleteModule: async (moduleId: string): Promise<unknown> => {
     return await apiClient.del<unknown>(endpoints.course.deleteModule(moduleId));
@@ -122,6 +128,7 @@ export const managementService = {
     moduleId: string,
     chapterData: {
       title: string;
+      description?: string;
       type: string;
       videoUrl?: string | null;
       duration?: number | null;
@@ -164,7 +171,7 @@ export const managementService = {
   createBatch: async (batchData: {
     name: string;
     code: string;
-    courseId: string;
+    courseId: string | null;
     startDate: string;
     endDate?: string | null;
   }): Promise<Batch> => {
@@ -175,7 +182,7 @@ export const managementService = {
     batchData: {
       name?: string;
       code?: string;
-      courseId?: string;
+      courseId?: string | null;
       startDate?: string;
       endDate?: string | null;
       instructorId?: string | null;
@@ -227,5 +234,20 @@ export const managementService = {
   },
   deleteUser: async (userId: string): Promise<void> => {
     await apiClient.del<unknown>(endpoints.admin.deleteUser(userId));
+  },
+  enrollStudent: async (payload: {
+    studentId: string;
+    courseId: string;
+  }): Promise<{
+    id: string;
+    studentId: string;
+    courseId: string;
+    pricePaid: number;
+    isCompleted: boolean;
+    completedPercent: number;
+    student: { id: string; name: string | null; email: string };
+    course: { id: string; title: string; slug: string };
+  }> => {
+    return await apiClient.post(endpoints.admin.enrollStudent, payload);
   },
 };

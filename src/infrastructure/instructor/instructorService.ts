@@ -1,16 +1,6 @@
-/**
- * instructorService.ts
- * All API calls scoped to the Instructor role.
- * Backend endpoints filter data by the JWT-encoded instructor identity.
- * When dedicated instructor endpoints aren't available yet, we fall back
- * to the shared endpoints and perform client-side filtering.
- */
-
 import { apiClient } from "@/infrastructure/http/apiClient";
 import { endpoints } from "@/infrastructure/http/endpoints";
 import type { Course } from "@/domain/course";
-
-// ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface InstructorBatch {
   id: string;
@@ -59,10 +49,6 @@ export interface CreateChapterPayload {
   duration?: number | null;
   documentUrl?: string | null;
   isPreview?: boolean;
-  /**
-   * Required when `type === "PLAYGROUND"`.
-   * Contains the sandbox template parameters for provisioning.
-   */
   playgroundConfig?: {
     pg: string;
     pgname: string;
@@ -71,8 +57,6 @@ export interface CreateChapterPayload {
     maxScore: number;
   } | null;
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function unwrap<T>(response: { success?: boolean; data?: T } | T): T {
   if (
@@ -86,21 +70,12 @@ function unwrap<T>(response: { success?: boolean; data?: T } | T): T {
   return response as T;
 }
 
-// ─── Service ─────────────────────────────────────────────────────────────────
-
 export const instructorService = {
-  /**
-   * Get courses assigned to / created by the logged-in instructor.
-   * Tries the dedicated instructor endpoint first; falls back to the
-   * general course list if the endpoint doesn't exist yet.
-   */
   getMyCourses: async (): Promise<Course[]> => {
     try {
       const response = await apiClient.get<unknown>(endpoints.instructor.myCourses);
       return unwrap<Course[]>(response as Course[]) ?? [];
     } catch {
-      // Fallback: fetch all courses (admin endpoint), return as-is.
-      // The page component further filters by instructorId client-side.
       try {
         const response = await apiClient.get<unknown>(endpoints.admin.courses);
         const courses = unwrap<Course[]>(response as Course[]);
@@ -111,10 +86,6 @@ export const instructorService = {
     }
   },
 
-  /**
-   * Get batches assigned to the instructor's courses.
-   * Falls back to all batches if dedicated endpoint isn't ready.
-   */
   getMyBatches: async (): Promise<InstructorBatch[]> => {
     try {
       const response = await apiClient.get<unknown>(endpoints.instructor.myBatches);
@@ -130,7 +101,6 @@ export const instructorService = {
     }
   },
 
-  /** Get the student roster for a specific batch. */
   getBatchRoster: async (batchId: string): Promise<InstructorBatchStudent[]> => {
     try {
       const response = await apiClient.get<unknown>(endpoints.instructor.batchRoster(batchId));
@@ -140,13 +110,11 @@ export const instructorService = {
     }
   },
 
-  /** Create a new course (instructor-owned). */
   createCourse: async (payload: CreateCoursePayload): Promise<Course> => {
     const response = await apiClient.post<unknown>(endpoints.instructor.createCourse, payload);
     return unwrap<Course>(response as Course);
   },
 
-  /** Add a module to a course. */
   createModule: async (courseId: string, title: string): Promise<unknown> => {
     const response = await apiClient.post<unknown>(endpoints.instructor.createModule(courseId), {
       title,
@@ -154,7 +122,6 @@ export const instructorService = {
     return unwrap(response);
   },
 
-  /** Update a module's title. */
   updateModule: async (moduleId: string, title: string): Promise<unknown> => {
     const response = await apiClient.patch<unknown>(endpoints.instructor.updateModule(moduleId), {
       title,
@@ -162,12 +129,10 @@ export const instructorService = {
     return unwrap(response);
   },
 
-  /** Delete a module. */
   deleteModule: async (moduleId: string): Promise<void> => {
     await apiClient.del<unknown>(endpoints.instructor.deleteModule(moduleId));
   },
 
-  /** Add a chapter/lesson to a module. */
   createChapter: async (moduleId: string, data: CreateChapterPayload): Promise<unknown> => {
     const response = await apiClient.post<unknown>(
       endpoints.instructor.createChapter(moduleId),
@@ -176,7 +141,6 @@ export const instructorService = {
     return unwrap(response);
   },
 
-  /** Update a chapter/lesson. */
   updateChapter: async (
     chapterId: string,
     data: Partial<CreateChapterPayload>,
@@ -188,7 +152,6 @@ export const instructorService = {
     return unwrap(response);
   },
 
-  /** Delete a chapter/lesson. */
   deleteChapter: async (chapterId: string): Promise<void> => {
     await apiClient.del<unknown>(endpoints.instructor.deleteChapter(chapterId));
   },

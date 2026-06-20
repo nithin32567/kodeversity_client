@@ -55,7 +55,6 @@ export function StudentProfilePage() {
           });
           setEnrollments(matchedStudent.enrolledCourses || []);
         } else {
-          // If no student profile is synced yet, fetch enrollments directly
           const fallbackEnrollments = await studentService.getStudentEnrollments(user.id);
           setEnrollments(fallbackEnrollments);
         }
@@ -81,7 +80,6 @@ export function StudentProfilePage() {
     );
   }
 
-  // Map courses with student enrollments
   const purchasedCourses = enrollments
     .map((enroll) => {
       const course = courses.find((c) => c.id === enroll.courseId);
@@ -94,7 +92,7 @@ export function StudentProfilePage() {
 
   return (
     <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 overflow-y-auto max-w-[1400px] mx-auto w-full">
-      {/* ── TOP SECTION: PROFILE CARD ── */}
+      {}
       <div className="p-6 sm:p-8 rounded-2xl border border-border bg-card relative overflow-hidden shadow-xl">
         <div
           className="absolute -right-20 -bottom-20 h-64 w-64 rounded-full blur-[90px] opacity-10"
@@ -102,7 +100,7 @@ export function StudentProfilePage() {
         />
 
         <div className="relative z-10 flex flex-col md:flex-row gap-6 items-start md:items-center">
-          {/* Avatar Initials */}
+          {}
           <div
             className="h-20 w-20 sm:h-24 sm:w-24 rounded-full grid place-items-center text-white text-3xl font-bold border-2 border-border shadow-lg"
             style={{ background: "var(--gradient-primary)" }}
@@ -118,7 +116,7 @@ export function StudentProfilePage() {
               : "ST"}
           </div>
 
-          {/* User Details */}
+          {}
           <div className="flex-1 space-y-3">
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-white font-display flex items-center gap-2">
@@ -129,7 +127,7 @@ export function StudentProfilePage() {
               </p>
             </div>
 
-            {/* Info Grid */}
+            {}
             <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 max-w-3xl pt-2">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Mail className="h-4 w-4 text-blue-400/80 shrink-0" />
@@ -165,7 +163,7 @@ export function StudentProfilePage() {
         </div>
       </div>
 
-      {/* ── BOTTOM SECTION: PURCHASED COURSES ── */}
+      {}
       <div className="space-y-4">
         <div>
           <h3 className="text-lg font-bold tracking-tight font-display flex items-center gap-2">
@@ -198,7 +196,7 @@ export function StudentProfilePage() {
                 key={enroll.id}
                 className="flex flex-col p-5 rounded-2xl border border-border bg-card hover:bg-card/85 transition duration-300 group shadow-lg"
               >
-                {/* Thumbnail */}
+                {}
                 <div className="relative aspect-video rounded-xl bg-card border border-border overflow-hidden shrink-0">
                   {enroll.course?.thumbnailUrl ? (
                     <img
@@ -216,7 +214,7 @@ export function StudentProfilePage() {
                   </span>
                 </div>
 
-                {/* Info */}
+                {}
                 <div className="mt-4 flex-1 flex flex-col justify-between">
                   <div className="space-y-1.5">
                     <h4 className="font-bold text-[15px] leading-tight text-white line-clamp-1 group-hover:text-indigo-400 transition">
@@ -227,7 +225,7 @@ export function StudentProfilePage() {
                     </p>
                   </div>
 
-                  {/* Pricing and Stats */}
+                  {}
                   <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-border text-[11px] text-muted-foreground">
                     <div className="flex items-center gap-1.5">
                       <Clock className="h-3.5 w-3.5 text-indigo-400/80" />
@@ -240,7 +238,7 @@ export function StudentProfilePage() {
                     </div>
                   </div>
 
-                  {/* Progress */}
+                  {}
                   <div className="mt-4 space-y-1">
                     <div className="flex justify-between items-center text-[10px] font-mono text-muted-foreground">
                       <span>Learning Progress</span>
@@ -256,18 +254,15 @@ export function StudentProfilePage() {
                     </div>
                   </div>
 
-                  {/* Resume Learning Button */}
-                  <button
-                    onClick={() => {
-                      alert(
-                        `Resume Course learning for: "${enroll.course?.title}".\nIn production, this navigates to the learning viewer/player.`,
-                      );
-                    }}
-                    className="w-full mt-4 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/20 active:scale-[0.98] transition cursor-pointer"
+                  {}
+                  <Link
+                    to="/student/learn/$slug"
+                    params={{ slug: enroll.course!.slug }}
+                    className="w-full mt-4 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/20 active:scale-[0.98] transition"
                   >
                     <span>Resume Learning</span>
                     <ExternalLink className="h-3.5 w-3.5" />
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}

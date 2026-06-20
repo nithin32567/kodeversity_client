@@ -17,7 +17,7 @@ export function CoursesSection() {
 
   return (
     <section className="relative w-full bg-background py-16 md:py-24 overflow-hidden">
-      {/* subtle top fade */}
+      {}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-40"
         style={{
@@ -26,7 +26,7 @@ export function CoursesSection() {
         }}
       />
 
-      {/* DarkVeil Background covering the entire course section */}
+      {}
       {mounted && (
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-30 mix-blend-screen">
           <DarkVeil
@@ -64,7 +64,7 @@ export function CoursesSection() {
           </div>
         </div>
 
-        {/* Tabs */}
+        {}
         <div className="mt-12 border-b border-border md:mt-16">
           <div className="-mx-4 flex items-center gap-4 overflow-x-auto px-4 md:mx-0 md:justify-center md:gap-8 md:overflow-visible md:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {tabs.map((tab) => {
@@ -87,7 +87,7 @@ export function CoursesSection() {
           </div>
         </div>
 
-        {/* Grid */}
+        {}
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {current.data.map((c) => (
             <CourseCard key={c.title} course={c} />

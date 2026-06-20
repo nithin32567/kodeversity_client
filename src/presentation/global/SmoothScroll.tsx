@@ -1,11 +1,8 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import { useEffect } from "react";
 import Lenis from "lenis";
 
 export function SmoothScroll() {
   useEffect(() => {
-    // Only run on client-side
     if (typeof window === "undefined") return;
 
     const lenis = new Lenis({
@@ -26,7 +23,6 @@ export function SmoothScroll() {
 
     rafId = requestAnimationFrame(raf);
 
-    // Global listener to smoothly animate anchor link clicks
     const handleAnchorClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const anchor = target.closest("a");

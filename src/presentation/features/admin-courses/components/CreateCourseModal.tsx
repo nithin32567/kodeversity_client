@@ -32,7 +32,7 @@ const initialFormState = {
   discountPrice: "",
   currency: "USD",
   level: "BEGINNER" as CourseLevel,
-  totalDuration: "60", // Default to 1 hour (60 minutes)
+  totalDuration: "60",
   lessonsCount: "10",
   projectsCount: "2",
   hasCertificate: true,
@@ -240,9 +240,9 @@ export function CreateCourseModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      {/* Modal Card */}
+      {}
       <div className="relative w-full max-w-3xl rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-        {/* Modal Header */}
+        {}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--hairline)] bg-[var(--surface-2)]/60">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-indigo-400" />
@@ -257,14 +257,14 @@ export function CreateCourseModal({
           </button>
         </div>
 
-        {/* Modal Body Form */}
+        {}
         <form
           onSubmit={handleSubmit}
           data-lenis-prevent
           className="flex-1 overflow-y-auto p-6 space-y-6"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Title */}
+            {}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Course Title *
@@ -279,7 +279,7 @@ export function CreateCourseModal({
               />
             </div>
 
-            {/* Slug */}
+            {}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                 URL Slug *
@@ -298,7 +298,7 @@ export function CreateCourseModal({
             </div>
           </div>
 
-          {/* Subtitle */}
+          {}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Course Subtitle *
@@ -313,7 +313,7 @@ export function CreateCourseModal({
             />
           </div>
 
-          {/* Description */}
+          {}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Description *
@@ -329,7 +329,7 @@ export function CreateCourseModal({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Level */}
+            {}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Difficulty Level
@@ -352,7 +352,7 @@ export function CreateCourseModal({
               </div>
             </div>
 
-            {/* Instructor */}
+            {}
             <div className="space-y-2 border border-[var(--hairline)] p-4 rounded-xl bg-[var(--surface-2)]/30">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -480,7 +480,7 @@ export function CreateCourseModal({
             </div>
           </div>
 
-          {/* Pricing section */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-[var(--surface-2)]/30 border border-[var(--hairline)]">
             <div className="space-y-1.5">
               <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
@@ -536,7 +536,7 @@ export function CreateCourseModal({
             </div>
           </div>
 
-          {/* Media links */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -569,7 +569,7 @@ export function CreateCourseModal({
             </div>
           </div>
 
-          {/* Stats */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -620,7 +620,7 @@ export function CreateCourseModal({
             </div>
           </div>
 
-          {/* Checkboxes */}
+          {}
           <div className="flex items-center gap-3 p-3 rounded-lg bg-[var(--surface-2)]/20 border border-[var(--hairline)]">
             <input
               type="checkbox"
@@ -636,7 +636,7 @@ export function CreateCourseModal({
             </label>
           </div>
 
-          {/* What you will learn & Includes lists */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -669,7 +669,7 @@ export function CreateCourseModal({
             </div>
           </div>
 
-          {/* Modal Actions */}
+          {}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--hairline)]">
             <button
               type="button"

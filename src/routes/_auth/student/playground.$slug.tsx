@@ -120,7 +120,7 @@ function PlaygroundPage() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
-      {/* SUB BAR */}
+      {}
       <div className="flex flex-wrap items-center gap-4 border-b border-border/60 bg-background/60 px-6 py-3">
         <Link
           to="/student/learn/$slug"
@@ -163,9 +163,9 @@ function PlaygroundPage() {
         </div>
       </div>
 
-      {/* BODY */}
+      {}
       <div className="flex min-h-0 flex-1 gap-3 overflow-hidden p-3">
-        {/* LEFT SIDEBAR */}
+        {}
         {!focusMode && (
           <aside className="order-3 hidden w-64 shrink-0 flex-col gap-3 overflow-y-auto lg:flex">
             <section className="rounded-2xl border border-border bg-card p-4">
@@ -229,9 +229,9 @@ function PlaygroundPage() {
           </aside>
         )}
 
-        {/* CENTER */}
+        {}
         <section className="order-2 flex min-w-0 min-h-0 flex-1 flex-col gap-3 overflow-hidden">
-          {/* Terminal panel */}
+          {}
           <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
             <div className="flex items-center border-b border-border/60 px-2">
               {(["terminal", "files", "editor"] as const).map((t) => (
@@ -287,7 +287,7 @@ drwxr-xr-x  2 student student 4096 May 20 10:15 `}
             </div>
           </div>
 
-          {/* Files panel */}
+          {}
           {!focusMode && (
             <div className="flex max-h-[220px] flex-col overflow-hidden rounded-2xl border border-border bg-card">
               <div className="flex items-center gap-3 border-b border-border/60 px-4 py-2.5 text-sm">
@@ -364,7 +364,7 @@ drwxr-xr-x  2 student student 4096 May 20 10:15 `}
           )}
         </section>
 
-        {/* RIGHT SIDEBAR */}
+        {}
         {!focusMode && (
           <aside className="order-1 hidden w-[340px] shrink-0 flex-col gap-3 overflow-y-auto xl:flex">
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
@@ -433,7 +433,7 @@ drwxr-xr-x  2 student student 4096 May 20 10:15 `}
         )}
       </div>
 
-      {/* FOOTER BAR */}
+      {}
       <footer className="flex items-center gap-4 border-t border-border/60 bg-background/80 px-6 py-3 text-xs">
         <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 font-medium hover:bg-foreground/[0.04]">
           <Settings className="h-3.5 w-3.5" /> Environment Settings{" "}

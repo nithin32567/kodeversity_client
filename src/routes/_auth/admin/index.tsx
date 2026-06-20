@@ -43,7 +43,6 @@ function AdminDashboard() {
   };
 
   const handleAddCourse = () => {
-    // If we want to redirect to courses page where course creation exists:
     window.location.href = "/admin/courses";
   };
 

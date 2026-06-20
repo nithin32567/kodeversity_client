@@ -91,11 +91,10 @@ export function AdminStudentsPage() {
 
     Promise.all([managementService.getStudents(), managementService.getSuspendedUsers()])
       .then(([activeList, suspendedList]) => {
-        // filter by status from activeList if API doesn't split it, but getStudents usually returns active
         setStudents((activeList as Student[]).filter((s) => s.status !== "SUSPENDED"));
         setSuspendedStudents(
           (suspendedList as Student[]).filter(
-            (s) => s.role === "STUDENT" || (s as any).role === "student",
+            (s) => s.role === "STUDENT" || (s.role as unknown as string) === "student",
           ),
         );
         setIsLoading(false);

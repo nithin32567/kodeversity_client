@@ -27,7 +27,6 @@ import {
   type ActionType,
 } from "@/presentation/features/admin-users/components/ActionModal";
 
-// Extends Instructor to include role and status just for internal state typing
 interface ExtendedInstructor extends Instructor {
   role?: string;
   status?: "ACTIVE" | "SUSPENDED";
@@ -88,7 +87,7 @@ export function AdminInstructorsPage() {
           (activeList as ExtendedInstructor[]).filter((i) => i.status !== "SUSPENDED"),
         );
         setSuspendedInstructors(
-          (suspendedList as any[]).filter(
+          (suspendedList as ExtendedInstructor[]).filter(
             (u) => u.role === "INSTRUCTOR" || u.role === "instructor",
           ),
         );

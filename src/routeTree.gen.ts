@@ -39,10 +39,12 @@ import { Route as AuthInstructorDashboardRouteImport } from './routes/_auth/inst
 import { Route as AuthInstructorCoursesRouteImport } from './routes/_auth/instructor/courses'
 import { Route as AuthInstructorBatchesRouteImport } from './routes/_auth/instructor/batches'
 import { Route as AuthAdminStudentsRouteImport } from './routes/_auth/admin/students'
+import { Route as AuthAdminPlaygroundRouteImport } from './routes/_auth/admin/playground'
 import { Route as AuthAdminLoginRouteImport } from './routes/_auth/admin/login'
 import { Route as AuthAdminLiveClassesRouteImport } from './routes/_auth/admin/live-classes'
 import { Route as AuthAdminInstructorsRouteImport } from './routes/_auth/admin/instructors'
 import { Route as AuthAdminInactiveUsersRouteImport } from './routes/_auth/admin/inactive-users'
+import { Route as AuthAdminEnrollmentsRouteImport } from './routes/_auth/admin/enrollments'
 import { Route as AuthAdminCoursesRouteImport } from './routes/_auth/admin/courses'
 import { Route as AuthAdminBatchesRouteImport } from './routes/_auth/admin/batches'
 import { Route as AuthInstructorCoursesIndexRouteImport } from './routes/_auth/instructor/courses/index'
@@ -51,6 +53,7 @@ import { Route as AuthStudentPlaygroundSlugRouteImport } from './routes/_auth/st
 import { Route as AuthStudentLearnSlugRouteImport } from './routes/_auth/student/learn.$slug'
 import { Route as AuthInstructorCoursesSlugRouteImport } from './routes/_auth/instructor/courses/$slug'
 import { Route as AuthAdminCoursesSlugRouteImport } from './routes/_auth/admin/courses/$slug'
+import { Route as AuthAdminCoursesViewSlugRouteImport } from './routes/_auth/admin/courses/view.$slug'
 
 const RoadmapsRoute = RoadmapsRouteImport.update({
   id: '/roadmaps',
@@ -201,6 +204,11 @@ const AuthAdminStudentsRoute = AuthAdminStudentsRouteImport.update({
   path: '/students',
   getParentRoute: () => AuthAdminRoute,
 } as any)
+const AuthAdminPlaygroundRoute = AuthAdminPlaygroundRouteImport.update({
+  id: '/playground',
+  path: '/playground',
+  getParentRoute: () => AuthAdminRoute,
+} as any)
 const AuthAdminLoginRoute = AuthAdminLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -219,6 +227,11 @@ const AuthAdminInstructorsRoute = AuthAdminInstructorsRouteImport.update({
 const AuthAdminInactiveUsersRoute = AuthAdminInactiveUsersRouteImport.update({
   id: '/inactive-users',
   path: '/inactive-users',
+  getParentRoute: () => AuthAdminRoute,
+} as any)
+const AuthAdminEnrollmentsRoute = AuthAdminEnrollmentsRouteImport.update({
+  id: '/enrollments',
+  path: '/enrollments',
   getParentRoute: () => AuthAdminRoute,
 } as any)
 const AuthAdminCoursesRoute = AuthAdminCoursesRouteImport.update({
@@ -264,6 +277,12 @@ const AuthAdminCoursesSlugRoute = AuthAdminCoursesSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => AuthAdminCoursesRoute,
 } as any)
+const AuthAdminCoursesViewSlugRoute =
+  AuthAdminCoursesViewSlugRouteImport.update({
+    id: '/view/$slug',
+    path: '/view/$slug',
+    getParentRoute: () => AuthAdminCoursesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -283,10 +302,12 @@ export interface FileRoutesByFullPath {
   '/courses/': typeof CoursesIndexRoute
   '/admin/batches': typeof AuthAdminBatchesRoute
   '/admin/courses': typeof AuthAdminCoursesRouteWithChildren
+  '/admin/enrollments': typeof AuthAdminEnrollmentsRoute
   '/admin/inactive-users': typeof AuthAdminInactiveUsersRoute
   '/admin/instructors': typeof AuthAdminInstructorsRoute
   '/admin/live-classes': typeof AuthAdminLiveClassesRoute
   '/admin/login': typeof AuthAdminLoginRoute
+  '/admin/playground': typeof AuthAdminPlaygroundRoute
   '/admin/students': typeof AuthAdminStudentsRoute
   '/instructor/batches': typeof AuthInstructorBatchesRoute
   '/instructor/courses': typeof AuthInstructorCoursesRouteWithChildren
@@ -307,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/student/playground/$slug': typeof AuthStudentPlaygroundSlugRoute
   '/admin/courses/': typeof AuthAdminCoursesIndexRoute
   '/instructor/courses/': typeof AuthInstructorCoursesIndexRoute
+  '/admin/courses/view/$slug': typeof AuthAdminCoursesViewSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -324,10 +346,12 @@ export interface FileRoutesByTo {
   '/meetings/$meetingId': typeof MeetingsMeetingIdRoute
   '/courses': typeof CoursesIndexRoute
   '/admin/batches': typeof AuthAdminBatchesRoute
+  '/admin/enrollments': typeof AuthAdminEnrollmentsRoute
   '/admin/inactive-users': typeof AuthAdminInactiveUsersRoute
   '/admin/instructors': typeof AuthAdminInstructorsRoute
   '/admin/live-classes': typeof AuthAdminLiveClassesRoute
   '/admin/login': typeof AuthAdminLoginRoute
+  '/admin/playground': typeof AuthAdminPlaygroundRoute
   '/admin/students': typeof AuthAdminStudentsRoute
   '/instructor/batches': typeof AuthInstructorBatchesRoute
   '/instructor/dashboard': typeof AuthInstructorDashboardRoute
@@ -347,6 +371,7 @@ export interface FileRoutesByTo {
   '/student/playground/$slug': typeof AuthStudentPlaygroundSlugRoute
   '/admin/courses': typeof AuthAdminCoursesIndexRoute
   '/instructor/courses': typeof AuthInstructorCoursesIndexRoute
+  '/admin/courses/view/$slug': typeof AuthAdminCoursesViewSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -368,10 +393,12 @@ export interface FileRoutesById {
   '/courses/': typeof CoursesIndexRoute
   '/_auth/admin/batches': typeof AuthAdminBatchesRoute
   '/_auth/admin/courses': typeof AuthAdminCoursesRouteWithChildren
+  '/_auth/admin/enrollments': typeof AuthAdminEnrollmentsRoute
   '/_auth/admin/inactive-users': typeof AuthAdminInactiveUsersRoute
   '/_auth/admin/instructors': typeof AuthAdminInstructorsRoute
   '/_auth/admin/live-classes': typeof AuthAdminLiveClassesRoute
   '/_auth/admin/login': typeof AuthAdminLoginRoute
+  '/_auth/admin/playground': typeof AuthAdminPlaygroundRoute
   '/_auth/admin/students': typeof AuthAdminStudentsRoute
   '/_auth/instructor/batches': typeof AuthInstructorBatchesRoute
   '/_auth/instructor/courses': typeof AuthInstructorCoursesRouteWithChildren
@@ -392,6 +419,7 @@ export interface FileRoutesById {
   '/_auth/student/playground/$slug': typeof AuthStudentPlaygroundSlugRoute
   '/_auth/admin/courses/': typeof AuthAdminCoursesIndexRoute
   '/_auth/instructor/courses/': typeof AuthInstructorCoursesIndexRoute
+  '/_auth/admin/courses/view/$slug': typeof AuthAdminCoursesViewSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -413,10 +441,12 @@ export interface FileRouteTypes {
     | '/courses/'
     | '/admin/batches'
     | '/admin/courses'
+    | '/admin/enrollments'
     | '/admin/inactive-users'
     | '/admin/instructors'
     | '/admin/live-classes'
     | '/admin/login'
+    | '/admin/playground'
     | '/admin/students'
     | '/instructor/batches'
     | '/instructor/courses'
@@ -437,6 +467,7 @@ export interface FileRouteTypes {
     | '/student/playground/$slug'
     | '/admin/courses/'
     | '/instructor/courses/'
+    | '/admin/courses/view/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -454,10 +485,12 @@ export interface FileRouteTypes {
     | '/meetings/$meetingId'
     | '/courses'
     | '/admin/batches'
+    | '/admin/enrollments'
     | '/admin/inactive-users'
     | '/admin/instructors'
     | '/admin/live-classes'
     | '/admin/login'
+    | '/admin/playground'
     | '/admin/students'
     | '/instructor/batches'
     | '/instructor/dashboard'
@@ -477,6 +510,7 @@ export interface FileRouteTypes {
     | '/student/playground/$slug'
     | '/admin/courses'
     | '/instructor/courses'
+    | '/admin/courses/view/$slug'
   id:
     | '__root__'
     | '/'
@@ -497,10 +531,12 @@ export interface FileRouteTypes {
     | '/courses/'
     | '/_auth/admin/batches'
     | '/_auth/admin/courses'
+    | '/_auth/admin/enrollments'
     | '/_auth/admin/inactive-users'
     | '/_auth/admin/instructors'
     | '/_auth/admin/live-classes'
     | '/_auth/admin/login'
+    | '/_auth/admin/playground'
     | '/_auth/admin/students'
     | '/_auth/instructor/batches'
     | '/_auth/instructor/courses'
@@ -521,6 +557,7 @@ export interface FileRouteTypes {
     | '/_auth/student/playground/$slug'
     | '/_auth/admin/courses/'
     | '/_auth/instructor/courses/'
+    | '/_auth/admin/courses/view/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -750,6 +787,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAdminStudentsRouteImport
       parentRoute: typeof AuthAdminRoute
     }
+    '/_auth/admin/playground': {
+      id: '/_auth/admin/playground'
+      path: '/playground'
+      fullPath: '/admin/playground'
+      preLoaderRoute: typeof AuthAdminPlaygroundRouteImport
+      parentRoute: typeof AuthAdminRoute
+    }
     '/_auth/admin/login': {
       id: '/_auth/admin/login'
       path: '/login'
@@ -776,6 +820,13 @@ declare module '@tanstack/react-router' {
       path: '/inactive-users'
       fullPath: '/admin/inactive-users'
       preLoaderRoute: typeof AuthAdminInactiveUsersRouteImport
+      parentRoute: typeof AuthAdminRoute
+    }
+    '/_auth/admin/enrollments': {
+      id: '/_auth/admin/enrollments'
+      path: '/enrollments'
+      fullPath: '/admin/enrollments'
+      preLoaderRoute: typeof AuthAdminEnrollmentsRouteImport
       parentRoute: typeof AuthAdminRoute
     }
     '/_auth/admin/courses': {
@@ -834,17 +885,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAdminCoursesSlugRouteImport
       parentRoute: typeof AuthAdminCoursesRoute
     }
+    '/_auth/admin/courses/view/$slug': {
+      id: '/_auth/admin/courses/view/$slug'
+      path: '/view/$slug'
+      fullPath: '/admin/courses/view/$slug'
+      preLoaderRoute: typeof AuthAdminCoursesViewSlugRouteImport
+      parentRoute: typeof AuthAdminCoursesRoute
+    }
   }
 }
 
 interface AuthAdminCoursesRouteChildren {
   AuthAdminCoursesSlugRoute: typeof AuthAdminCoursesSlugRoute
   AuthAdminCoursesIndexRoute: typeof AuthAdminCoursesIndexRoute
+  AuthAdminCoursesViewSlugRoute: typeof AuthAdminCoursesViewSlugRoute
 }
 
 const AuthAdminCoursesRouteChildren: AuthAdminCoursesRouteChildren = {
   AuthAdminCoursesSlugRoute: AuthAdminCoursesSlugRoute,
   AuthAdminCoursesIndexRoute: AuthAdminCoursesIndexRoute,
+  AuthAdminCoursesViewSlugRoute: AuthAdminCoursesViewSlugRoute,
 }
 
 const AuthAdminCoursesRouteWithChildren =
@@ -853,10 +913,12 @@ const AuthAdminCoursesRouteWithChildren =
 interface AuthAdminRouteChildren {
   AuthAdminBatchesRoute: typeof AuthAdminBatchesRoute
   AuthAdminCoursesRoute: typeof AuthAdminCoursesRouteWithChildren
+  AuthAdminEnrollmentsRoute: typeof AuthAdminEnrollmentsRoute
   AuthAdminInactiveUsersRoute: typeof AuthAdminInactiveUsersRoute
   AuthAdminInstructorsRoute: typeof AuthAdminInstructorsRoute
   AuthAdminLiveClassesRoute: typeof AuthAdminLiveClassesRoute
   AuthAdminLoginRoute: typeof AuthAdminLoginRoute
+  AuthAdminPlaygroundRoute: typeof AuthAdminPlaygroundRoute
   AuthAdminStudentsRoute: typeof AuthAdminStudentsRoute
   AuthAdminIndexRoute: typeof AuthAdminIndexRoute
 }
@@ -864,10 +926,12 @@ interface AuthAdminRouteChildren {
 const AuthAdminRouteChildren: AuthAdminRouteChildren = {
   AuthAdminBatchesRoute: AuthAdminBatchesRoute,
   AuthAdminCoursesRoute: AuthAdminCoursesRouteWithChildren,
+  AuthAdminEnrollmentsRoute: AuthAdminEnrollmentsRoute,
   AuthAdminInactiveUsersRoute: AuthAdminInactiveUsersRoute,
   AuthAdminInstructorsRoute: AuthAdminInstructorsRoute,
   AuthAdminLiveClassesRoute: AuthAdminLiveClassesRoute,
   AuthAdminLoginRoute: AuthAdminLoginRoute,
+  AuthAdminPlaygroundRoute: AuthAdminPlaygroundRoute,
   AuthAdminStudentsRoute: AuthAdminStudentsRoute,
   AuthAdminIndexRoute: AuthAdminIndexRoute,
 }

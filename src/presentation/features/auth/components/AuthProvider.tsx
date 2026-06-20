@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
   useCallback,
@@ -26,7 +27,6 @@ export interface AuthState {
   verifyOtp: (payload: OtpPayload & { otp: string }) => Promise<{ message: string }>;
 }
 
-// Exported so hooks/useAuth.ts can import it directly.
 export const AuthContext = createContext<AuthState | null>(null);
 
 function normalizeRole(role: string): UserRole {
@@ -51,7 +51,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => setUnauthorizedHandler(null);
   }, [clear]);
 
-  // Silently restore session on app load using httpOnly refresh cookie.
   useEffect(() => {
     if (bootstrapped.current) return;
     bootstrapped.current = true;
@@ -59,10 +58,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const { accessToken } = await authService.refresh();
         tokenStore.set(accessToken);
-        // Validate token and get user id + role from /verify-token.
+
         const tokenData = await authService.verifyToken();
-        // Build a minimal User object from the token payload.
-        // Full profile data can be fetched lazily from user-service.
+
         setUser({
           id: tokenData.user.id,
           email: "",
@@ -112,7 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  // Sync to authStore so router beforeLoad guards can read auth state.
   useEffect(() => {
     authStore.set({ isAuthenticated: !!user, isLoading, user });
   }, [user, isLoading]);
@@ -134,7 +131,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-/** @deprecated Import useAuth from "@/presentation/features/auth/hooks/useAuth" instead. */
 export function useAuth(): AuthState {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within <AuthProvider>");

@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { courseApi } from "../api";
 
-/** Fetch all courses. Cached for 5 minutes. */
 export function useCourses() {
   return useQuery({
     queryKey: ["courses"],
@@ -10,7 +9,6 @@ export function useCourses() {
   });
 }
 
-/** Fetch a single course by slug. */
 export function useCourse(slug: string) {
   return useQuery({
     queryKey: ["courses", slug],
@@ -20,7 +18,6 @@ export function useCourse(slug: string) {
   });
 }
 
-/** Fetch all lessons for a course. */
 export function useCourseLessons(courseSlug: string) {
   return useQuery({
     queryKey: ["courses", courseSlug, "lessons"],

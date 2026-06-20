@@ -39,7 +39,6 @@ export function AdminBatchesPage() {
   const { isLoading: isAuthLoading, isAuthenticated, user } = useAuth();
   const isInstructor = user?.role === "INSTRUCTOR";
 
-  // Main Data States
   const [batches, setBatches] = useState<Batch[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [students, setStudents] = useState<User[]>([]);
@@ -47,7 +46,6 @@ export function AdminBatchesPage() {
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [roster, setRoster] = useState<BatchStudent[]>([]);
 
-  // Loading & Error States
   const [isLoading, setIsLoading] = useState(true);
   const [isRosterLoading, setIsRosterLoading] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -55,7 +53,6 @@ export function AdminBatchesPage() {
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isAssigningInstructor, setIsAssigningInstructor] = useState(false);
 
-  // Search & Selection States
   const [searchQuery, setSearchQuery] = useState("");
   const [studentSearchQuery, setStudentSearchQuery] = useState("");
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
@@ -78,7 +75,6 @@ export function AdminBatchesPage() {
   const [editFormCourseId, setEditFormCourseId] = useState("");
   const [editFormStatus, setEditFormStatus] = useState<Batch["status"]>("ACTIVE");
 
-  // Fetch all initial data
   const fetchData = useCallback(async () => {
     if (isAuthLoading || !isAuthenticated) return;
     setIsLoading(true);
@@ -105,7 +101,6 @@ export function AdminBatchesPage() {
     }
   }, [isAuthLoading, isAuthenticated]);
 
-  // Fetch roster of selected batch
   const fetchRoster = useCallback(async (batchId: string) => {
     setIsRosterLoading(true);
     try {
@@ -147,7 +142,7 @@ export function AdminBatchesPage() {
     let pool = batches;
     // Instructors only see batches tied to their own courses
     if (isInstructor && instructorCourseIds && instructorCourseIds.size > 0) {
-      pool = batches.filter((b) => instructorCourseIds.has(b.courseId));
+      pool = batches.filter((b) => b.courseId && instructorCourseIds.has(b.courseId));
     }
     return pool.filter((b) => {
       const query = searchQuery.toLowerCase();
@@ -179,8 +174,8 @@ export function AdminBatchesPage() {
   // Create Batch Submit handler
   const handleCreateBatch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formName || !formCode || !formStartDate || !formCourseId) {
-      toast.error("Please fill in all fields.");
+    if (!formName || !formCode || !formStartDate) {
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -190,7 +185,7 @@ export function AdminBatchesPage() {
         name: formName,
         code: formCode,
         startDate: formStartDate,
-        courseId: formCourseId,
+        courseId: formCourseId || null,
       });
 
       toast.success(`Batch "${newBatch.name}" created successfully.`);
@@ -292,14 +287,14 @@ export function AdminBatchesPage() {
     setEditFormCode(batch.code);
     setEditFormStartDate(new Date(batch.startDate).toISOString().split("T")[0]);
     setEditFormEndDate(batch.endDate ? new Date(batch.endDate).toISOString().split("T")[0] : "");
-    setEditFormCourseId(batch.courseId);
+    setEditFormCourseId(batch.courseId || "");
     setEditFormStatus(batch.status);
     setShowEditModal(true);
   };
 
   const handleUpdateBatch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editFormName || !editFormCode || !editFormStartDate || !editFormCourseId) {
+    if (!editFormName || !editFormCode || !editFormStartDate) {
       toast.error("Please fill in all required fields.");
       return;
     }
@@ -311,7 +306,7 @@ export function AdminBatchesPage() {
         code: editFormCode,
         startDate: editFormStartDate,
         endDate: editFormEndDate || null,
-        courseId: editFormCourseId,
+        courseId: editFormCourseId || null,
       });
 
       if (selectedBatch && selectedBatch.status !== editFormStatus) {
@@ -330,9 +325,10 @@ export function AdminBatchesPage() {
                 code: editFormCode,
                 startDate: editFormStartDate,
                 endDate: editFormEndDate || null,
-                courseId: editFormCourseId,
+                courseId: editFormCourseId || null,
                 status: editFormStatus,
                 course: (() => {
+                  if (!editFormCourseId) return null;
                   const foundCourse = courses.find((c) => c.id === editFormCourseId);
                   return foundCourse ? { name: foundCourse.title } : prev.course;
                 })(),
@@ -503,7 +499,6 @@ export function AdminBatchesPage() {
       </div>
 
       {isLoading ? (
-        // Global Loading Grid
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
@@ -517,7 +512,6 @@ export function AdminBatchesPage() {
           ))}
         </div>
       ) : isError ? (
-        // Connection Error State
         <div className="flex flex-col items-center justify-center p-12 rounded-2xl border border-rose-500/20 bg-rose-500/5 text-center max-w-2xl mx-auto">
           <AlertCircle className="h-12 w-12 text-rose-500 mb-3 animate-pulse" />
           <h3 className="font-semibold text-lg text-foreground">Unable to load batches</h3>
@@ -533,9 +527,8 @@ export function AdminBatchesPage() {
           </button>
         </div>
       ) : !selectedBatch ? (
-        // VIEW 1: BATCH LIST VIEW
         <div className="space-y-6">
-          {/* Filtering Header */}
+          {}
           <div className="flex flex-col sm:flex-row gap-4 p-4 rounded-xl bg-[var(--surface-2)]/40 border border-[var(--hairline)]">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -549,7 +542,7 @@ export function AdminBatchesPage() {
             </div>
           </div>
 
-          {/* Batches Grid */}
+          {}
           {filteredBatches.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-[var(--hairline)] bg-[var(--surface-2)]/10 text-center">
               <Layers className="h-12 w-12 text-muted-foreground/45 mb-3" />
@@ -575,7 +568,7 @@ export function AdminBatchesPage() {
                   key={batch.id}
                   className="flex flex-col p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] hover:bg-[var(--surface-2)]/50 transition duration-300 group shadow-lg"
                 >
-                  {/* Header */}
+                  {}
                   <div className="flex justify-between items-start gap-3">
                     <div className="min-w-0">
                       <h3 className="font-semibold text-[17px] text-foreground truncate group-hover:text-blue-400 transition">
@@ -588,12 +581,12 @@ export function AdminBatchesPage() {
                     {getStatusBadge(batch.status)}
                   </div>
 
-                  {/* Course Details mapping */}
+                  {}
                   <div className="space-y-2.5 mt-5 flex-1 border-t border-b border-[var(--hairline)] py-4 my-4">
                     <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
                       <BookOpen className="h-4 w-4 text-blue-400/80 shrink-0" />
                       <span className="truncate text-foreground/90 font-medium">
-                        {batch.course?.name || "Mapped Course"}
+                        {batch.course?.name || "General Study Batch"}
                       </span>
                     </div>
                     <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
@@ -622,7 +615,7 @@ export function AdminBatchesPage() {
                     )}
                   </div>
 
-                  {/* Button */}
+                  {}
                   <button
                     onClick={() => setSelectedBatch(batch)}
                     className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 text-sm font-semibold text-blue-400 hover:text-blue-300 transition cursor-pointer"
@@ -636,11 +629,10 @@ export function AdminBatchesPage() {
           )}
         </div>
       ) : (
-        // VIEW 2 & 3: BATCH DETAILS & ROSTER VIEW
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column (Details & Bulk Student Adder) - Span 5 */}
+          {}
           <div className="lg:col-span-5 space-y-6">
-            {/* Details Panel Card */}
+            {}
             <div className="p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] space-y-5 shadow-lg relative overflow-hidden">
               <div className="absolute top-0 right-0 h-24 w-24 bg-blue-500/5 rounded-full blur-2xl" />
 
@@ -725,7 +717,7 @@ export function AdminBatchesPage() {
                     Course
                   </span>
                   <span className="font-semibold text-foreground max-w-[200px] truncate text-right">
-                    {selectedBatch.course?.name || "Mapped Course"}
+                    {selectedBatch.course?.name || "General Study Batch"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
@@ -764,7 +756,7 @@ export function AdminBatchesPage() {
               </div>
             </div>
 
-            {/* Bulk Add Action Form */}
+            {}
             <div className="p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] space-y-4 shadow-lg">
               <div>
                 <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
@@ -776,7 +768,7 @@ export function AdminBatchesPage() {
                 </p>
               </div>
 
-              {/* Student Search */}
+              {}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/70" />
                 <input
@@ -788,7 +780,7 @@ export function AdminBatchesPage() {
                 />
               </div>
 
-              {/* Checkbox List */}
+              {}
               <div className="border border-[var(--hairline)] rounded-lg bg-[var(--surface-2)]/30 max-h-[220px] overflow-y-auto p-2 space-y-1 scrollbar-thin">
                 {filteredAvailableStudents.length === 0 ? (
                   <div className="p-4 text-center text-xs text-muted-foreground">
@@ -830,7 +822,7 @@ export function AdminBatchesPage() {
                 )}
               </div>
 
-              {/* Selection Summary & Submit */}
+              {}
               <div className="flex items-center justify-between pt-2">
                 <span className="text-xs font-medium text-muted-foreground">
                   Selected:{" "}
@@ -868,7 +860,7 @@ export function AdminBatchesPage() {
             </div>
           </div>
 
-          {/* Right Column (Batch Roster Renders) - Span 7 */}
+          {}
           <div className="lg:col-span-7 p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] shadow-lg space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-[var(--hairline)]">
               <div>
@@ -886,7 +878,6 @@ export function AdminBatchesPage() {
             </div>
 
             {isRosterLoading ? (
-              // Roster Loading State
               <div className="py-12 space-y-3">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="flex gap-4 items-center animate-pulse py-2">
@@ -899,7 +890,6 @@ export function AdminBatchesPage() {
                 ))}
               </div>
             ) : roster.length === 0 ? (
-              // Empty State
               <div className="flex flex-col items-center justify-center p-16 text-center">
                 <Users className="h-12 w-12 text-muted-foreground/30 mb-3" />
                 <h4 className="font-semibold text-foreground/80">Roster is empty</h4>
@@ -909,7 +899,6 @@ export function AdminBatchesPage() {
                 </p>
               </div>
             ) : (
-              // Table layout
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm border-collapse">
                   <thead>
@@ -974,12 +963,12 @@ export function AdminBatchesPage() {
         </div>
       )}
 
-      {/* CREATE BATCH MODAL DIALOG */}
+      {}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          {/* Modal Container */}
+          {}
           <div className="relative w-full max-w-md p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] shadow-2xl space-y-5 animate-scale-in">
-            {/* Header */}
+            {}
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-xl font-bold tracking-tight text-foreground font-display flex items-center gap-2">
@@ -998,9 +987,9 @@ export function AdminBatchesPage() {
               </button>
             </div>
 
-            {/* Form */}
+            {}
             <form onSubmit={handleCreateBatch} className="space-y-4">
-              {/* Batch Name */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Batch Name *</label>
                 <input
@@ -1013,7 +1002,7 @@ export function AdminBatchesPage() {
                 />
               </div>
 
-              {/* Unique Code */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">
                   Unique Batch Code *
@@ -1028,7 +1017,7 @@ export function AdminBatchesPage() {
                 />
               </div>
 
-              {/* Start Date */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Start Date *</label>
                 <input
@@ -1040,21 +1029,18 @@ export function AdminBatchesPage() {
                 />
               </div>
 
-              {/* Course Select */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">
-                  Select Course *
+                  Select Course
+                  <span className="ml-1 text-muted-foreground/50 font-normal">(optional)</span>
                 </label>
                 <div className="relative">
                   <select
-                    required
                     value={formCourseId}
                     onChange={(e) => setFormCourseId(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm focus:outline-none focus:border-blue-500 transition text-foreground appearance-none cursor-pointer"
                   >
-                    <option value="" disabled>
-                      -- Choose Mapped Course --
-                    </option>
+                    <option value="">None / General Study Batch</option>
                     {courses.map((course) => (
                       <option key={course.id} value={course.id}>
                         {course.title}
@@ -1065,7 +1051,7 @@ export function AdminBatchesPage() {
                 </div>
               </div>
 
-              {/* Buttons */}
+              {}
               <div className="flex gap-3 pt-3">
                 <button
                   type="button"
@@ -1086,12 +1072,12 @@ export function AdminBatchesPage() {
           </div>
         </div>
       )}
-      {/* EDIT BATCH MODAL DIALOG */}
+      {}
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          {/* Modal Container */}
+          {}
           <div className="relative w-full max-w-md p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] shadow-2xl space-y-5 animate-scale-in">
-            {/* Header */}
+            {}
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-xl font-bold tracking-tight text-foreground font-display flex items-center gap-2">
@@ -1110,9 +1096,9 @@ export function AdminBatchesPage() {
               </button>
             </div>
 
-            {/* Form */}
+            {}
             <form onSubmit={handleUpdateBatch} className="space-y-4">
-              {/* Batch Name */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Batch Name *</label>
                 <input
@@ -1125,7 +1111,7 @@ export function AdminBatchesPage() {
                 />
               </div>
 
-              {/* Unique Code */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">
                   Unique Batch Code *
@@ -1140,7 +1126,7 @@ export function AdminBatchesPage() {
                 />
               </div>
 
-              {/* Start Date */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Start Date *</label>
                 <input
@@ -1152,7 +1138,7 @@ export function AdminBatchesPage() {
                 />
               </div>
 
-              {/* End Date */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">End Date</label>
                 <input
@@ -1163,21 +1149,18 @@ export function AdminBatchesPage() {
                 />
               </div>
 
-              {/* Course Select */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">
-                  Select Course *
+                  Select Course
+                  <span className="ml-1 text-muted-foreground/50 font-normal">(optional)</span>
                 </label>
                 <div className="relative">
                   <select
-                    required
                     value={editFormCourseId}
                     onChange={(e) => setEditFormCourseId(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)] text-sm focus:outline-none focus:border-blue-500 transition text-foreground appearance-none cursor-pointer"
                   >
-                    <option value="" disabled>
-                      -- Choose Mapped Course --
-                    </option>
+                    <option value="">None / General Study Batch</option>
                     {courses.map((course) => (
                       <option key={course.id} value={course.id}>
                         {course.title}
@@ -1188,7 +1171,7 @@ export function AdminBatchesPage() {
                 </div>
               </div>
 
-              {/* Status Select */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Status *</label>
                 <div className="relative">
@@ -1207,7 +1190,7 @@ export function AdminBatchesPage() {
                 </div>
               </div>
 
-              {/* Buttons */}
+              {}
               <div className="flex gap-3 pt-3">
                 <button
                   type="button"

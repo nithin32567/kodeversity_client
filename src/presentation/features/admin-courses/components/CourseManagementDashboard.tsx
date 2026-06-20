@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import {
   GripVertical,
@@ -18,6 +19,7 @@ import {
   ChevronsDownUp,
   Upload,
   TerminalSquare,
+  PlayCircle,
 } from "lucide-react";
 import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
 import { managementService } from "@/infrastructure/admin/managementService";
@@ -32,8 +34,6 @@ import type {
 } from "@/domain/course";
 import type { PlaygroundConfig } from "@/domain/playground";
 
-// ─── Local Types ──────────────────────────────────────────────────────────────
-
 interface EnrolledStudent {
   id: string;
   name: string;
@@ -43,6 +43,7 @@ interface EnrolledStudent {
 
 interface AddModuleForm {
   title: string;
+  description?: string;
   sortOrder?: number;
 }
 interface QuizQuestion {
@@ -53,6 +54,7 @@ interface QuizQuestion {
 
 interface AddChapterForm {
   title: string;
+  description?: string;
   type: ChapterType;
   sortOrder?: number;
   videoUrl?: string | null;
@@ -71,8 +73,6 @@ interface AddChapterForm {
     | null;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 const LEVEL_OPTIONS: { value: CourseLevel; label: string }[] = [
   { value: "BEGINNER", label: "Beginner" },
   { value: "INTERMEDIATE", label: "Intermediate" },
@@ -90,11 +90,11 @@ const CHAPTER_TYPE_COLORS: Record<ChapterType, string> = {
 function ChapterIcon({ type }: { type: ChapterType }) {
   if (type === "VIDEO") return <Video className="h-3.5 w-3.5 shrink-0 text-blue-400" />;
   if (type === "DOCUMENT") return <FileText className="h-3.5 w-3.5 shrink-0 text-amber-400" />;
-  if (type === "PLAYGROUND") return <TerminalSquare className="h-3.5 w-3.5 shrink-0 text-purple-400" />;
+  if (type === "PLAYGROUND")
+    return <TerminalSquare className="h-3.5 w-3.5 shrink-0 text-purple-400" />;
   return <HelpCircle className="h-3.5 w-3.5 shrink-0 text-emerald-400" />;
 }
 
-/** Drag-and-drop placeholder — reorders by sortOrder, returns updated list. */
 function handleModuleReorder(modules: Module[], fromIdx: number, toIdx: number): Module[] {
   const list = [...modules];
   const [moved] = list.splice(fromIdx, 1);
@@ -108,8 +108,6 @@ function handleChapterReorder(chapters: Chapter[], fromIdx: number, toIdx: numbe
   list.splice(toIdx, 0, moved);
   return list.map((c, i) => ({ ...c, sortOrder: i }));
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function SectionCard({
   children,
@@ -197,6 +195,7 @@ function AddModulePanel({
   onCancel: () => void;
 }) {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [sortOrder, setSortOrder] = useState("");
   return (
     <div className="mt-3 rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4 flex flex-col gap-3">
@@ -216,10 +215,20 @@ function AddModulePanel({
           className="w-24 rounded-md border border-[var(--hairline)] bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
         />
       </div>
+      <input
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Module description (optional)..."
+        className="w-full rounded-md border border-[var(--hairline)] bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+      />
       <div className="flex gap-2 justify-end">
         <button
           onClick={() =>
-            onAdd({ title, sortOrder: sortOrder ? parseInt(sortOrder, 10) : undefined })
+            onAdd({
+              title,
+              description,
+              sortOrder: sortOrder ? parseInt(sortOrder, 10) : undefined,
+            })
           }
           disabled={!title.trim()}
           className="inline-flex items-center gap-1.5 rounded-lg bg-[image:var(--gradient-primary)] px-3 py-2 text-xs font-semibold text-primary-foreground shadow-[var(--shadow-primary)] disabled:opacity-40 transition"
@@ -240,10 +249,34 @@ function AddModulePanel({
 // ─── Inline "Add Chapter" Form ────────────────────────────────────────────────
 
 const PRESETS = [
-  { id: "1vmpg", name: "Ubuntu 24.04 LTS (1 VM)", pg: "6659f131a9de4f16462740bc", pgname: "1VMPG", playground: "ubuntu2404n1" },
-  { id: "2vmpg", name: "2 VM Network (2 VMs)", pg: "6659f131a9de4f16462740bd", pgname: "2VMPG", playground: "ubuntu2404n2" },
-  { id: "dockerpg", name: "Docker Workspace (1 VM)", pg: "6659f131a9de4f16462740be", pgname: "DOCKERPG", playground: "ubuntu2404n1-docker" },
-  { id: "3ansbl", name: "Ansible Playground (3 VMs)", pg: "6659f131a9de4f16462740bf", pgname: "3ANSBL", playground: "ubuntu2404n3-ansible" },
+  {
+    id: "1vmpg",
+    name: "Ubuntu 24.04 LTS (1 VM)",
+    pg: "6659f131a9de4f16462740bc",
+    pgname: "1VMPG",
+    playground: "ubuntu2404n1",
+  },
+  {
+    id: "2vmpg",
+    name: "2 VM Network (2 VMs)",
+    pg: "6659f131a9de4f16462740bd",
+    pgname: "2VMPG",
+    playground: "ubuntu2404n2",
+  },
+  {
+    id: "dockerpg",
+    name: "Docker Workspace (1 VM)",
+    pg: "6659f131a9de4f16462740be",
+    pgname: "DOCKERPG",
+    playground: "ubuntu2404n1-docker",
+  },
+  {
+    id: "3ansbl",
+    name: "Ansible Playground (3 VMs)",
+    pg: "6659f131a9de4f16462740bf",
+    pgname: "3ANSBL",
+    playground: "ubuntu2404n3-ansible",
+  },
 ];
 
 function AddChapterPanel({
@@ -254,6 +287,7 @@ function AddChapterPanel({
   onCancel: () => void;
 }) {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [type, setType] = useState<ChapterType>("VIDEO");
   const [sortOrder, setSortOrder] = useState("");
 
@@ -278,7 +312,7 @@ function AddChapterPanel({
 
   const handleTemplateChange = (presetId: string) => {
     setPgTemplate(presetId);
-    const preset = PRESETS.find(p => p.id === presetId);
+    const preset = PRESETS.find((p) => p.id === presetId);
     if (preset) {
       setPgId(preset.pg);
       setPgName(preset.pgname);
@@ -297,8 +331,7 @@ function AddChapterPanel({
     if (!quizTitle && title) {
       setQuizTitle(`${title} Quiz`);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title]);
+  }, [title, quizTitle]);
 
   const addQuestion = () => {
     setQuestions([...questions, { questionText: "", options: ["", ""], correctAnswer: "" }]);
@@ -358,7 +391,8 @@ function AddChapterPanel({
     if (!title.trim()) return true;
     if (type === "VIDEO" && !videoUrl.trim()) return true;
     if (type === "DOCUMENT" && !documentUrl.trim()) return true;
-    if (type === "PLAYGROUND" && (!pgId.trim() || !pgPlayground.trim() || !pgName.trim())) return true;
+    if (type === "PLAYGROUND" && (!pgId.trim() || !pgPlayground.trim() || !pgName.trim()))
+      return true;
     if (type === "QUIZ") {
       const validQuestions = questions.filter((q) => q.questionText.trim());
       if (validQuestions.length === 0) return true;
@@ -379,6 +413,7 @@ function AddChapterPanel({
 
     const payload: AddChapterForm = {
       title: title.trim(),
+      description: description.trim(),
       type,
       sortOrder: sortOrder ? parseInt(sortOrder, 10) : undefined,
     };
@@ -436,6 +471,12 @@ function AddChapterPanel({
           className="w-24 rounded-md border border-[var(--hairline)] bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
         />
       </div>
+      <input
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Chapter description (optional)..."
+        className="w-full rounded-md border border-[var(--hairline)] bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+      />
 
       <div className="flex items-center gap-2">
         {(["VIDEO", "DOCUMENT", "QUIZ", "PLAYGROUND"] as ChapterType[]).map((t) => (
@@ -454,7 +495,7 @@ function AddChapterPanel({
         ))}
       </div>
 
-      {/* Conditional Inputs */}
+      {}
       {type === "PLAYGROUND" && (
         <div className="space-y-4 bg-card/40 border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
           <div className="flex items-center justify-between border-b border-[var(--hairline)] pb-2">
@@ -487,7 +528,9 @@ function AddChapterPanel({
               </label>
               <select
                 value={pgDifficulty}
-                onChange={(e) => setPgDifficulty(e.target.value as any)}
+                onChange={(e) =>
+                  setPgDifficulty(e.target.value as "easy" | "medium" | "hard" | "expert")
+                }
                 className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition cursor-pointer"
               >
                 <option value="easy">Easy (1.0x XP)</option>
@@ -518,7 +561,9 @@ function AddChapterPanel({
               onClick={() => setShowAdvancedPg(!showAdvancedPg)}
               className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
             >
-              {showAdvancedPg ? "Hide Advanced Settings" : "Show Advanced Settings (ZFS Parameters)"}
+              {showAdvancedPg
+                ? "Hide Advanced Settings"
+                : "Show Advanced Settings (ZFS Parameters)"}
             </button>
 
             {showAdvancedPg && (
@@ -671,7 +716,7 @@ function AddChapterPanel({
                   setFileName("");
                 }
               }}
-              placeholder="https://example.com/document.pdf"
+              placeholder="https://..."
               className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
             />
           </div>
@@ -699,14 +744,14 @@ function AddChapterPanel({
             />
           </div>
 
-          {/* Question List */}
+          {}
           <div className="space-y-4">
             {questions.map((q, qIdx) => (
               <div
                 key={qIdx}
                 className="relative bg-card border border-[var(--hairline)] rounded-lg p-3.5 space-y-3"
               >
-                {/* Delete Question Button */}
+                {}
                 <button
                   type="button"
                   onClick={() => removeQuestion(qIdx)}
@@ -729,7 +774,7 @@ function AddChapterPanel({
                   />
                 </div>
 
-                {/* Option Editor */}
+                {}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
@@ -743,7 +788,7 @@ function AddChapterPanel({
                   <div className="space-y-1.5">
                     {q.options.map((opt, oIdx) => (
                       <div key={oIdx} className="flex items-center gap-2">
-                        {/* Radio selection for correct answer */}
+                        {}
                         <input
                           type="radio"
                           name={`correct-${qIdx}`}
@@ -802,7 +847,7 @@ function AddChapterPanel({
         </div>
       )}
 
-      {/* Action buttons */}
+      {}
       <div className="flex gap-2 justify-end pt-2 border-t border-[var(--hairline)]">
         <button
           onClick={handleSubmit}
@@ -822,8 +867,6 @@ function AddChapterPanel({
   );
 }
 
-// ─── Edit Chapter Panel ───────────────────────────────────────────────────────
-
 function EditChapterPanel({
   chapter,
   onSave,
@@ -834,6 +877,7 @@ function EditChapterPanel({
   onCancel: () => void;
 }) {
   const [title, setTitle] = useState(chapter.title);
+  const [description, setDescription] = useState(chapter.description || "");
   const [type, setType] = useState<ChapterType>(chapter.type);
   const [sortOrder, setSortOrder] = useState(chapter.sortOrder?.toString() || "");
 
@@ -849,19 +893,22 @@ function EditChapterPanel({
 
   // Playground states
   const pgConf = chapter.playgroundConfig;
-  const initialPreset = PRESETS.find(p => p.pg === pgConf?.pg && p.playground === pgConf?.playground)?.id || "1vmpg";
+  const initialPreset =
+    PRESETS.find((p) => p.pg === pgConf?.pg && p.playground === pgConf?.playground)?.id || "1vmpg";
 
   const [pgTemplate, setPgTemplate] = useState(initialPreset);
   const [pgId, setPgId] = useState(pgConf?.pg || "6659f131a9de4f16462740bc");
   const [pgName, setPgName] = useState(pgConf?.pgname || "1VMPG");
   const [pgPlayground, setPgPlayground] = useState(pgConf?.playground || "ubuntu2404n1");
-  const [pgDifficulty, setPgDifficulty] = useState<"easy" | "medium" | "hard" | "expert">(pgConf?.difficulty || "easy");
+  const [pgDifficulty, setPgDifficulty] = useState<"easy" | "medium" | "hard" | "expert">(
+    pgConf?.difficulty || "easy",
+  );
   const [pgMaxScore, setPgMaxScore] = useState(pgConf?.maxScore?.toString() || "100");
   const [showAdvancedPg, setShowAdvancedPg] = useState(false);
 
   const handleTemplateChange = (presetId: string) => {
     setPgTemplate(presetId);
-    const preset = PRESETS.find(p => p.id === presetId);
+    const preset = PRESETS.find((p) => p.id === presetId);
     if (preset) {
       setPgId(preset.pg);
       setPgName(preset.pgname);
@@ -873,7 +920,8 @@ function EditChapterPanel({
     if (!title.trim()) return true;
     if (type === "VIDEO" && !videoUrl.trim()) return true;
     if (type === "DOCUMENT" && !documentUrl.trim()) return true;
-    if (type === "PLAYGROUND" && (!pgId.trim() || !pgPlayground.trim() || !pgName.trim())) return true;
+    if (type === "PLAYGROUND" && (!pgId.trim() || !pgPlayground.trim() || !pgName.trim()))
+      return true;
     return false;
   };
 
@@ -882,6 +930,7 @@ function EditChapterPanel({
 
     const payload: AddChapterForm = {
       title: title.trim(),
+      description: description.trim(),
       type,
       sortOrder: sortOrder ? parseInt(sortOrder, 10) : undefined,
     };
@@ -928,6 +977,12 @@ function EditChapterPanel({
           className="w-24 rounded-md border border-[var(--hairline)] bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
         />
       </div>
+      <input
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Chapter description (optional)..."
+        className="w-full rounded-md border border-[var(--hairline)] bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+      />
 
       <div className="flex items-center gap-2">
         {(["VIDEO", "DOCUMENT", "QUIZ", "PLAYGROUND"] as ChapterType[]).map((t) => (
@@ -946,7 +1001,7 @@ function EditChapterPanel({
         ))}
       </div>
 
-      {/* Conditional Inputs */}
+      {}
       {type === "PLAYGROUND" && (
         <div className="space-y-4 bg-card/40 border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
           <div className="flex items-center justify-between border-b border-[var(--hairline)] pb-2">
@@ -979,7 +1034,9 @@ function EditChapterPanel({
               </label>
               <select
                 value={pgDifficulty}
-                onChange={(e) => setPgDifficulty(e.target.value as any)}
+                onChange={(e) =>
+                  setPgDifficulty(e.target.value as "easy" | "medium" | "hard" | "expert")
+                }
                 className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition cursor-pointer"
               >
                 <option value="easy">Easy (1.0x XP)</option>
@@ -1010,7 +1067,9 @@ function EditChapterPanel({
               onClick={() => setShowAdvancedPg(!showAdvancedPg)}
               className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
             >
-              {showAdvancedPg ? "Hide Advanced Settings" : "Show Advanced Settings (ZFS Parameters)"}
+              {showAdvancedPg
+                ? "Hide Advanced Settings"
+                : "Show Advanced Settings (ZFS Parameters)"}
             </button>
 
             {showAdvancedPg && (
@@ -1163,7 +1222,7 @@ function EditChapterPanel({
                   setFileName("");
                 }
               }}
-              placeholder="https://example.com/document.pdf"
+              placeholder="https://..."
               className="w-full rounded-lg border border-[var(--hairline)] bg-card px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
             />
           </div>
@@ -1180,7 +1239,7 @@ function EditChapterPanel({
         </div>
       )}
 
-      {/* Action buttons */}
+      {}
       <div className="flex gap-2 justify-end pt-2 border-t border-[var(--hairline)]">
         <button
           onClick={handleSubmit}
@@ -1199,8 +1258,6 @@ function EditChapterPanel({
     </div>
   );
 }
-
-// ─── Chapter Row ──────────────────────────────────────────────────────────────
 
 function ChapterRow({
   chapter,
@@ -1274,8 +1331,15 @@ function ChapterRow({
         onMouseUp={() => setDragEnabled(false)}
       />
       <ChapterIcon type={chapter.type} />
-      <span className="flex-1 text-foreground/90 font-medium truncate">
-        {index + 1}. {chapter.title}
+      <span className="flex-1 text-foreground/90 font-medium truncate flex flex-col justify-center">
+        <span>
+          {index + 1}. {chapter.title}
+        </span>
+        {chapter.description && (
+          <span className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">
+            {chapter.description}
+          </span>
+        )}
       </span>
       <span
         className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${CHAPTER_TYPE_COLORS[chapter.type]}`}
@@ -1299,8 +1363,6 @@ function ChapterRow({
     </li>
   );
 }
-
-// ─── Module Row ───────────────────────────────────────────────────────────────
 
 function ModuleRow({
   module,
@@ -1406,16 +1468,23 @@ function ModuleRow({
             </button>
           </div>
         ) : (
-          <span className="flex-1 font-semibold text-foreground text-sm flex items-center gap-2">
-            {index + 1}. {module.title}
-            <button
-              onClick={() => setIsEditingTitle(true)}
-              className="opacity-0 group-hover/mod-header:opacity-100 p-0.5 rounded text-muted-foreground hover:text-foreground transition cursor-pointer"
-              title="Edit Module Title"
-            >
-              <Edit3 className="h-3.5 w-3.5" />
-            </button>
-          </span>
+          <div className="flex-1 flex flex-col min-w-0">
+            <span className="font-semibold text-foreground text-sm flex items-center gap-2">
+              {index + 1}. {module.title}
+              <button
+                onClick={() => setIsEditingTitle(true)}
+                className="opacity-0 group-hover/mod-header:opacity-100 p-0.5 rounded text-muted-foreground hover:text-foreground transition cursor-pointer"
+                title="Edit Module Title"
+              >
+                <Edit3 className="h-3.5 w-3.5" />
+              </button>
+            </span>
+            {module.description && (
+              <span className="text-[11px] text-muted-foreground/80 mt-0.5 truncate">
+                {module.description}
+              </span>
+            )}
+          </div>
         )}
 
         <span className="text-xs text-muted-foreground">{sortedChapters.length} chapters</span>
@@ -1495,8 +1564,6 @@ function ModuleRow({
     </div>
   );
 }
-
-// ─── Left Column: Curriculum ──────────────────────────────────────────────────
 
 function CurriculumPanel({
   modules,
@@ -1642,8 +1709,6 @@ function CurriculumPanel({
     </SectionCard>
   );
 }
-
-// ─── Right Column: Config Tabs ────────────────────────────────────────────────
 
 function EditDetailsTab({
   course,
@@ -1920,8 +1985,6 @@ function ConfigPanel({
   );
 }
 
-// ─── Main Dashboard ───────────────────────────────────────────────────────────
-
 export function CourseManagementDashboard({ slug }: { slug: string }) {
   const { data: course, isLoading, isError, refetch } = useCourse(slug);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
@@ -1944,7 +2007,11 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
     async (form: AddModuleForm) => {
       if (!form.title.trim() || !course?.id) return;
       try {
-        const newModule = await managementService.createModule(course.id, form.title.trim());
+        const newModule = await managementService.createModule(
+          course.id,
+          form.title.trim(),
+          form.description,
+        );
         const moduleWithChapters = { ...newModule, chapters: [] };
         setLocalModules((prev) => {
           const updated = [...prev, moduleWithChapters].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -1962,6 +2029,7 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
     try {
       const newChapter = await managementService.createChapter(moduleId, {
         title: form.title.trim(),
+        description: form.description,
         type: form.type,
         isPreview: false,
         videoUrl: form.videoUrl || null,
@@ -2017,6 +2085,7 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
       try {
         const updated = await managementService.updateChapter(chapterId, {
           title: form.title.trim(),
+          description: form.description,
           type: form.type,
           videoUrl: form.type === "VIDEO" ? form.videoUrl : null,
           duration: form.type === "VIDEO" ? form.duration : null,
@@ -2103,7 +2172,6 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
     [course?.id, refetch],
   );
 
-  // ── Loading ──
   if (isLoading) {
     return (
       <main className="flex-1 px-6 py-6 space-y-6 overflow-y-auto">
@@ -2118,7 +2186,6 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
     );
   }
 
-  // ── Error ──
   if (isError || !course) {
     return (
       <main className="flex-1 px-6 py-6 flex flex-col items-center justify-center min-h-[400px]">
@@ -2133,7 +2200,7 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
 
   return (
     <main className="flex-1 px-4 pb-8 sm:px-6 lg:px-8 overflow-y-auto">
-      {/* ── Page Header ── */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 py-6">
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground tracking-tight md:text-3xl">
@@ -2142,29 +2209,38 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
           <p className="mt-1 text-sm text-muted-foreground">Course Management Dashboard</p>
         </div>
 
-        <button
-          onClick={handleSaveAll}
-          disabled={saveStatus === "saving"}
-          className="inline-flex items-center gap-2 rounded-xl bg-[image:var(--gradient-primary)] px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-primary)] hover:opacity-90 active:scale-[0.98] transition disabled:opacity-60 shrink-0 cursor-pointer"
-        >
-          {saveStatus === "saving" ? (
-            <>
-              <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin animate-infinite" />
-              Saving…
-            </>
-          ) : saveStatus === "saved" ? (
-            <>
-              <Check className="h-4 w-4" /> Saved!
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4" /> Save All Changes
-            </>
-          )}
-        </button>
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <Link
+            to="/admin/courses/view/$slug"
+            params={{ slug: course.slug }}
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)] px-5 py-2.5 text-sm font-bold text-foreground hover:bg-[var(--surface)] active:scale-[0.98] transition shrink-0 cursor-pointer"
+          >
+            <PlayCircle className="h-4 w-4" /> Preview Course
+          </Link>
+          <button
+            onClick={handleSaveAll}
+            disabled={saveStatus === "saving"}
+            className="inline-flex items-center gap-2 rounded-xl bg-[image:var(--gradient-primary)] px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-primary)] hover:opacity-90 active:scale-[0.98] transition disabled:opacity-60 shrink-0 cursor-pointer"
+          >
+            {saveStatus === "saving" ? (
+              <>
+                <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin animate-infinite" />
+                Saving…
+              </>
+            ) : saveStatus === "saved" ? (
+              <>
+                <Check className="h-4 w-4" /> Saved!
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" /> Save All Changes
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
-      {/* ── Quick Stats Bar ── */}
+      {}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           { label: "Modules", value: localModules.length },
@@ -2188,9 +2264,9 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
         ))}
       </div>
 
-      {/* ── Two-Column Grid ── */}
+      {}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left: Curriculum */}
+        {}
         <div className="lg:col-span-7">
           <CurriculumPanel
             modules={localModules}
@@ -2204,7 +2280,7 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
           />
         </div>
 
-        {/* Right: Config Tabs */}
+        {}
         <div className="lg:col-span-5">
           <ConfigPanel
             course={course}

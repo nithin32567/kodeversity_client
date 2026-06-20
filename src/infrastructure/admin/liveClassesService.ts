@@ -13,8 +13,8 @@ export interface LiveSession {
   id: string;
   title: string;
   description: string | null;
-  startTime: string; // ISO String from backend
-  duration: number; // in minutes
+  startTime: string;
+  duration: number;
   status: MeetingStatus;
   type: MeetingType;
   batchId: string;
@@ -23,7 +23,7 @@ export interface LiveSession {
   createdAt: string;
   updatedAt: string;
   allowedStudents?: AllowedStudent[];
-  // UI fields added after mapping
+
   batchName?: string;
 }
 
@@ -41,7 +41,7 @@ export const liveClassesService = {
       const response = await apiClient.get<
         { success: boolean; data: LiveSession[] } | LiveSession[]
       >(url);
-      // Backend controller returns `{ success: true, data: result }`
+
       if (Array.isArray(response)) {
         return response;
       }
@@ -79,7 +79,7 @@ export const liveClassesService = {
       base,
       backendPayload,
     );
-    // Unbox `{ success: true, data: result }` if returned that way
+
     if (response && typeof response === "object" && "data" in response) {
       return response.data;
     }

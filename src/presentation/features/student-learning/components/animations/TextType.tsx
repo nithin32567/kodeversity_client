@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState, type ElementType } from "react";
 
 type Props = {
@@ -121,7 +122,6 @@ export function TextType({
 
   const color = textColors?.[colorIndex % (textColors?.length || 1)];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const TagComp = Tag as any;
   return (
     <TagComp ref={rootRef} className={className} style={color ? { color } : undefined}>

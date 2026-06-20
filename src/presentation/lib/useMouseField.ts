@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 
 export type MouseField = {
-  x: number; // -1..1
-  y: number; // -1..1
-  active: number; // 0..1 smoothed
+  x: number;
+  y: number;
+  active: number;
 };
 
 export function useMouseField() {

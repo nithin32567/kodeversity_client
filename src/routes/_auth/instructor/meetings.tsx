@@ -43,29 +43,23 @@ export const Route = createFileRoute("/_auth/instructor/meetings")({
 export function LiveClassesPage() {
   const { isLoading: isAuthLoading, isAuthenticated, user } = useAuth();
 
-  // Role detection
-  const userRole = user?.role || "INSTRUCTOR"; // fallback safety
+  const userRole = user?.role || "INSTRUCTOR";
   const isAdmin = userRole === "ADMIN";
 
-  // Data states
   const [batches, setBatches] = useState<Batch[]>([]);
   const [meetings, setMeetings] = useState<LiveSession[]>([]);
   const [roster, setRoster] = useState<BatchStudent[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
 
-  // Loading states
   const [isLoading, setIsLoading] = useState(true);
   const [isMeetingsLoading, setIsMeetingsLoading] = useState(false);
   const [isRosterLoading, setIsRosterLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Tab State: "upcoming" | "live" | "completed"
   const [activeTab, setActiveTab] = useState<"upcoming" | "live" | "completed">("upcoming");
 
-  // Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // Filter query
   const [searchQuery, setSearchQuery] = useState("");
 
   // Creation Form State
@@ -121,7 +115,7 @@ export function LiveClassesPage() {
     }
     // If instructor, filter by batches where the batch's course belongs to the instructor, or the batch is assigned to the instructor explicitly
     return batches.filter((b) => {
-      const instructorId = courseInstructorMap.get(b.courseId);
+      const instructorId = b.courseId ? courseInstructorMap.get(b.courseId) : null;
       return instructorId === user?.id || b.instructorId === user?.id;
     });
   }, [batches, isAdmin, courseInstructorMap, user]);
@@ -187,12 +181,10 @@ export function LiveClassesPage() {
     }
   }, [formBatchId, formAudience, isAdmin]);
 
-  // Categorize and filter meetings based on search & activeTab
   const filteredMeetings = useMemo(() => {
     const query = searchQuery.toLowerCase();
 
     return meetings.filter((meeting) => {
-      // Search matching
       const matchesSearch =
         meeting.title.toLowerCase().includes(query) ||
         (meeting.description && meeting.description.toLowerCase().includes(query)) ||
@@ -200,8 +192,6 @@ export function LiveClassesPage() {
 
       if (!matchesSearch) return false;
 
-      // Status tab matching
-      // Upcoming: status is UPCOMING or CANCELLED is excluded (or included depending on UI, usually we omit CANCELLED or show it as completed/past. Let's show UPCOMING in Upcoming tab, LIVE in Live Now, COMPLETED or CANCELLED in Completed tab)
       if (activeTab === "upcoming") {
         return meeting.status === "UPCOMING";
       } else if (activeTab === "live") {
@@ -212,14 +202,12 @@ export function LiveClassesPage() {
     });
   }, [meetings, searchQuery, activeTab]);
 
-  // Student toggle
   const toggleStudentSelection = (studentId: string) => {
     setSelectedStudentIds((prev) =>
       prev.includes(studentId) ? prev.filter((id) => id !== studentId) : [...prev, studentId],
     );
   };
 
-  // Handle Cancel meeting
   const handleCancelMeeting = async (id: string, title: string) => {
     const confirmCancel = window.confirm(`Are you sure you want to cancel the class "${title}"?`);
     if (!confirmCancel) return;
@@ -237,7 +225,6 @@ export function LiveClassesPage() {
 
   const navigate = useNavigate();
 
-  // Handle Join as Host
   const handleJoinMeeting = async (meeting: LiveSession) => {
     if (!user) {
       toast.error("You must be logged in to join.");
@@ -269,7 +256,6 @@ export function LiveClassesPage() {
     }
   };
 
-  // Form submission
   const handleCreateMeetingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -316,7 +302,6 @@ export function LiveClassesPage() {
         toast.success(`Live Class "${formTitle}" scheduled successfully!`);
       }
 
-      // Reset form
       setFormTitle("");
       setFormDescription("");
       setFormDate("");
@@ -327,7 +312,6 @@ export function LiveClassesPage() {
       setSelectedStudentIds([]);
       setShowCreateModal(false);
 
-      // Refresh meetings list
       await fetchAllMeetings();
     } catch (err) {
       const error = err as Error;
@@ -338,7 +322,6 @@ export function LiveClassesPage() {
     }
   };
 
-  // Filter student checklist
   const filteredRoster = useMemo(() => {
     const filter = studentFilter.toLowerCase();
     return roster.filter((r) => {
@@ -363,7 +346,7 @@ export function LiveClassesPage() {
 
   return (
     <main className="flex-1 px-4 pb-6 sm:px-6 lg:px-8 lg:pb-8 space-y-6 overflow-y-auto max-w-[1400px] mx-auto w-full">
-      {/* Title & Navigation */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-b border-[var(--hairline)] pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
@@ -382,7 +365,7 @@ export function LiveClassesPage() {
           </p>
         </div>
 
-        {/* Buttons / Actions */}
+        {}
         <div className="flex items-center gap-3">
           <button
             onClick={fetchAllMeetings}
@@ -402,9 +385,9 @@ export function LiveClassesPage() {
         </div>
       </div>
 
-      {/* Tabs Menu & Search Filter */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-2 rounded-xl bg-[var(--surface-2)]/40 border border-[var(--hairline)]">
-        {/* Navigation Tabs */}
+        {}
         <div className="flex items-center gap-1.5 p-1 bg-black/25 rounded-lg border border-[var(--hairline)] w-fit">
           <button
             onClick={() => setActiveTab("upcoming")}
@@ -439,7 +422,7 @@ export function LiveClassesPage() {
           </button>
         </div>
 
-        {/* Search */}
+        {}
         <div className="relative w-full sm:max-w-xs">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/75" />
           <input
@@ -452,7 +435,7 @@ export function LiveClassesPage() {
         </div>
       </div>
 
-      {/* Main content grid */}
+      {}
       {isMeetingsLoading ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -506,7 +489,7 @@ export function LiveClassesPage() {
                 </div>
               )}
 
-              {/* Header */}
+              {}
               <div className="flex justify-between items-start gap-3">
                 <div className="min-w-0">
                   <h3 className="font-semibold text-[17px] text-foreground truncate group-hover:text-blue-400 transition flex items-center gap-2">
@@ -520,7 +503,7 @@ export function LiveClassesPage() {
                   </span>
                 </div>
 
-                {/* Type Badge */}
+                {}
                 <span
                   className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
                     meeting.type === "CUSTOM_STUDENTS"
@@ -536,7 +519,7 @@ export function LiveClassesPage() {
                 {meeting.description || "No session description provided."}
               </p>
 
-              {/* Details */}
+              {}
               <div className="space-y-2 mt-5 flex-1 border-t border-b border-[var(--hairline)] py-4 my-4">
                 <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
                   <Calendar className="h-4 w-4 text-blue-400/80 shrink-0" />
@@ -575,7 +558,7 @@ export function LiveClassesPage() {
                 )}
               </div>
 
-              {/* Actions Footer */}
+              {}
               <div className="flex items-center gap-2 mt-2">
                 {meeting.status === "LIVE" ? (
                   <div className="flex w-full flex-col gap-2">
@@ -642,12 +625,12 @@ export function LiveClassesPage() {
         </div>
       )}
 
-      {/* CREATE MEETING MODAL DIALOG */}
+      {}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          {/* Modal Container */}
+          {}
           <div className="relative w-full max-w-lg p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] shadow-2xl space-y-5 animate-scale-in max-h-[90vh] flex flex-col">
-            {/* Header */}
+            {}
             <div className="flex justify-between items-start shrink-0">
               <div>
                 <h3 className="text-xl font-bold tracking-tight text-foreground font-display flex items-center gap-2">
@@ -666,12 +649,12 @@ export function LiveClassesPage() {
               </button>
             </div>
 
-            {/* Form - Scrollable */}
+            {}
             <form
               onSubmit={handleCreateMeetingSubmit}
               className="space-y-4 overflow-y-auto flex-1 pr-1 scrollbar-thin"
             >
-              {/* Mode Toggle */}
+              {}
               <div className="flex gap-4 mb-2">
                 <label className="flex items-center gap-2 text-sm font-semibold text-foreground cursor-pointer select-none">
                   <input
@@ -695,7 +678,7 @@ export function LiveClassesPage() {
                 </label>
               </div>
 
-              {/* Title */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Class Title *</label>
                 <input
@@ -708,7 +691,7 @@ export function LiveClassesPage() {
                 />
               </div>
 
-              {/* Description */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Description</label>
                 <textarea
@@ -720,7 +703,7 @@ export function LiveClassesPage() {
                 />
               </div>
 
-              {/* Date, Time & Duration Grid */}
+              {}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {formMeetingMode === "SCHEDULE" && (
                   <>
@@ -764,7 +747,7 @@ export function LiveClassesPage() {
                 </div>
               </div>
 
-              {/* Batch Select */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">
                   Select Batch / Cohort *
@@ -795,7 +778,7 @@ export function LiveClassesPage() {
                 )}
               </div>
 
-              {/* Audience selection */}
+              {}
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground block">
                   Audience Target *
@@ -840,7 +823,7 @@ export function LiveClassesPage() {
                     </span>
                   </div>
 
-                  {/* Student search filter */}
+                  {}
                   <div className="relative mt-2 shrink-0">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/70" />
                     <input
@@ -852,7 +835,7 @@ export function LiveClassesPage() {
                     />
                   </div>
 
-                  {/* Scrollable list */}
+                  {}
                   <div className="max-h-[160px] overflow-y-auto mt-2 space-y-1 pr-1 scrollbar-thin">
                     {isRosterLoading ? (
                       <div className="p-4 text-center text-xs text-muted-foreground animate-pulse">
@@ -907,7 +890,7 @@ export function LiveClassesPage() {
                 </div>
               )}
 
-              {/* Submit Buttons */}
+              {}
               <div className="flex gap-3 pt-3 shrink-0">
                 <button
                   type="button"

@@ -32,12 +32,11 @@ export function HUDOverlay({ mouse }: Props) {
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10 flex flex-col">
-      {/* Top bar */}
+      {}
       <header className="flex items-start justify-between p-4 md:p-10 text-[11px] uppercase tracking-[0.2em] text-foreground/80">
         <div className="pointer-events-auto flex items-center gap-2 md:gap-3">
           <span className="inline-block size-2 rounded-full bg-cyan shadow-[0_0_12px_var(--accent-cyan)]" />
           <span className="font-semibold">KODEVERSITY</span>
-          <span className="hidden text-muted-foreground sm:inline">//</span>
           <span className="hidden text-muted-foreground sm:inline">cluster.us-east-1</span>
         </div>
         <nav className="pointer-events-auto hidden gap-6 md:flex">
@@ -64,7 +63,7 @@ export function HUDOverlay({ mouse }: Props) {
         <MobileMenu />
       </header>
 
-      {/* Center stage */}
+      {}
       <main className="flex flex-1 items-center justify-center px-4 text-center md:px-6">
         <div className="max-w-3xl">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan/30 bg-cyan/5 px-3 py-1 text-[9px] uppercase tracking-[0.25em] text-cyan md:mb-6 md:text-[10px]">
@@ -106,7 +105,7 @@ export function HUDOverlay({ mouse }: Props) {
         </div>
       </main>
 
-      {/* Bottom readout */}
+      {}
       <footer className="grid grid-cols-2 gap-3 p-4 text-[9px] uppercase tracking-[0.18em] text-muted-foreground md:grid-cols-4 md:gap-4 md:p-10 md:text-[10px] md:tracking-[0.2em]">
         <div>
           <div className="text-foreground/40">PTR</div>

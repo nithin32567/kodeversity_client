@@ -11,12 +11,7 @@ import {
 } from "@/presentation/core-ui/dialog";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/presentation/core-ui/input-otp";
 
-// ---------------------------------------------------------------------------
-// Route definition
-// ---------------------------------------------------------------------------
-
 interface RegisterSearch {
-  /** When redirected from login (EMAIL_NOT_VERIFIED), jump straight to OTP step. */
   step?: "register" | "otp";
   email?: string;
 }
@@ -34,10 +29,6 @@ export const Route = createFileRoute("/register")({
   head: () => ({ meta: [{ title: "Create account — Kodeversity" }] }),
   component: RegisterPage,
 });
-
-// ---------------------------------------------------------------------------
-// OTP Modal
-// ---------------------------------------------------------------------------
 
 const OTP_RESEND_SECONDS = 30;
 
@@ -118,7 +109,6 @@ function OtpModal({ email, open, onSuccess }: OtpModalProps) {
     <Dialog open={open}>
       <DialogContent
         className="sm:max-w-md"
-        // Prevent closing by clicking outside — user must verify.
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
@@ -179,16 +169,11 @@ function OtpModal({ email, open, onSuccess }: OtpModalProps) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Register Page
-// ---------------------------------------------------------------------------
-
 function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const search = Route.useSearch();
 
-  // If redirected from login with EMAIL_NOT_VERIFIED, jump straight to OTP.
   const [email, setEmail] = useState(search.email ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -212,19 +197,13 @@ function RegisterPage() {
     setBusy(true);
     try {
       await register({ email, password });
-      // 201 Created → open OTP modal.
-      setOtpOpen(true);
+
+      void navigate({ to: "/login", search: { verified: email } });
     } catch (err) {
       setError(getAuthErrorMessage((err as Error).message));
     } finally {
       setBusy(false);
     }
-  };
-
-  const handleOtpSuccess = () => {
-    setOtpOpen(false);
-    // Navigate to login with a success toast hint via search param.
-    void navigate({ to: "/login", search: { verified: email } });
   };
 
   return (
@@ -299,8 +278,8 @@ function RegisterPage() {
         </p>
       </form>
 
-      {/* OTP Verification Modal — shown after successful registration or EMAIL_NOT_VERIFIED redirect */}
-      <OtpModal email={email} open={otpOpen} onSuccess={handleOtpSuccess} />
+      {}
+      <OtpModal email={email} open={otpOpen} onSuccess={() => setOtpOpen(false)} />
     </main>
   );
 }

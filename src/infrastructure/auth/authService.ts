@@ -8,23 +8,19 @@ export interface LoginPayload {
   password: string;
 }
 
-// Shape returned by POST /api/auth/login (after envelope unwrap by apiClient)
 interface LoginData {
   accessToken: string;
   user: User;
 }
 
-// Shape returned by POST /api/auth/register (after envelope unwrap: { userId })
 interface RegisterData {
   userId: string;
 }
 
-// Shape returned by POST /api/auth/refresh (after envelope unwrap: { accessToken })
 interface RefreshData {
   accessToken: string;
 }
 
-// Shape returned by GET /api/auth/verify-token
 interface VerifyTokenData {
   user: { id: string; role: string };
 }

@@ -1,17 +1,3 @@
-/**
- * usePlaygroundLifecycle.ts — Custom hook orchestrating the full 7-step
- * playground provisioning lifecycle as a state machine.
- *
- * Responsibilities:
- * 1. Fetch template config
- * 2. Generate instance ID
- * 3. Create the container
- * 4. Poll until ready
- * 5. Fetch connection info
- * 6. Expose teardown + test validation
- * 7. Auto-teardown on unmount
- */
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   PlaygroundLifecyclePhase,
@@ -21,34 +7,22 @@ import type {
 } from "@/domain/playground";
 import { playgroundApi } from "../api";
 
-// ─── Constants ──────────────────────────────────────────────────────────────
-
 const POLL_INTERVAL_MS = 3_000;
-const MAX_POLL_ATTEMPTS = 60; // ~3 minutes max wait
-const KEEPALIVE_INTERVAL_MS = 2.5 * 60 * 1000; // 2.5 minutes
-
-// ─── Hook Return Type ───────────────────────────────────────────────────────
+const MAX_POLL_ATTEMPTS = 60;
+const KEEPALIVE_INTERVAL_MS = 2.5 * 60 * 1000;
 
 export interface UsePlaygroundLifecycleReturn {
-  /** The current playground instance state. */
   instance: PlaygroundInstance;
-  /** The fetched template configuration (null until loaded). */
   templateConfig: TemplateConfig | null;
-  /** Manually trigger teardown (also fires on unmount). */
   teardown: () => Promise<void>;
-  /** Run a validation test against the playground. */
   runTest: (
     vm: string,
     test: string,
     args?: string[],
   ) => Promise<{ message: string; passed: boolean }>;
-  /** Whether the lifecycle is in a terminal error state. */
   hasError: boolean;
-  /** Retry provisioning from scratch (after error). */
   retry: () => void;
 }
-
-// ─── Initial State ──────────────────────────────────────────────────────────
 
 function createInitialInstance(): PlaygroundInstance {
   return {
@@ -62,28 +36,25 @@ function createInitialInstance(): PlaygroundInstance {
   };
 }
 
-// ─── Hook ───────────────────────────────────────────────────────────────────
-
 export function usePlaygroundLifecycle(
   config: PlaygroundConfig,
-  /** Origin context: "course" or "challenge". */
   from: string,
-  /** ID of the course or challenge triggering this. */
   fromId: string,
 ): UsePlaygroundLifecycleReturn {
   const [instance, setInstance] = useState<PlaygroundInstance>(createInitialInstance);
   const [templateConfig, setTemplateConfig] = useState<TemplateConfig | null>(null);
   const [retryKey, setRetryKey] = useState(0);
 
-  // Refs for cleanup safety
   const instanceIdRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
   const keepaliveRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Helpers ─────────────────────────────────────────────────────────────
-
   const updatePhase = useCallback(
-    (phase: PlaygroundLifecyclePhase, statusMessage: string, extra?: Partial<PlaygroundInstance>) => {
+    (
+      phase: PlaygroundLifecyclePhase,
+      statusMessage: string,
+      extra?: Partial<PlaygroundInstance>,
+    ) => {
       setInstance((prev) => ({ ...prev, phase, statusMessage, ...extra }));
     },
     [],
@@ -96,19 +67,15 @@ export function usePlaygroundLifecycle(
     [updatePhase],
   );
 
-  // ── Core Lifecycle ─────────────────────────────────────────────────────
-
   const provision = useCallback(async () => {
     if (!isMountedRef.current) return;
 
     try {
-      // Phase 0: Fetch template config
       updatePhase("GENERATING_ID", "Loading template configuration…");
       const template = await playgroundApi.getTemplateConfig(config.pg);
       if (!isMountedRef.current) return;
       setTemplateConfig(template);
 
-      // Phase 1: Generate instance ID
       updatePhase("GENERATING_ID", "Allocating playground instance…");
       const { id } = await playgroundApi.generateId(
         config.pg,
@@ -121,7 +88,6 @@ export function usePlaygroundLifecycle(
       instanceIdRef.current = id;
       setInstance((prev) => ({ ...prev, id }));
 
-      // Phase 2: Create the container
       updatePhase("CREATING", "Spinning up container…");
       const createResult = await playgroundApi.create(id);
       if (!isMountedRef.current) return;
@@ -132,7 +98,6 @@ export function usePlaygroundLifecycle(
         statusMessage: createResult.message || "Container created, waiting for boot…",
       }));
 
-      // Phase 3: Poll for readiness
       updatePhase("POLLING", "Waiting for environment to be ready…");
       let ready = false;
       for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
@@ -148,15 +113,12 @@ export function usePlaygroundLifecycle(
         return;
       }
 
-      // Phase 4: Get connection info
       updatePhase("CONNECTING", "Establishing connection…");
       const connection = await playgroundApi.getConnectionInfo(id);
       if (!isMountedRef.current) return;
 
-      // ✅ READY
       updatePhase("READY", "Playground is ready!", { connection });
 
-      // Start keepalive polling
       keepaliveRef.current = setInterval(() => {
         if (instanceIdRef.current) {
           playgroundApi.poll(instanceIdRef.current).catch(() => {});
@@ -168,8 +130,6 @@ export function usePlaygroundLifecycle(
       setError(message);
     }
   }, [config, from, fromId, updatePhase, setError]);
-
-  // ── Teardown ───────────────────────────────────────────────────────────
 
   const teardown = useCallback(async () => {
     if (keepaliveRef.current) {
@@ -186,15 +146,13 @@ export function usePlaygroundLifecycle(
     try {
       await playgroundApi.teardown(id);
     } catch {
-      // Best-effort cleanup
+      void 0;
     }
 
     if (isMountedRef.current) {
       updatePhase("DESTROYED", "Playground destroyed.");
     }
   }, [updatePhase]);
-
-  // ── Test Validation ────────────────────────────────────────────────────
 
   const runTest = useCallback(
     async (vm: string, test: string, args: string[] = []) => {
@@ -217,8 +175,6 @@ export function usePlaygroundLifecycle(
     [updatePhase],
   );
 
-  // ── Retry ──────────────────────────────────────────────────────────────
-
   const retry = useCallback(() => {
     setInstance(createInitialInstance());
     setTemplateConfig(null);
@@ -226,9 +182,6 @@ export function usePlaygroundLifecycle(
     setRetryKey((k) => k + 1);
   }, []);
 
-  // ── Effects ────────────────────────────────────────────────────────────
-
-  // Mount/unmount tracking
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
@@ -236,13 +189,11 @@ export function usePlaygroundLifecycle(
     };
   }, []);
 
-  // Auto-provision on mount (and on retry)
   useEffect(() => {
     provision();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retryKey]);
 
-  // Auto-teardown on unmount
   useEffect(() => {
     return () => {
       if (keepaliveRef.current) {

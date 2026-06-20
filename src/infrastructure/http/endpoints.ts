@@ -74,16 +74,16 @@ export const endpoints = {
     batchStudents: (batchId: string) => `${COURSE_URL}/api/batches/${batchId}/students`,
     removeStudentFromBatch: (batchId: string, studentId: string) =>
       `${COURSE_URL}/api/batches/${batchId}/students/${studentId}`,
+    enrollStudent: `${COURSE_URL}/api/admin/courses/enroll`,
     suspendedUsers: `${AUTH_URL}/api/admin/users/suspended`,
     updateUserStatus: (id: string) => `${AUTH_URL}/api/admin/users/${id}/status`,
     deleteUser: (id: string) => `${AUTH_URL}/api/admin/users/${id}`,
   },
   instructor: {
-    // Dedicated instructor-scoped endpoints (backend filters by JWT's instructorId)
     myCourses: `${COURSE_URL}/api/instructor/courses`,
     myBatches: `${COURSE_URL}/api/instructor/batches`,
     createCourse: `${COURSE_URL}/api/instructor/courses`,
-    // Module & chapter management — shared with admin but instructor-gated on backend
+
     createModule: (courseId: string) => `${COURSE_URL}/api/courses/${courseId}/modules`,
     updateModule: (moduleId: string) => `${COURSE_URL}/api/modules/${moduleId}`,
     deleteModule: (moduleId: string) => `${COURSE_URL}/api/modules/${moduleId}`,
@@ -91,35 +91,39 @@ export const endpoints = {
     updateChapter: (chapterId: string) => `${COURSE_URL}/api/chapters/${chapterId}`,
     deleteChapter: (chapterId: string) => `${COURSE_URL}/api/chapters/${chapterId}`,
     batchRoster: (batchId: string) => `${COURSE_URL}/api/batches/${batchId}/students`,
-    // Meetings — instructor creates & joins sessions for accessible batches
+
     meetings: `${MEETING_URL}/api/meetings`,
     meetingsByBatch: (batchId: string) => `${MEETING_URL}/api/meetings/batch/${batchId}`,
   },
   playground: {
-    // Step 1: Generate a unique instance ID for a new playground session.
     generateId: (pg: string, pgname: string, playground: string, from: string, fromId: string) =>
       `${PLAYGROUND_URL}/api/v1/generate-id/${pg}/${pgname}/${playground}/${from}/${fromId}`,
-    // Step 2: Signal the backend to physically spin up the container.
+
     create: (id: string) => `${PLAYGROUND_URL}/api/v1/playground/${id}`,
-    // Step 3: Poll for container boot readiness.
+
     poll: (id: string) => `${PLAYGROUND_URL}/api/v1/pg-poll/${id}`,
-    // Step 4: Get connection IP/ports once the container is ready.
+
     getIp: (id: string) => `${PLAYGROUND_URL}/api/v1/get-ip/${id}`,
-    // Step 5: Validate user work against automated tests.
+
     checkTestGet: (id: string, vm: string, test: string) =>
       `${PLAYGROUND_URL}/api/v1/check-test/${id}/${vm}/${test}`,
     checkTestPost: (id: string, vm: string) =>
       `${PLAYGROUND_URL}/api/v1/check-test/${id}/${vm}/test`,
-    // Step 6: Record score and XP upon test pass.
+
     score: `${PLAYGROUND_URL}/api/v1/admin/score`,
     xp: `${PLAYGROUND_URL}/api/v1/admin/xp`,
-    // Step 7: Teardown — destroy the container.
+
     remove: (id: string) => `${PLAYGROUND_URL}/api/v1/playground/${id}`,
-    // Auxiliary: List active playgrounds & fetch template configuration.
+
     active: `${PLAYGROUND_URL}/api/v1/active-playgrounds`,
     list: `${PLAYGROUND_URL}/api/v1/playground`,
-    templateConfig: (pgid: string) => `${PLAYGROUND_URL}/api/v1/admin/template-config/${pgid}`,
-    // Optional: Open code-server / desktop GUI.
+    templateConfig: (pgid: string) => `${PLAYGROUND_URL}/api/v1/template-config/${pgid}`,
+    adminTemplateConfig: `${PLAYGROUND_URL}/api/v1/admin/template-config`,
+    adminTemplateConfigId: (id: string) => `${PLAYGROUND_URL}/api/v1/admin/template-config/${id}`,
+    adminPlaygrounds: `${PLAYGROUND_URL}/api/v1/admin/playgrounds`,
+    adminKernels: `${PLAYGROUND_URL}/api/v1/admin/kernels`,
+    adminSnapshots: `${PLAYGROUND_URL}/api/v1/admin/snapshots`,
+
     openCodeServer: (id: string) => `${PLAYGROUND_URL}/api/v1/open-code-server/${id}`,
     openDesktopServer: (id: string) => `${PLAYGROUND_URL}/api/v1/open-desktop-server/${id}`,
   },

@@ -28,7 +28,6 @@ export function MyBatchesPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Detail selection
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [roster, setRoster] = useState<BatchStudent[]>([]);
   const [rosterLoading, setRosterLoading] = useState(false);
@@ -57,7 +56,6 @@ export function MyBatchesPage() {
     void loadBatches();
   }, [isAuthLoading, user]);
 
-  // Load roster details when selectedBatch changes
   useEffect(() => {
     if (!selectedBatch) return;
 
@@ -87,7 +85,6 @@ export function MyBatchesPage() {
     );
   }
 
-  // Predefined simulated announcements for cohorts
   const simulatedAnnouncements = [
     {
       id: "1",
@@ -120,7 +117,7 @@ export function MyBatchesPage() {
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-3 items-start">
-          {/* ── LEFT COLUMN: BATCH CARDS ── */}
+          {}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
               My Cohorts
@@ -158,11 +155,11 @@ export function MyBatchesPage() {
             </div>
           </div>
 
-          {/* ── RIGHT COLUMN: COHORT DETAILS ── */}
+          {}
           <div className="lg:col-span-2 space-y-4">
             {selectedBatch && (
               <div className="p-6 rounded-2xl border border-border bg-card shadow-lg space-y-5">
-                {/* Header */}
+                {}
                 <div>
                   <h2 className="text-xl font-bold tracking-tight text-white font-display">
                     {selectedBatch.name}
@@ -172,7 +169,7 @@ export function MyBatchesPage() {
                   </p>
                 </div>
 
-                {/* Tabs Menu */}
+                {}
                 <div className="flex border-b border-border pb-0.5 gap-4">
                   <button
                     onClick={() => setActiveTab("schedule")}
@@ -206,7 +203,7 @@ export function MyBatchesPage() {
                   </button>
                 </div>
 
-                {/* Tab Content Panels */}
+                {}
                 <div className="min-h-[220px]">
                   {activeTab === "schedule" && (
                     <div className="space-y-4">

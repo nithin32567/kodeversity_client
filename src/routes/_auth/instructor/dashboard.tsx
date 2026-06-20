@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   BookOpen,
   Layers,
@@ -35,18 +35,16 @@ export function InstructorDashboardPage() {
   const [batches, setBatches] = useState<InstructorBatch[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       const [fetchedCourses, fetchedBatches] = await Promise.all([
         instructorService.getMyCourses(),
         instructorService.getMyBatches(),
       ]);
 
-      // Filter courses where the instructor owns the course
       const myCourses = fetchedCourses.filter((c) => c.instructorId === user?.id);
       setCourses(myCourses);
 
-      // Filter batches assigned to instructor courses
       const myCourseIds = new Set(myCourses.map((c) => c.id));
       const myBatches = fetchedBatches.filter((b) => myCourseIds.has(b.courseId));
       setBatches(myBatches);
@@ -56,12 +54,12 @@ export function InstructorDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     if (isAuthLoading || !user) return;
     void fetchDashboardData();
-  }, [isAuthLoading, user]);
+  }, [isAuthLoading, user, fetchDashboardData]);
 
   if (isAuthLoading || loading) {
     return (
@@ -76,7 +74,7 @@ export function InstructorDashboardPage() {
 
   return (
     <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 max-w-[1400px] mx-auto w-full">
-      {/* Welcome Hero Banner */}
+      {}
       <div className="relative overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] p-6 sm:p-8 shadow-xl">
         <div
           className="absolute -right-20 -bottom-20 h-64 w-64 rounded-full blur-[90px] opacity-10"
@@ -93,7 +91,7 @@ export function InstructorDashboardPage() {
         </div>
       </div>
 
-      {/* Grid Stats Row */}
+      {}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           glow={glow}
@@ -113,25 +111,25 @@ export function InstructorDashboardPage() {
           glow={glow}
           icon={<Users className="h-5 w-5 text-emerald-400" />}
           title="Students Managed"
-          value={124} // Fallback mock student count for context
+          value={124}
           desc="Total enrolled students"
         />
         <StatCard
           glow={glow}
           icon={<Video className="h-5 w-5 text-rose-400" />}
           title="Meetings Conducted"
-          value={18} // Fallback mock sessions count
+          value={18}
           desc="Interactive video sessions"
         />
       </div>
 
-      {/* Bento Layout Actions & Upcoming Schedules */}
+      {}
       <MagicBentoSection
         className="grid gap-6 lg:grid-cols-3"
         glowColor={glow}
         spotlightRadius={450}
       >
-        {/* Quick Actions Panel */}
+        {}
         <MagicBentoCard
           className="lg:col-span-1 p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] flex flex-col justify-between"
           glowColor={glow}
@@ -192,7 +190,7 @@ export function InstructorDashboardPage() {
           </div>
         </MagicBentoCard>
 
-        {/* Courses Overview List */}
+        {}
         <MagicBentoCard
           className="lg:col-span-2 p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] flex flex-col justify-between"
           glowColor={glow}

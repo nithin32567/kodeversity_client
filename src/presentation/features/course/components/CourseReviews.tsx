@@ -4,7 +4,6 @@ import { computeAverageRating } from "./utils";
 
 interface CourseReviewsProps {
   reviews: Review[];
-  /** If true, only show the first 2 reviews (preview mode). */
   preview?: boolean;
 }
 

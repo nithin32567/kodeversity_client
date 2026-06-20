@@ -92,7 +92,6 @@ export function EditUserModal({ isOpen, onClose, onSubmitSuccess, user }: EditUs
         withCredentials: true,
       });
 
-      // Extract details from envelope if returned as { success: true, data: ... }
       const data = response.data;
       if (data && data.success === false) {
         throw new Error(data.error || data.message || "Failed to update user.");
@@ -116,9 +115,9 @@ export function EditUserModal({ isOpen, onClose, onSubmitSuccess, user }: EditUs
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      {/* Modal Card */}
+      {}
       <div className="relative w-full max-w-md rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] shadow-2xl overflow-hidden flex flex-col">
-        {/* Modal Header */}
+        {}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--hairline)] bg-[var(--surface-2)]/60">
           <div className="flex items-center gap-2">
             <UserCheck className="h-5 w-5 text-indigo-400" />
@@ -135,9 +134,9 @@ export function EditUserModal({ isOpen, onClose, onSubmitSuccess, user }: EditUs
           </button>
         </div>
 
-        {/* Modal Body Form */}
+        {}
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Validation Alert */}
+          {}
           {validationError && (
             <div className="flex items-start gap-2.5 p-3 rounded-lg border border-red-500/20 bg-red-500/5 text-red-400 text-xs">
               <ShieldAlert className="h-4.5 w-4.5 shrink-0 mt-0.5" />
@@ -145,7 +144,7 @@ export function EditUserModal({ isOpen, onClose, onSubmitSuccess, user }: EditUs
             </div>
           )}
 
-          {/* Full Name */}
+          {}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Full Name
@@ -165,7 +164,7 @@ export function EditUserModal({ isOpen, onClose, onSubmitSuccess, user }: EditUs
             </div>
           </div>
 
-          {/* Email Address */}
+          {}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Email Address
@@ -185,7 +184,7 @@ export function EditUserModal({ isOpen, onClose, onSubmitSuccess, user }: EditUs
             </div>
           </div>
 
-          {/* Role */}
+          {}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Role Assignment
@@ -204,7 +203,7 @@ export function EditUserModal({ isOpen, onClose, onSubmitSuccess, user }: EditUs
             </div>
           </div>
 
-          {/* Reset Password */}
+          {}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex justify-between">
               <span>Reset Password</span>
@@ -225,7 +224,7 @@ export function EditUserModal({ isOpen, onClose, onSubmitSuccess, user }: EditUs
             </div>
           </div>
 
-          {/* Modal Actions */}
+          {}
           <div className="flex flex-col gap-3 pt-3 border-t border-[var(--hairline)]">
             {isSubmitting ? (
               <div className="flex flex-col items-center justify-center p-3 text-center space-y-2.5">

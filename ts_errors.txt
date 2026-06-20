@@ -1,0 +1,47 @@
+src/presentation/features/admin-courses/components/EditConfigModal.tsx(392,8): error TS2352: Conversion of type 'TemplateBridge' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'TemplateBridge'.
+src/presentation/features/admin-courses/components/EditConfigModal.tsx(450,6): error TS2352: Conversion of type 'TemplateVM' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'TemplateVM'.
+src/presentation/features/admin-courses/components/EditConfigModal.tsx(486,6): error TS2352: Conversion of type 'TemplateDisk' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'TemplateDisk'.
+src/presentation/features/admin-courses/components/EditConfigModal.tsx(533,8): error TS2352: Conversion of type 'TemplateNetwork' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'TemplateNetwork'.
+src/presentation/features/admin-courses/components/PlaygroundManager.tsx(483,15): error TS2345: Argument of type '(pg: { _id: string; status: string; post_name?: string; type?: string; userid?: string; from?: string; ip?: string; start?: number; }) => JSX.Element' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => Element'.
+  Types of parameters 'pg' and 'value' are incompatible.
+    Type 'unknown' is not assignable to type '{ _id: string; status: string; post_name?: string | undefined; type?: string | undefined; userid?: string | undefined; from?: string | undefined; ip?: string | undefined; start?: number | undefined; }'.
+src/routes/_auth/admin/students.tsx(97,78): error TS2367: This comparison appears to be unintentional because the types 'UserRole.ADMIN | UserRole.INSTRUCTOR' and '"student"' have no overlap.
+src/routes/_auth/student/learn.$slug.tsx(180,54): error TS2322: Type 'Chapter[] | ({ id: string; title: string; duration: number; status: LessonStatus; type: ChapterType; videoUrl: string; documentUrl?: undefined; playgroundConfig?: undefined; } | { ...; } | { ...; })[] | ({ ...; } | { ...; })[]' is not assignable to type 'Chapter | readonly Chapter[]'.
+  Type '({ id: string; title: string; duration: number; status: LessonStatus; type: ChapterType; videoUrl: string; documentUrl?: undefined; playgroundConfig?: undefined; } | { ...; } | { ...; })[]' is not assignable to type 'Chapter | readonly Chapter[]'.
+    Type '({ id: string; title: string; duration: number; status: LessonStatus; type: ChapterType; videoUrl: string; documentUrl?: undefined; playgroundConfig?: undefined; } | { ...; } | { ...; })[]' is not assignable to type 'readonly Chapter[]'.
+      Type '{ id: string; title: string; duration: number; status: LessonStatus; type: ChapterType; videoUrl: string; documentUrl?: undefined; playgroundConfig?: undefined; } | { ...; } | { ...; }' is not assignable to type 'Chapter'.
+        Type '{ id: string; title: string; duration: number; status: LessonStatus; type: ChapterType; videoUrl: string; documentUrl?: undefined; playgroundConfig?: undefined; }' is missing the following properties from type 'Chapter': sortOrder, isPreview, moduleId, quizzes
+src/routes/_auth/student/learn.$slug.tsx(185,29): error TS18046: 'c' is of type 'unknown'.
+src/routes/_auth/student/learn.$slug.tsx(202,53): error TS18046: 'c' is of type 'unknown'.
+src/routes/_auth/student/learn.$slug.tsx(202,76): error TS2339: Property 'id' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(204,28): error TS2571: Object is of type 'unknown'.
+src/routes/_auth/student/learn.$slug.tsx(230,74): error TS18046: 'c' is of type 'unknown'.
+src/routes/_auth/student/learn.$slug.tsx(233,71): error TS18046: 'ch' is of type 'unknown'.
+src/routes/_auth/student/learn.$slug.tsx(234,42): error TS18046: 'totalDurationSeconds' is of type 'unknown'.
+src/routes/_auth/student/learn.$slug.tsx(234,87): error TS18046: 'totalDurationSeconds' is of type 'unknown'.
+src/routes/_auth/student/learn.$slug.tsx(262,32): error TS2339: Property 'type' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(264,36): error TS2339: Property 'playgroundConfig' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(266,47): error TS2339: Property 'playgroundConfig' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(270,81): error TS2339: Property 'id' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(281,35): error TS2339: Property 'type' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(290,44): error TS2339: Property 'title' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(297,38): error TS2339: Property 'documentUrl' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(299,47): error TS2339: Property 'documentUrl' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(320,42): error TS2339: Property 'documentUrl' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(326,74): error TS2339: Property 'id' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(333,35): error TS2339: Property 'type' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(340,90): error TS2339: Property 'title' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(344,72): error TS2339: Property 'id' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(358,38): error TS2339: Property 'videoUrl' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(360,46): error TS2339: Property 'videoUrl' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(384,46): error TS2339: Property 'title' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(436,78): error TS2339: Property 'duration' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(497,42): error TS2339: Property 'title' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(505,46): error TS2339: Property 'type' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(511,57): error TS2339: Property 'duration' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(515,42): error TS2339: Property 'playgroundConfig' does not exist on type '{}'.
+src/routes/_auth/student/learn.$slug.tsx(670,60): error TS2339: Property 'id' does not exist on type '{}'.

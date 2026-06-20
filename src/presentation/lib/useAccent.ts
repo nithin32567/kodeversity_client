@@ -17,7 +17,7 @@ export function getStoredAccent(): string {
 function applyToRoot(color: string) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-  // Single source of truth — every derived token uses color-mix(... var(--primary) ...).
+
   root.style.setProperty("--primary", color);
 }
 
