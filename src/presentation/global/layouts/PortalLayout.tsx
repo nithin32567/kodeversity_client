@@ -1,11 +1,12 @@
-import { Outlet, useLocation } from "@tanstack/react-router";
-import { useState } from "react";
+import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 
 export function PortalLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isLoading, user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isStudent = user?.role === "STUDENT";
@@ -16,11 +17,21 @@ export function PortalLayout() {
     location.pathname === "/register" ||
     location.pathname === "/admin/register";
 
+  useEffect(() => {
+    if (!isLoading && !user && !isLoginPage) {
+      if (location.pathname.startsWith("/admin") || location.pathname.startsWith("/instructor")) {
+        void navigate({ to: "/admin/login", search: { redirect: location.href } });
+      } else {
+        void navigate({ to: "/login", search: { redirect: location.href } });
+      }
+    }
+  }, [isLoading, user, isLoginPage, location.pathname, location.href, navigate]);
+
   if (isLoginPage) {
     return <Outlet />;
   }
 
-  if (isLoading) {
+  if (isLoading || (!user && !isLoginPage)) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />

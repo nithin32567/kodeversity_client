@@ -68,7 +68,7 @@ function Index() {
         <Hero />
         <CoursesSection />
 
-        {}
+        { }
         <section className="relative w-full border-y border-border/40 bg-background py-8 overflow-hidden">
           <div className="relative mx-auto max-w-7xl px-4 md:px-6">
             <div className="flex flex-col items-center gap-4">
