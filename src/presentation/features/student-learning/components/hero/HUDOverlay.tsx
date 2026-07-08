@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
+import { NavLink, useNavigate } from "react-router-dom";
 import type { MouseField } from "@/presentation/lib/useMouseField";
 import { PlaygroundsMenu } from "./nav/PlaygroundsMenu";
 import { TextType } from "@/presentation/features/student-learning/components/animations/TextType";
@@ -137,7 +137,7 @@ function AuthNavLink() {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    void navigate({ to: isAuthenticated ? "/dashboard" : "/login" });
+    navigate(isAuthenticated ? "/student/dashboard" : "/login");
   };
 
   return (
@@ -271,7 +271,7 @@ function MobileMenu() {
 
   const handleLoginClick = () => {
     setOpen(false);
-    void navigate({ to: isAuthenticated ? "/dashboard" : "/login" });
+    navigate(isAuthenticated ? "/student/dashboard" : "/login");
   };
 
   return (

@@ -1,5 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   BookOpen,
@@ -109,21 +108,18 @@ function Group({
         {items.map((it) => (
           <li key={it.label}>
             {it.to ? (
-              <Link
+              <NavLink
                 to={it.to}
                 onClick={onClose}
-                activeProps={{
-                  className:
-                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm text-white font-medium transition border-l-2 border-indigo-500 bg-white/[0.08]",
-                }}
-                inactiveProps={{
-                  className:
-                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground/75 hover:text-foreground hover:bg-white/[0.04] transition border-l-2 border-transparent",
-                }}
+                className={({ isActive }) =>
+                  isActive
+                    ? "flex items-center gap-3 px-3 py-2 rounded-md text-sm text-white font-medium transition border-l-2 border-indigo-500 bg-white/[0.08]"
+                    : "flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground/75 hover:text-foreground hover:bg-white/[0.04] transition border-l-2 border-transparent"
+                }
               >
                 <it.icon className="h-[18px] w-[18px] opacity-80" />
                 <span>{it.label}</span>
-              </Link>
+              </NavLink>
             ) : (
               <button
                 type="button"
@@ -163,15 +159,21 @@ function StudentGroup({
         {items.map((it) => (
           <div key={it.label}>
             {it.to ? (
-              <Link
+              <NavLink
                 to={it.to}
                 onClick={onClose}
-                activeOptions={{ exact: true }}
-                className="flex lg:flex-col items-center gap-3 lg:gap-1 rounded-lg lg:rounded-xl px-3 lg:px-1 py-2.5 lg:py-2 text-sm lg:text-[10px] font-medium text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground data-[status=active]:bg-primary-soft data-[status=active]:text-foreground data-[status=active]:ring-1 data-[status=active]:ring-primary/40"
+                end
+                className={({ isActive }) =>
+                  `flex lg:flex-col items-center gap-3 lg:gap-1 rounded-lg lg:rounded-xl px-3 lg:px-1 py-2.5 lg:py-2 text-sm lg:text-[10px] font-medium transition-colors hover:bg-foreground/[0.04] hover:text-foreground ${
+                    isActive
+                      ? "bg-primary-soft text-foreground ring-1 ring-primary/40"
+                      : "text-muted-foreground"
+                  }`
+                }
               >
                 <it.icon className="h-[18px] w-[18px] lg:h-5 lg:w-5 shrink-0" />
                 <span className="leading-tight lg:text-center">{it.label}</span>
-              </Link>
+              </NavLink>
             ) : (
               <button
                 type="button"
@@ -222,9 +224,9 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
     await logout();
     onClose?.();
     if (isAdmin || isInstructor) {
-      void navigate({ to: "/admin/login" });
+      navigate("/admin/login");
     } else {
-      void navigate({ to: "/login" });
+      navigate("/login");
     }
   };
 
@@ -285,24 +287,22 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         {}
         {!isStudent && (
           <div className="mt-3">
-            <Link
+            <NavLink
               to={isAdmin ? "/admin" : "/instructor/dashboard"}
               onClick={onClose}
-              activeOptions={{ exact: true }}
-              activeProps={{
-                className:
-                  "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-white shadow-lg shadow-indigo-500/25 border-l-2 border-indigo-500",
-                style: { background: "var(--grad-cta)" },
-              }}
-              inactiveProps={{
-                className:
-                  "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-foreground/75 hover:text-foreground hover:bg-white/[0.04] transition border-l-2 border-transparent",
-                style: { background: "none" },
-              }}
+              end
+              className={({ isActive }) =>
+                isActive
+                  ? "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-white shadow-lg shadow-indigo-500/25 border-l-2 border-indigo-500"
+                  : "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-foreground/75 hover:text-foreground hover:bg-white/[0.04] transition border-l-2 border-transparent"
+              }
+              style={({ isActive }) =>
+                isActive ? { background: "var(--grad-cta)" } : { background: "none" }
+              }
             >
               <LayoutDashboard className="h-[18px] w-[18px]" />
               <span>Dashboard</span>
-            </Link>
+            </NavLink>
           </div>
         )}
 

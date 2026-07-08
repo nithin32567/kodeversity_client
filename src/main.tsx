@@ -1,16 +1,17 @@
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider } from "@tanstack/react-router";
-import { getRouter } from "./router";
+import { Provider } from "react-redux";
+import { store } from "@/app/store";
+import { AuthBootstrap } from "@/app/AuthBootstrap";
+import { AppRoutes } from "@/routes/AppRoutes";
 import "./styles.css";
-import axios from "axios";
-
-axios.defaults.withCredentials = true;
-
-const router = getRouter();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <Provider store={store}>
+      <AuthBootstrap>
+        <AppRoutes />
+      </AuthBootstrap>
+    </Provider>
   </StrictMode>,
 );

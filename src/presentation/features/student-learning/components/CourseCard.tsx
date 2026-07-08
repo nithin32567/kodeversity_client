@@ -1,5 +1,5 @@
 import { Clock, Play, ArrowRight, User } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { slugify, type Course, type Level } from "./data";
 
 const levelBars: Record<Level, number> = {
@@ -24,7 +24,6 @@ export function CourseCard({ course }: { course: Course }) {
       <div className="mb-3 flex items-start justify-between gap-4">
         <Link
           to="/courses/$slug"
-          params={{ slug }}
           className="text-lg font-bold leading-tight text-foreground transition-colors hover:text-[var(--accent-cyan)]"
         >
           {course.title}
@@ -68,7 +67,6 @@ export function CourseCard({ course }: { course: Course }) {
         </div>
         <Link
           to="/courses/$slug"
-          params={{ slug }}
           className="inline-flex items-center gap-1 text-xs font-medium text-[var(--accent-cyan)] hover:underline"
         >
           Details <ArrowRight className="h-3 w-3" />

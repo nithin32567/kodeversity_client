@@ -1,43 +1,42 @@
-import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
+import { useAppSelector } from "@/app/hooks";
+import { selectIsLoading, selectUser } from "@/features/auth/authSlice";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 
 export function PortalLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isLoading, user } = useAuth();
+  const isLoading = useAppSelector(selectIsLoading);
+  const user = useAppSelector(selectUser);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isStudent = user?.role === "STUDENT";
 
-  const isLoginPage =
-    location.pathname === "/login" ||
-    location.pathname === "/admin/login" ||
-    location.pathname === "/register" ||
-    location.pathname === "/admin/register";
-
   useEffect(() => {
-    if (!isLoading && !user && !isLoginPage) {
-      if (location.pathname.startsWith("/admin") || location.pathname.startsWith("/instructor")) {
-        void navigate({ to: "/admin/login", search: { redirect: location.href } });
+    if (!isLoading && !user) {
+      // Redirect to the correct login portal based on the URL being accessed
+      if (
+        location.pathname.startsWith("/admin") ||
+        location.pathname.startsWith("/instructor")
+      ) {
+        navigate(`/admin/login?redirect=${encodeURIComponent(location.pathname)}`, {
+          replace: true,
+        });
       } else {
-        void navigate({ to: "/login", search: { redirect: location.href } });
+        navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`, { replace: true });
       }
     }
-  }, [isLoading, user, isLoginPage, location.pathname, location.href, navigate]);
+  }, [isLoading, user, location.pathname, navigate]);
 
-  if (isLoginPage) {
-    return <Outlet />;
-  }
-
-  if (isLoading || (!user && !isLoginPage)) {
+  if (isLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
   }
+
 
   return (
     <div className="admin-theme min-h-screen bg-background text-foreground lg:flex">

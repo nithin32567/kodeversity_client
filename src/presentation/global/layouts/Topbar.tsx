@@ -1,6 +1,6 @@
 import { Menu, Search, Sun, Bell, MessageSquare, Plus, ShoppingCart, LogOut } from "lucide-react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
-import { useNavigate, useLocation } from "@tanstack/react-router";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function getInitials(email: string, name?: string): string {
   if (name && name.trim()) {
@@ -36,9 +36,9 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const handleLogout = async () => {
     await logout();
     if (isAdmin || isInstructor) {
-      void navigate({ to: "/admin/login" });
+      navigate("/admin/login");
     } else {
-      void navigate({ to: "/login" });
+      navigate("/login");
     }
   };
 

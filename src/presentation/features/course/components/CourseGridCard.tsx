@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { Star, Clock, BookOpen } from "lucide-react";
 import { MagicBentoCard } from "@/presentation/global/MagicBento";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
@@ -97,7 +97,6 @@ export function CourseGridCard({ course, index }: CourseGridCardProps) {
       <div className="flex flex-1 flex-col p-4">
         <Link
           to="/courses/$slug"
-          params={{ slug: course.slug }}
           className="line-clamp-2 min-h-[2.75rem] text-base font-semibold leading-snug text-foreground transition-colors hover:text-primary"
         >
           {course.title}
@@ -143,7 +142,6 @@ export function CourseGridCard({ course, index }: CourseGridCardProps) {
 
         <Link
           to="/courses/$slug"
-          params={{ slug: course.slug }}
           className="mt-4 block w-full rounded-lg bg-[image:var(--gradient-primary)] py-2.5 text-center text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] transition-transform hover:scale-[1.01]"
         >
           View Course

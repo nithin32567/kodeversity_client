@@ -1,28 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
-import { courseApi } from "../api";
-
-export function useCourses() {
-  return useQuery({
-    queryKey: ["courses"],
-    queryFn: () => courseApi.listCourses(),
-    staleTime: 5 * 60 * 1000,
-  });
-}
-
-export function useCourse(slug: string) {
-  return useQuery({
-    queryKey: ["courses", slug],
-    queryFn: () => courseApi.getCourseBySlug(slug),
-    enabled: !!slug,
-    staleTime: 5 * 60 * 1000,
-  });
-}
-
-export function useCourseLessons(courseSlug: string) {
-  return useQuery({
-    queryKey: ["courses", courseSlug, "lessons"],
-    queryFn: () => courseApi.getLessons(courseSlug),
-    enabled: !!courseSlug,
-    staleTime: 5 * 60 * 1000,
-  });
-}
+/**
+ * useCourses — RTK Query wrappers (replaces TanStack useQuery hooks)
+ *
+ * These are thin re-exports of the RTK Query auto-generated hooks
+ * to preserve the existing import paths used throughout the presentation layer.
+ *
+ * Components that import from here will work without changes:
+ *   import { useCourses, useCourse } from "../hooks/useCourses";
+ */
+export {
+  useGetCoursesQuery as useCourses,
+  useGetCourseBySlugQuery as useCourse,
+  useGetCourseLessonsQuery as useCourseLessons,
+} from "@/features/course/courseApi";

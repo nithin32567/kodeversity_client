@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { AppShell } from "@/presentation/global/AppShell";
 

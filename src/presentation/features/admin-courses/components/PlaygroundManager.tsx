@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useCallback } from "react";
 import {
   Plus,
   Trash2,
@@ -42,42 +41,66 @@ export function PlaygroundManager() {
     postName: string;
     type: string;
   } | null>(null);
-  const queryClient = useQueryClient();
 
-  const {
-    data: templates = [],
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
-    queryKey: ["admin", "templates"],
-    queryFn: adminPlaygroundService.listTemplates,
-  });
+  // ── Templates state ────────────────────────────────────────────────────────
+  const [templates, setTemplates] = useState<(TemplateConfig & { _id: string })[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
-  const {
-    data: activePlaygrounds = [],
-    isLoading: isLoadingInstances,
-    refetch: refetchInstances,
-  } = useQuery({
-    queryKey: ["admin", "playgrounds"],
-    queryFn: adminPlaygroundService.listPlaygrounds,
-    enabled: activeTab === "instances",
-  });
+  const fetchTemplates = useCallback(async () => {
+    setIsLoading(true);
+    setIsError(false);
+    try {
+      const data = await adminPlaygroundService.listTemplates();
+      setTemplates(data as (TemplateConfig & { _id: string })[]);
+    } catch {
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const deleteMutation = useMutation({
-    mutationFn: adminPlaygroundService.deleteTemplate,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin", "templates"] });
+  useEffect(() => {
+    void fetchTemplates();
+  }, [fetchTemplates]);
+
+  // ── Active playgrounds state ───────────────────────────────────────────────
+  const [activePlaygrounds, setActivePlaygrounds] = useState<unknown[]>([]);
+  const [isLoadingInstances, setIsLoadingInstances] = useState(false);
+
+  const fetchInstances = useCallback(async () => {
+    setIsLoadingInstances(true);
+    try {
+      const data = await adminPlaygroundService.listPlaygrounds();
+      setActivePlaygrounds(data as unknown[]);
+    } catch {
+      // silently fail for instances
+    } finally {
+      setIsLoadingInstances(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "instances") void fetchInstances();
+  }, [activeTab, fetchInstances]);
+
+  const refetch = fetchTemplates;
+  const refetchInstances = fetchInstances;
+
+  // ── Delete mutation ────────────────────────────────────────────────────────
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete the "${name}" baseline profile?`)) return;
+    setIsDeleting(true);
+    try {
+      await adminPlaygroundService.deleteTemplate(id);
       toast.success("Playground template deleted successfully");
-    },
-    onError: (err: unknown) => {
+      void fetchTemplates();
+    } catch (err) {
       toast.error((err as Error).message || "Failed to delete playground template");
-    },
-  });
-
-  const handleDelete = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete the "${name}" baseline profile?`)) {
-      deleteMutation.mutate(id);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -268,7 +291,7 @@ export function PlaygroundManager() {
                           </button>
                           <button
                             onClick={() => handleDelete(tpl._id, tpl.name)}
-                            disabled={deleteMutation.isPending}
+                            disabled={isDeleting}
                             className="px-2 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold rounded-md transition-colors flex items-center border border-red-500/20 disabled:opacity-50"
                           >
                             <Trash2 className="w-3 h-3 mr-1" /> Delete
@@ -565,7 +588,7 @@ export function PlaygroundManager() {
           isOpen={isFormOpen}
           onClose={() => setIsFormOpen(false)}
           onSuccess={() => {
-            void queryClient.invalidateQueries({ queryKey: ["admin", "templates"] });
+            void fetchTemplates();
             toast.success("Profile created successfully!");
           }}
         />
@@ -580,7 +603,7 @@ export function PlaygroundManager() {
             setSelectedConfig(null);
           }}
           onSuccess={() => {
-            void queryClient.invalidateQueries({ queryKey: ["admin", "templates"] });
+            void fetchTemplates();
             toast.success("Profile updated successfully!");
           }}
           config={selectedConfig}

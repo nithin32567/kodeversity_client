@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import {
   Heart,
@@ -87,14 +87,12 @@ export function CourseSidebar({ course, slug }: CourseSidebarProps) {
           <div className="mt-4 flex flex-col gap-2">
             <Link
               to="/admin/courses/view/$slug"
-              params={{ slug }}
               className="block w-full rounded-lg bg-[image:var(--gradient-primary)] py-3 text-center text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] transition-transform hover:scale-[1.01]"
             >
               Preview Course Contents
             </Link>
             <Link
               to="/admin/courses/$slug"
-              params={{ slug }}
               className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-transparent py-3 text-sm font-medium text-foreground hover:bg-foreground/[0.04]"
             >
               ⚙ Manage Course
@@ -104,7 +102,6 @@ export function CourseSidebar({ course, slug }: CourseSidebarProps) {
           <>
             <Link
               to="/learn/$slug"
-              params={{ slug }}
               className="mt-4 block w-full rounded-lg bg-[image:var(--gradient-primary)] py-3 text-center text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] transition-transform hover:scale-[1.01]"
             >
               Enroll Now

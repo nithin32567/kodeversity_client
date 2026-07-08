@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import {
   GripVertical,
@@ -2212,7 +2212,6 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
         <div className="flex flex-wrap items-center gap-3 shrink-0">
           <Link
             to="/admin/courses/view/$slug"
-            params={{ slug: course.slug }}
             className="inline-flex items-center gap-2 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)] px-5 py-2.5 text-sm font-bold text-foreground hover:bg-[var(--surface)] active:scale-[0.98] transition shrink-0 cursor-pointer"
           >
             <PlayCircle className="h-4 w-4" /> Preview Course

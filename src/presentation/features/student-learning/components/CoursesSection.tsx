@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { tabs } from "./data";
 import { ScrollFloat } from "@/presentation/features/student-learning/components/animations/ScrollFloat";
 import { CourseCard } from "./CourseCard";

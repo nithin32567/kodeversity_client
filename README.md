@@ -134,15 +134,15 @@ This layer manages connection to external APIs and maps response models back to 
 
 #### Backend Adapters (`src/infrastructure/...`)
 
-| File                            | Functionality                                                                                                                                                                   |
-| :------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `admin/analyticsService.ts`     | Fetches administrative overview metrics from the backend. Integrates a rich mock data fallback for testing KPI metrics and Recharts graphs when the API service is unreachable. |
-| `admin/liveClassesService.ts`   | Manages scheduling, retrieval, and updates for live instructor-led classes within the administrative portal.                                                                    |
-| `admin/managementService.ts`    | Retrieves course directory tables and registered users lists for back-office records management.                                                                                |
-| `auth/authService.ts`           | Exposes identity management actions: credentials sign-in, account creation, sessions termination, session refresh, token validation, and email OTP dispatch/verification.       |
-| `course/courseService.ts`       | Manages course catalog fetching; resolves courses by their slugs, fetches associated modules/chapters, and retrieves text/video lesson contents.                                |
-| `instructor/instructorService.ts`| Provides dashboard and management endpoints for instructors to manage their assigned batches, track meetings, and update curriculum.                                             |
-| `student/studentService.ts`     | Consolidates student-specific requests, including tracking lesson completions, fetching course progress percentages, and retrieving user profiles or challenges.                |
+| File                              | Functionality                                                                                                                                                                   |
+| :-------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `admin/analyticsService.ts`       | Fetches administrative overview metrics from the backend. Integrates a rich mock data fallback for testing KPI metrics and Recharts graphs when the API service is unreachable. |
+| `admin/liveClassesService.ts`     | Manages scheduling, retrieval, and updates for live instructor-led classes within the administrative portal.                                                                    |
+| `admin/managementService.ts`      | Retrieves course directory tables and registered users lists for back-office records management.                                                                                |
+| `auth/authService.ts`             | Exposes identity management actions: credentials sign-in, account creation, sessions termination, session refresh, token validation, and email OTP dispatch/verification.       |
+| `course/courseService.ts`         | Manages course catalog fetching; resolves courses by their slugs, fetches associated modules/chapters, and retrieves text/video lesson contents.                                |
+| `instructor/instructorService.ts` | Provides dashboard and management endpoints for instructors to manage their assigned batches, track meetings, and update curriculum.                                            |
+| `student/studentService.ts`       | Consolidates student-specific requests, including tracking lesson completions, fetching course progress percentages, and retrieving user profiles or challenges.                |
 
 ---
 

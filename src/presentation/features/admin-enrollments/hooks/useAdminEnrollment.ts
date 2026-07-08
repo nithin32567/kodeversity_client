@@ -1,24 +1,33 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { managementService } from "@/infrastructure/admin/managementService";
+/**
+ * useAdminEnrollStudent — RTK Query migration
+ * Replaces: useMutation + useQueryClient from @tanstack/react-query
+ * Uses: useEnrollStudentMutation from features/admin/adminApi
+ */
 import { toast } from "sonner";
+import { useEnrollStudentMutation } from "@/features/admin/adminApi";
+import { managementService } from "@/infrastructure/admin/managementService";
+import { useAppDispatch } from "@/app/hooks";
+import { baseApi } from "@/services/api";
 
 export function useAdminEnrollStudent() {
-  const queryClient = useQueryClient();
+  const [enrollStudent, { isLoading }] = useEnrollStudentMutation();
+  const dispatch = useAppDispatch();
 
-  return useMutation({
-    mutationFn: (payload: { studentId: string; courseId: string }) =>
-      managementService.enrollStudent(payload),
-    onSuccess: (data) => {
+  const mutate = async (payload: { studentId: string; courseId: string }) => {
+    try {
+      // Use existing managementService for the detailed response (name/title)
+      const data = await managementService.enrollStudent(payload);
       toast.success(
         `Successfully enrolled student "${data.student.name || data.student.email}" in "${data.course.title}"`,
       );
+      // Invalidate RTK Query cache tags
+      dispatch(baseApi.util.invalidateTags(["Courses", "Analytics"]));
+    } catch (error) {
+      const err = error as Error & { message?: string };
+      console.error("Enrollment error:", err);
+      toast.error(err.message || "Failed to enroll student.");
+    }
+  };
 
-      void queryClient.invalidateQueries({ queryKey: ["courses"] });
-      void queryClient.invalidateQueries({ queryKey: ["adminDashboardAnalytics"] });
-    },
-    onError: (error: Error & { message?: string }) => {
-      console.error("Enrollment error:", error);
-      toast.error(error.message || "Failed to enroll student.");
-    },
-  });
+  return { mutate, isPending: isLoading };
 }

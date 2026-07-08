@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { redirect } from "@tanstack/react-router";
 import {
   Search,
   SlidersHorizontal,
@@ -11,7 +10,8 @@ import {
 import { MagicBentoSection } from "@/presentation/global/MagicBento";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
 import { AppShell } from "@/presentation/global/AppShell";
-import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
+import { useAppSelector } from "@/app/hooks";
+import { selectUser, selectIsAuthenticated } from "@/features/auth/authSlice";
 import { useCourses } from "../hooks/useCourses";
 import { CourseGridCard } from "./CourseGridCard";
 import { CourseCardSkeleton } from "./CourseCardSkeleton";
@@ -28,7 +28,8 @@ const categories = [
 ];
 
 export function AllCoursesPage() {
-  const { user, isAuthenticated } = useAuth();
+  const user = useAppSelector(selectUser);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const [activeCategory, setActiveCategory] = useState("All Courses");
   const [query, setQuery] = useState("");
   const glow = useAccentRgb();

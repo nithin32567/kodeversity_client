@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   Search,
   Home,
@@ -103,7 +103,7 @@ export function AppShell({
     setSigningOut(true);
     try {
       await logout();
-      void navigate({ to: "/" });
+      navigate("/");
     } finally {
       setSigningOut(false);
     }
@@ -258,7 +258,6 @@ export function AppShell({
                   key={label}
                   to={to}
                   onClick={() => setMenuOpen(false)}
-                  activeOptions={{ exact: true }}
                   className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground data-[status=active]:bg-primary-soft data-[status=active]:text-foreground data-[status=active]:ring-1 data-[status=active]:ring-primary/40"
                 >
                   <Icon className="h-4 w-4" />
@@ -289,7 +288,6 @@ export function AppShell({
               <Link
                 key={label}
                 to={to}
-                activeOptions={{ exact: true }}
                 className="flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground data-[status=active]:bg-primary-soft data-[status=active]:text-foreground data-[status=active]:ring-1 data-[status=active]:ring-primary/40"
               >
                 <Icon className="h-5 w-5" />

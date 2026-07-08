@@ -1,6 +1,11 @@
+/**
+ * useAnalyticsData — RTK Query migration
+ * Replaces: useQuery from @tanstack/react-query
+ * Uses: useGetAnalyticsQuery from features/admin/adminApi
+ */
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { analyticsService, type DashboardAnalytics } from "@/infrastructure/admin/analyticsService";
+import { useGetAnalyticsQuery } from "@/features/admin/adminApi";
+import type { DashboardAnalytics } from "@/infrastructure/admin/analyticsService";
 
 export interface TimelineDataPoint {
   d: string;
@@ -26,16 +31,12 @@ const mockTimelineData: TimelineDataPoint[] = [
 export function useAnalyticsData() {
   const [selectedMonth, setSelectedMonth] = useState("This Month");
 
-  const query = useQuery<DashboardAnalytics>({
-    queryKey: ["adminDashboardAnalytics"],
-    queryFn: () => analyticsService.getDashboardAnalytics(),
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: dashboardData, isLoading, isError } = useGetAnalyticsQuery();
 
   return {
-    isLoading: query.isLoading,
-    isError: query.isError,
-    dashboardData: query.data,
+    isLoading,
+    isError,
+    dashboardData: dashboardData as DashboardAnalytics | undefined,
     timelineData: mockTimelineData,
     selectedMonth,
     setSelectedMonth,
