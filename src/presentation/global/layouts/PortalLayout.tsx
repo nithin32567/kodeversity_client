@@ -4,6 +4,7 @@ import { useAppSelector } from "@/app/hooks";
 import { selectIsLoading, selectUser } from "@/features/auth/authSlice";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { Toaster } from "@/presentation/core-ui/sonner";
 
 export function PortalLayout() {
   const location = useLocation();
@@ -16,10 +17,7 @@ export function PortalLayout() {
   useEffect(() => {
     if (!isLoading && !user) {
       // Redirect to the correct login portal based on the URL being accessed
-      if (
-        location.pathname.startsWith("/admin") ||
-        location.pathname.startsWith("/instructor")
-      ) {
+      if (location.pathname.startsWith("/admin") || location.pathname.startsWith("/instructor")) {
         navigate(`/admin/login?redirect=${encodeURIComponent(location.pathname)}`, {
           replace: true,
         });
@@ -36,7 +34,6 @@ export function PortalLayout() {
       </div>
     );
   }
-
 
   return (
     <div className="admin-theme min-h-screen bg-background text-foreground lg:flex">
@@ -67,6 +64,7 @@ export function PortalLayout() {
           <Outlet />
         </div>
       </div>
+      <Toaster richColors position="top-right" />
     </div>
   );
 }

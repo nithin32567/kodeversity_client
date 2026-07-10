@@ -103,9 +103,11 @@ export function EditUserModal({ isOpen, onClose, onSubmitSuccess, user }: EditUs
     } catch (err: unknown) {
       console.error("User update failed:", err);
       const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
+      const responseData = axiosErr.response?.data;
       const errMsg =
-        axiosErr.response?.data?.error ||
-        axiosErr.response?.data?.message ||
+        responseData?.message ||
+        responseData?.error ||
+        (typeof responseData === "string" ? responseData : null) ||
         (err instanceof Error ? err.message : "Failed to update user.");
       toast.error(errMsg);
     } finally {

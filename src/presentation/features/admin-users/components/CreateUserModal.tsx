@@ -96,9 +96,11 @@ export function CreateUserModal({
     } catch (err: unknown) {
       console.error("User creation failed:", err);
       const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
+      const responseData = axiosErr.response?.data;
       const errMsg =
-        axiosErr.response?.data?.error ||
-        axiosErr.response?.data?.message ||
+        responseData?.message ||
+        responseData?.error ||
+        (typeof responseData === "string" ? responseData : null) ||
         (err instanceof Error ? err.message : "Failed to create user.");
       toast.error(errMsg);
     } finally {

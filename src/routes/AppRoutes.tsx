@@ -23,6 +23,9 @@ const AdminCoursesPage = lazy(() =>
 const AdminAnalyticsPage = lazy(() =>
   import("@/pages/admin/AdminAnalyticsPage").then((m) => ({ default: m.AdminAnalyticsPage })),
 );
+const AdminArchivePage = lazy(() =>
+  import("@/pages/admin/AdminArchivePage").then((m) => ({ default: m.AdminArchivePage })),
+);
 const AdminEnrollmentsPage = lazy(() =>
   import("@/pages/admin/AdminEnrollmentsPage").then((m) => ({ default: m.AdminEnrollmentsPage })),
 );
@@ -42,6 +45,14 @@ const AdminInstructorsPage = lazy(() =>
 );
 const AdminLiveClassesPage = lazy(() =>
   import("@/pages/admin/AdminLiveClassesPage").then((m) => ({ default: m.AdminLiveClassesPage })),
+);
+const AdminManageCoursePage = lazy(() =>
+  import("@/pages/admin/AdminManageCoursePage").then((m) => ({ default: m.AdminManageCoursePage })),
+);
+const AdminPreviewCoursePage = lazy(() =>
+  import("@/pages/admin/AdminPreviewCoursePage").then((m) => ({
+    default: m.AdminPreviewCoursePage,
+  })),
 );
 
 const InstructorDashboard = lazy(() =>
@@ -133,6 +144,9 @@ export function AppRoutes() {
             <Route path="students" element={<AdminUsersPage />} />
             <Route path="analytics" element={<AdminAnalyticsPage />} />
             <Route path="courses" element={<AdminCoursesPage />} />
+            <Route path="archive" element={<AdminArchivePage />} />
+            <Route path="courses/:slug" element={<AdminManageCoursePage />} />
+            <Route path="courses/view/:slug" element={<AdminPreviewCoursePage />} />
             <Route path="enrollments" element={<AdminEnrollmentsPage />} />
             <Route path="batches" element={<AdminBatchesPage />} />
             <Route path="playground" element={<AdminPlaygroundsPage />} />

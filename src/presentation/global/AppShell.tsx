@@ -19,6 +19,7 @@ import {
   Menu,
   X,
   Shield,
+  Archive,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import kodeversityLogo from "@/assets/kodeversity-logo.png";
@@ -71,12 +72,13 @@ function RoleBadge({ role }: { role: string }) {
     instructor: "text-violet-400 bg-violet-400/10 border-violet-400/30",
     student: "text-cyan-400 bg-cyan-400/10 border-cyan-400/30",
   };
-  const cls = map[role] ?? "text-foreground/60 bg-foreground/5 border-border";
+  const normalizedRole = role.toLowerCase();
+  const cls = map[normalizedRole] ?? "text-foreground/60 bg-foreground/5 border-border";
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest ${cls}`}
     >
-      {role === "admin" && <Shield className="h-2.5 w-2.5" />}
+      {normalizedRole === "admin" && <Shield className="h-2.5 w-2.5" />}
       {role}
     </span>
   );
@@ -264,6 +266,16 @@ export function AppShell({
                   <span>{label}</span>
                 </Link>
               ))}
+              {isAuthenticated && user?.role === "ADMIN" && !isLearn && (
+                <Link
+                  to="/admin/archive"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
+                >
+                  <Archive className="h-4 w-4" />
+                  <span>Archived Content</span>
+                </Link>
+              )}
             </nav>
 
             {}
@@ -294,6 +306,15 @@ export function AppShell({
                 <span className="leading-tight">{label}</span>
               </Link>
             ))}
+            {isAuthenticated && user?.role === "ADMIN" && !isLearn && (
+              <Link
+                to="/admin/archive"
+                className="flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
+              >
+                <Archive className="h-5 w-5" />
+                <span className="leading-tight text-center">Archived</span>
+              </Link>
+            )}
           </nav>
 
           {}

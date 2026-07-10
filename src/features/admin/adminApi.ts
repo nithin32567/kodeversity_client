@@ -104,6 +104,36 @@ export const adminApi = baseApi.injectEndpoints({
       providesTags: ["Courses"],
     }),
 
+    getArchivedCourses: build.query<Course[], void>({
+      query: () => ({ url: endpoints.admin.archivedCourses }),
+      providesTags: ["Courses"],
+    }),
+
+    suspendCourse: build.mutation<Course, { id: string; isSuspended: boolean }>({
+      query: ({ id, isSuspended }) => ({
+        url: endpoints.admin.suspendCourse(id),
+        method: "PATCH",
+        body: { isSuspended },
+      }),
+      invalidatesTags: ["Courses", "Analytics"],
+    }),
+
+    deleteCourse: build.mutation<Course, string>({
+      query: (id) => ({
+        url: endpoints.admin.deleteCourse(id),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Courses", "Analytics"],
+    }),
+
+    restoreCourse: build.mutation<Course, string>({
+      query: (id) => ({
+        url: endpoints.admin.restoreCourse(id),
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Courses", "Analytics"],
+    }),
+
     getBatches: build.query<Batch[], void>({
       query: () => ({ url: endpoints.admin.batches }),
       providesTags: ["Batches"],
@@ -166,6 +196,10 @@ export const {
   useUpdateUserStatusMutation,
   useDeleteUserMutation,
   useGetAdminCoursesQuery,
+  useGetArchivedCoursesQuery,
+  useSuspendCourseMutation,
+  useDeleteCourseMutation,
+  useRestoreCourseMutation,
   useGetBatchesQuery,
   useCreateBatchMutation,
   useUpdateBatchMutation,

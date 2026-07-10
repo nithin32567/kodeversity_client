@@ -1,13 +1,3 @@
-/**
- * AdminLoginPage
- * Migrated from: src/routes/_auth/admin/login.tsx
- *
- * Changes from TanStack version:
- *   - Removed: createFileRoute, useNavigate from @tanstack/react-router
- *   - Added: useNavigate, useSearchParams from react-router-dom
- *   - Auth: useAppDispatch + loginThunk (Redux) instead of useAuth().login (Context)
- *   - Redirect: navigate() with string paths instead of TanStack { to } objects
- */
 import { useState, type FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAppDispatch } from "@/app/hooks";
@@ -41,13 +31,10 @@ export function AdminLoginPage() {
 
       const user = result.payload;
 
-      // Strict Role Validation: Must be strictly ADMIN
       if (user.role !== UserRole.ADMIN) {
         setError("Access Denied: This portal is for administrators only.");
         return;
       }
-
-      // Successful Admin authentication: redirect to Admin dashboard
       navigate(redirectTo);
     } catch (err) {
       setError(getAuthErrorMessage((err as Error).message));
@@ -58,7 +45,6 @@ export function AdminLoginPage() {
 
   return (
     <main className="grid min-h-screen place-items-center bg-background px-4 text-foreground relative overflow-hidden">
-      {/* Ambient glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
       <form

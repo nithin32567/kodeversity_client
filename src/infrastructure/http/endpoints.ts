@@ -60,6 +60,10 @@ export const endpoints = {
   admin: {
     analytics: `${COURSE_URL}/api/admin/analytics`,
     courses: `${COURSE_URL}/api/courses`,
+    archivedCourses: `${COURSE_URL}/api/admin/courses/archived`,
+    suspendCourse: (id: string) => `${COURSE_URL}/api/courses/${id}/suspend`,
+    deleteCourse: (id: string) => `${COURSE_URL}/api/courses/${id}`,
+    restoreCourse: (id: string) => `${COURSE_URL}/api/courses/${id}/restore`,
     users: `${ADMIN_URL}/api/admin/users`,
     createUser: `${AUTH_URL}/api/admin/users/create`,
     updateUser: (id: string) => `${AUTH_URL}/api/admin/users/${id}`,

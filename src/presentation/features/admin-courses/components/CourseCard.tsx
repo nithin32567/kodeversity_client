@@ -1,9 +1,13 @@
 import type { Course } from "@/domain/course";
 import { Clock, BookOpen, Award, Layers } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
+import { useSuspendCourseMutation, useDeleteCourseMutation } from "@/features/admin/adminApi";
+import { toast } from "sonner";
 
 interface CourseCardProps {
   course: Course;
+  onActionSuccess?: () => void;
 }
 
 const levelLabels: Record<string, string> = {
@@ -23,7 +27,7 @@ function formatPrice(price: number, currency: string): string {
   return `$${price.toFixed(2)}`;
 }
 
-export function CourseCard({ course }: CourseCardProps) {
+export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
   const hasDiscount = course.discountPrice !== null && course.discountPrice !== undefined;
   const priceVal = formatPrice(course.price, course.currency);
   const discountVal = hasDiscount ? formatPrice(course.discountPrice!, course.currency) : null;
@@ -34,6 +38,37 @@ export function CourseCard({ course }: CourseCardProps) {
         .slice(0, 2)
         .join("")
     : "IN";
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
+  const [suspendCourse] = useSuspendCourseMutation();
+  const [deleteCourse] = useDeleteCourseMutation();
+
+  const handleSuspend = async () => {
+    if (confirm("Are you sure you want to suspend this course?")) {
+      try {
+        await suspendCourse({ id: course.id, isSuspended: true }).unwrap();
+        toast.success("Course suspended successfully");
+        onActionSuccess?.();
+      } catch (err) {
+        console.error("Failed to suspend course", err);
+        toast.error("Failed to suspend course");
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    if (confirm("Are you sure you want to delete this course?")) {
+      try {
+        await deleteCourse(course.id).unwrap();
+        toast.success("Course deleted successfully");
+        onActionSuccess?.();
+      } catch (err) {
+        console.error("Failed to delete course", err);
+        toast.error("Failed to delete course");
+      }
+    }
+  };
 
   return (
     <div className="group flex flex-col rounded-2xl border border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)]/80 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-0.5 transition duration-350 overflow-hidden">
@@ -119,17 +154,33 @@ export function CourseCard({ course }: CourseCardProps) {
         {}
         <div className="pt-3 mt-1 border-t border-[var(--hairline)] flex flex-col gap-2">
           <Link
-            to="/admin/courses/view/$slug"
+            to={`/admin/courses/view/${course.slug}`}
             className="flex w-full items-center justify-center rounded-lg bg-[image:var(--gradient-primary)] py-2.5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-primary)] transition-transform hover:scale-[1.02]"
           >
             Preview Course Contents
           </Link>
           <Link
-            to="/admin/courses/$slug"
+            to={`/admin/courses/${course.slug}`}
             className="flex w-full items-center justify-center rounded-lg border border-[var(--hairline)] bg-transparent py-2 text-xs font-semibold text-muted-foreground hover:text-foreground hover:border-primary/40 transition"
           >
             ⚙ Manage Course
           </Link>
+          {isAdmin && (
+            <div className="flex gap-2 w-full mt-2">
+              <button
+                onClick={handleSuspend}
+                className="flex-1 py-1.5 rounded-lg border border-orange-500/30 text-orange-400 text-xs font-medium hover:bg-orange-500/10 transition"
+              >
+                Suspend
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 py-1.5 rounded-lg border border-red-500/30 text-red-400 text-xs font-medium hover:bg-red-500/10 transition"
+              >
+                Delete
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
