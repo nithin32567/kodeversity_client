@@ -27,6 +27,7 @@ import {
   Sparkles,
   ShieldOff,
   Terminal,
+  Archive,
 } from "lucide-react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 
@@ -38,6 +39,7 @@ export type NavItem = {
 
 export const adminManage: NavItem[] = [
   { label: "Courses", icon: BookOpen, to: "/admin/courses" },
+
   { label: "Playgrounds", icon: Terminal, to: "/admin/playground" },
   { label: "Students", icon: Users, to: "/admin/students" },
   { label: "Instructors", icon: GraduationCap, to: "/admin/instructors" },
@@ -47,6 +49,7 @@ export const adminManage: NavItem[] = [
   { label: "Certificates", icon: Award },
   { label: "Reviews", icon: Star },
   { label: "Announcements", icon: Megaphone },
+
 ];
 export const adminContent: NavItem[] = [
   { label: "Live Classes", icon: Video, to: "/admin/live-classes" },
@@ -62,6 +65,7 @@ export const adminFinance: NavItem[] = [
 export const adminSystem: NavItem[] = [
   { label: "Users", icon: UserCog },
   { label: "Inactive Users", icon: ShieldOff, to: "/admin/inactive-users" },
+  { label: "Inactive Courses", icon: Archive, to: "/admin/archive" },
   { label: "Roles & Permissions", icon: ShieldCheck },
   { label: "Settings", icon: Settings },
 ];
@@ -164,10 +168,9 @@ function StudentGroup({
                 onClick={onClose}
                 end
                 className={({ isActive }) =>
-                  `flex lg:flex-col items-center gap-3 lg:gap-1 rounded-lg lg:rounded-xl px-3 lg:px-1 py-2.5 lg:py-2 text-sm lg:text-[10px] font-medium transition-colors hover:bg-foreground/[0.04] hover:text-foreground ${
-                    isActive
-                      ? "bg-primary-soft text-foreground ring-1 ring-primary/40"
-                      : "text-muted-foreground"
+                  `flex lg:flex-col items-center gap-3 lg:gap-1 rounded-lg lg:rounded-xl px-3 lg:px-1 py-2.5 lg:py-2 text-sm lg:text-[10px] font-medium transition-colors hover:bg-foreground/[0.04] hover:text-foreground ${isActive
+                    ? "bg-primary-soft text-foreground ring-1 ring-primary/40"
+                    : "text-muted-foreground"
                   }`
                 }
               >
@@ -232,7 +235,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
 
   return (
     <aside className="flex h-full w-full flex-col border-r border-[var(--hairline)] bg-[var(--surface)]/60 backdrop-blur-sm">
-      {}
+      { }
       <div
         className={`flex items-center justify-between py-5 shrink-0 ${isStudent ? "px-5 lg:px-0 lg:justify-center" : "px-5"}`}
       >
@@ -259,32 +262,30 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         )}
       </div>
 
-      {}
+      { }
       <div className={`px-5 pb-2 shrink-0 ${isStudent ? "lg:hidden" : ""}`}>
         <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${
-            isAdmin
-              ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
-              : isInstructor
-                ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
-                : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-          }`}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${isAdmin
+            ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+            : isInstructor
+              ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
+              : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+            }`}
         >
           <span
-            className={`h-1.5 w-1.5 rounded-full ${
-              isAdmin ? "bg-blue-400" : isInstructor ? "bg-purple-400" : "bg-emerald-400"
-            }`}
+            className={`h-1.5 w-1.5 rounded-full ${isAdmin ? "bg-blue-400" : isInstructor ? "bg-purple-400" : "bg-emerald-400"
+              }`}
           />
           {isAdmin ? "Admin Panel" : isInstructor ? "Instructor Portal" : "Student Space"}
         </span>
       </div>
 
-      {}
+      { }
       <nav
         data-lenis-prevent="true"
         className="px-2 pb-6 flex-1 min-h-0 overflow-y-auto overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
-        {}
+        { }
         {!isStudent && (
           <div className="mt-3">
             <NavLink
@@ -330,7 +331,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         )}
       </nav>
 
-      {}
+      { }
       <div
         className={`p-3 shrink-0 border-t border-[var(--hairline)] space-y-2 ${isStudent ? "lg:hidden" : ""}`}
       >

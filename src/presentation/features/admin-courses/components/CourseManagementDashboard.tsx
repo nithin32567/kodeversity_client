@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import {
   GripVertical,
@@ -24,6 +24,9 @@ import {
 import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
 import { managementService } from "@/infrastructure/admin/managementService";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
+import { useSuspendCourseMutation, useDeleteCourseMutation } from "@/features/admin/adminApi";
+import { toast } from "sonner";
+import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";
 import type {
   Course,
   Module,
@@ -1992,6 +1995,51 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
 
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const isAdmin = user?.role === "ADMIN";
+  const { confirm } = useConfirm();
+  const [suspendCourse] = useSuspendCourseMutation();
+  const [deleteCourse] = useDeleteCourseMutation();
+
+  const handleSuspend = async () => {
+    if (!course) return;
+    const isConfirmed = await confirm({
+      title: "Suspend Course",
+      message: "Are you sure you want to suspend this course?",
+      confirmText: "Suspend",
+      destructive: true
+    });
+    if (isConfirmed) {
+      try {
+        await suspendCourse({ id: course.id, isSuspended: true }).unwrap();
+        toast.success("Course suspended successfully");
+        refetch();
+      } catch (err) {
+        console.error("Failed to suspend course", err);
+        toast.error("Failed to suspend course");
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!course) return;
+    const isConfirmed = await confirm({
+      title: "Delete Course",
+      message: "Are you sure you want to delete this course?",
+      confirmText: "Delete",
+      destructive: true
+    });
+    if (isConfirmed) {
+      try {
+        await deleteCourse(course.id).unwrap();
+        toast.success("Course deleted successfully");
+        navigate("/admin/courses");
+      } catch (err) {
+        console.error("Failed to delete course", err);
+        toast.error("Failed to delete course");
+      }
+    }
+  };
 
   useEffect(() => {
     if (course?.modules) setLocalModules(course.modules);
@@ -2211,11 +2259,28 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
           <Link
-            to="/admin/courses/view/$slug"
+            to={`/admin/courses/view/${course.slug}`}
             className="inline-flex items-center gap-2 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)] px-5 py-2.5 text-sm font-bold text-foreground hover:bg-[var(--surface)] active:scale-[0.98] transition shrink-0 cursor-pointer"
           >
             <PlayCircle className="h-4 w-4" /> Preview Course
           </Link>
+          
+          {isAdmin && (
+            <>
+              <button
+                onClick={handleSuspend}
+                className="inline-flex items-center justify-center rounded-xl border border-orange-500/30 bg-orange-500/5 px-5 py-2.5 text-sm font-bold text-orange-400 hover:bg-orange-500/10 active:scale-[0.98] transition shrink-0 cursor-pointer"
+              >
+                Suspend Course
+              </button>
+              <button
+                onClick={handleDelete}
+                className="inline-flex items-center justify-center rounded-xl border border-red-500/30 bg-red-500/5 px-5 py-2.5 text-sm font-bold text-red-400 hover:bg-red-500/10 active:scale-[0.98] transition shrink-0 cursor-pointer"
+              >
+                Delete Course
+              </button>
+            </>
+          )}
           <button
             onClick={handleSaveAll}
             disabled={saveStatus === "saving"}

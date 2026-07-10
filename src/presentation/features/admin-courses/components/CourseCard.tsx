@@ -2,9 +2,6 @@ import type { Course } from "@/domain/course";
 import { Clock, BookOpen, Award, Layers } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
-import { useSuspendCourseMutation, useDeleteCourseMutation } from "@/features/admin/adminApi";
-import { toast } from "sonner";
-import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";
 
 interface CourseCardProps {
   course: Course;
@@ -42,47 +39,6 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
 
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
-  const { confirm } = useConfirm();
-  const [suspendCourse] = useSuspendCourseMutation();
-  const [deleteCourse] = useDeleteCourseMutation();
-
-  const handleSuspend = async () => {
-    const isConfirmed = await confirm({
-      title: "Suspend Course",
-      message: "Are you sure you want to suspend this course?",
-      confirmText: "Suspend",
-      destructive: true
-    });
-    if (isConfirmed) {
-      try {
-        await suspendCourse({ id: course.id, isSuspended: true }).unwrap();
-        toast.success("Course suspended successfully");
-        onActionSuccess?.();
-      } catch (err) {
-        console.error("Failed to suspend course", err);
-        toast.error("Failed to suspend course");
-      }
-    }
-  };
-
-  const handleDelete = async () => {
-    const isConfirmed = await confirm({
-      title: "Delete Course",
-      message: "Are you sure you want to delete this course?",
-      confirmText: "Delete",
-      destructive: true
-    });
-    if (isConfirmed) {
-      try {
-        await deleteCourse(course.id).unwrap();
-        toast.success("Course deleted successfully");
-        onActionSuccess?.();
-      } catch (err) {
-        console.error("Failed to delete course", err);
-        toast.error("Failed to delete course");
-      }
-    }
-  };
 
   return (
     <div className="group flex flex-col rounded-2xl border border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)]/80 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-0.5 transition duration-350 overflow-hidden">
@@ -179,22 +135,6 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
           >
             ⚙ Manage Course
           </Link>
-          {isAdmin && (
-            <div className="flex gap-2 w-full mt-2">
-              <button
-                onClick={handleSuspend}
-                className="flex-1 py-1.5 rounded-lg border border-orange-500/30 text-orange-400 text-xs font-medium hover:bg-orange-500/10 transition"
-              >
-                Suspend
-              </button>
-              <button
-                onClick={handleDelete}
-                className="flex-1 py-1.5 rounded-lg border border-red-500/30 text-red-400 text-xs font-medium hover:bg-red-500/10 transition"
-              >
-                Delete
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>
