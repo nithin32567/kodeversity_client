@@ -11,11 +11,13 @@ import { toast } from "sonner";
 import { RefreshCw, AlertTriangle, ChevronLeft } from "lucide-react";
 import axios from "axios";
 import { tokenStore } from "@/infrastructure/http/apiClient";
+import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";
 
 export function MeetingRoomPage() {
   const { meetingId } = useParams<{ meetingId: string }>();
   const navigate = useNavigate();
   const { user, isLoading: isAuthLoading } = useAuth();
+  const { confirm } = useConfirm();
 
   const [meeting, initMeeting] = useRealtimeKitClient();
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +88,7 @@ export function MeetingRoomPage() {
   useEffect(() => {
     if (user?.role !== "STUDENT" || !meeting) return;
 
-    const handleVisibilityChange = () => {
+    const handleVisibilityChange = async () => {
       if (document.hidden) {
         setTabViolations((prev) => {
           const newViolations = prev + 1;
@@ -95,7 +97,12 @@ export function MeetingRoomPage() {
             toast.error("You have been disconnected due to tab switching violations.");
             navigate("/student/dashboard");
           } else {
-            alert(`Warning: Do not leave the classroom tab! (${newViolations}/3 violations)`);
+            confirm({
+              title: "Warning",
+              message: `Warning: Do not leave the classroom tab! (${newViolations}/3 violations)`,
+              confirmText: "I understand",
+              cancelText: "" // hide cancel button
+            });
           }
           return newViolations;
         });
@@ -104,7 +111,7 @@ export function MeetingRoomPage() {
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [user, meeting, navigate]);
+  }, [user, meeting, navigate, confirm]);
 
   if (isAuthLoading || (!meeting && !error)) {
     return (
@@ -148,8 +155,8 @@ export function MeetingRoomPage() {
       {/* Back button overlay if needed */}
       <div className="absolute top-4 left-4 z-50">
         <button
-          onClick={() => {
-            if (window.confirm("Are you sure you want to leave the live class?")) {
+          onClick={async () => {
+            if (await confirm("Are you sure you want to leave the live class?")) {
               meeting?.leaveRoom();
               navigate(-1);
             }

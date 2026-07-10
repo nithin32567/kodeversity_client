@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import { useSuspendCourseMutation, useDeleteCourseMutation } from "@/features/admin/adminApi";
 import { toast } from "sonner";
+import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";
 
 interface CourseCardProps {
   course: Course;
@@ -41,11 +42,18 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
 
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
+  const { confirm } = useConfirm();
   const [suspendCourse] = useSuspendCourseMutation();
   const [deleteCourse] = useDeleteCourseMutation();
 
   const handleSuspend = async () => {
-    if (confirm("Are you sure you want to suspend this course?")) {
+    const isConfirmed = await confirm({
+      title: "Suspend Course",
+      message: "Are you sure you want to suspend this course?",
+      confirmText: "Suspend",
+      destructive: true
+    });
+    if (isConfirmed) {
       try {
         await suspendCourse({ id: course.id, isSuspended: true }).unwrap();
         toast.success("Course suspended successfully");
@@ -58,7 +66,13 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
   };
 
   const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this course?")) {
+    const isConfirmed = await confirm({
+      title: "Delete Course",
+      message: "Are you sure you want to delete this course?",
+      confirmText: "Delete",
+      destructive: true
+    });
+    if (isConfirmed) {
       try {
         await deleteCourse(course.id).unwrap();
         toast.success("Course deleted successfully");

@@ -6,11 +6,15 @@ import { AuthBootstrap } from "@/app/AuthBootstrap";
 import { AppRoutes } from "@/routes/AppRoutes";
 import "./styles.css";
 
+import { ConfirmProvider } from "@/presentation/global/contexts/ConfirmContext";
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
       <AuthBootstrap>
-        <AppRoutes />
+        <ConfirmProvider>
+          <AppRoutes />
+        </ConfirmProvider>
       </AuthBootstrap>
     </Provider>
   </StrictMode>,

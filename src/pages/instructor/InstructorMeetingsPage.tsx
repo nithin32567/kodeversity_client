@@ -34,9 +34,11 @@ import {
   type MeetingType,
 } from "@/infrastructure/admin/liveClassesService";
 import { toast } from "sonner";
+import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";
 
 export function InstructorMeetingsPage() {
   const { isLoading: isAuthLoading, isAuthenticated, user } = useAuth();
+  const { confirm } = useConfirm();
 
   const userRole = user?.role || "INSTRUCTOR";
   const isAdmin = userRole === "ADMIN";
@@ -204,7 +206,12 @@ export function InstructorMeetingsPage() {
   };
 
   const handleCancelMeeting = async (id: string, title: string) => {
-    const confirmCancel = window.confirm(`Are you sure you want to cancel the class "${title}"?`);
+    const confirmCancel = await confirm({
+      title: "Cancel Class",
+      message: `Are you sure you want to cancel the class "${title}"?`,
+      confirmText: "Cancel Class",
+      destructive: true
+    });
     if (!confirmCancel) return;
 
     try {

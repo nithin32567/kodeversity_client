@@ -27,6 +27,7 @@ import type {
   TemplateNetwork,
   TemplateDisk,
 } from "@/domain/playground";
+import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";
 
 export function PlaygroundManager() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -41,6 +42,7 @@ export function PlaygroundManager() {
     postName: string;
     type: string;
   } | null>(null);
+  const { confirm } = useConfirm();
 
   // ── Templates state ────────────────────────────────────────────────────────
   const [templates, setTemplates] = useState<(TemplateConfig & { _id: string })[]>([]);
@@ -91,7 +93,13 @@ export function PlaygroundManager() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete the "${name}" baseline profile?`)) return;
+    const isConfirmed = await confirm({
+      title: "Delete Profile",
+      message: `Are you sure you want to delete the "${name}" baseline profile?`,
+      confirmText: "Delete",
+      destructive: true
+    });
+    if (!isConfirmed) return;
     setIsDeleting(true);
     try {
       await adminPlaygroundService.deleteTemplate(id);

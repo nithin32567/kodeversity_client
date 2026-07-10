@@ -29,9 +29,11 @@ import type { Course, Instructor } from "@/domain/course";
 import type { User } from "@/domain/user";
 import { toast } from "sonner";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
+import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";
 
 export function AdminBatchesPage() {
   const { isLoading: isAuthLoading, isAuthenticated, user } = useAuth();
+  const { confirm } = useConfirm();
   const isInstructor = user?.role === "INSTRUCTOR";
 
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -253,9 +255,12 @@ export function AdminBatchesPage() {
   const handleRemoveStudent = async (studentId: string, studentName: string) => {
     if (!selectedBatch) return;
 
-    const confirmRemove = window.confirm(
-      `Are you sure you want to remove ${studentName || "this student"} from "${selectedBatch.name}"?`,
-    );
+    const confirmRemove = await confirm({
+      title: "Remove Student",
+      message: `Are you sure you want to remove ${studentName || "this student"} from "${selectedBatch.name}"?`,
+      confirmText: "Remove",
+      destructive: true
+    });
     if (!confirmRemove) return;
 
     try {
@@ -342,9 +347,12 @@ export function AdminBatchesPage() {
   };
 
   const handleDeleteBatch = async (batchId: string, batchName: string) => {
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete batch "${batchName}"? This action cannot be undone.`,
-    );
+    const confirmDelete = await confirm({
+      title: "Delete Batch",
+      message: `Are you sure you want to delete batch "${batchName}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      destructive: true
+    });
     if (!confirmDelete) return;
 
     try {

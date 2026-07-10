@@ -18,9 +18,11 @@ import { toast } from "sonner";
 import { managementService } from "@/infrastructure/admin/managementService";
 import type { User } from "@/domain/user";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
+import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";
 
 export function AdminInactiveUsersPage() {
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
+  const { confirm } = useConfirm();
   const [activeTab, setActiveTab] = useState<"SUSPENDED" | "DELETED">("SUSPENDED");
   const [inactiveUsers, setInactiveUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,7 +71,13 @@ export function AdminInactiveUsersPage() {
   };
 
   const handleHardDelete = async (userId: string) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    const isConfirmed = await confirm({
+      title: "Delete User",
+      message: "Are you sure you want to delete this user?",
+      confirmText: "Delete",
+      destructive: true
+    });
+    if (!isConfirmed) return;
 
     setProcessingIds((prev) => new Set(prev).add(userId));
     try {

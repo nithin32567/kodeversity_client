@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useGetArchivedCoursesQuery, useSuspendCourseMutation, useRestoreCourseMutation } from "@/features/admin/adminApi";
 import { Archive, RotateCcw, AlertCircle, Undo2 } from "lucide-react";
 import { toast } from "sonner";
+import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";
 
 export function AdminArchivePage() {
   const { data: courses = [], isLoading, isError, refetch } = useGetArchivedCoursesQuery();
   const [suspendCourse] = useSuspendCourseMutation();
   const [restoreCourse] = useRestoreCourseMutation();
   const [activeTab, setActiveTab] = useState<"suspended" | "deleted">("suspended");
+  const { confirm } = useConfirm();
 
   const suspendedCourses = courses.filter((c: any) => c.isSuspended && !c.isDeleted);
   const deletedCourses = courses.filter((c: any) => c.isDeleted);
@@ -15,7 +17,7 @@ export function AdminArchivePage() {
   const displayCourses = activeTab === "suspended" ? suspendedCourses : deletedCourses;
 
   const handleReactivate = async (courseId: string) => {
-    if (confirm("Are you sure you want to reactivate this course?")) {
+    if (await confirm("Are you sure you want to reactivate this course?")) {
       try {
         await suspendCourse({ id: courseId, isSuspended: false }).unwrap();
         toast.success("Course reactivated successfully");
@@ -27,7 +29,7 @@ export function AdminArchivePage() {
   };
 
   const handleRestore = async (courseId: string) => {
-    if (confirm("Are you sure you want to restore this deleted course?")) {
+    if (await confirm("Are you sure you want to restore this deleted course?")) {
       try {
         await restoreCourse(courseId).unwrap();
         toast.success("Course restored successfully");
