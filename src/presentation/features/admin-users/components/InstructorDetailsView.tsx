@@ -19,48 +19,48 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
   const totalStudents = assignedCourses.reduce((acc, curr) => acc + (curr.enrollmentCount || 0), 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Top Section: Profile & Stats */}
-      <div className="grid gap-6 lg:grid-cols-12">
+      <div className="grid gap-4 lg:grid-cols-12">
         {/* Profile Card */}
-        <div className="lg:col-span-4 p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] shadow-lg relative overflow-hidden">
+        <div className="lg:col-span-4 xl:col-span-3 p-4 rounded-xl border border-[var(--hairline)] bg-[var(--surface)] shadow-sm relative overflow-hidden flex flex-col">
           <div
-            className="absolute -right-20 -top-20 h-48 w-48 rounded-full blur-[80px] opacity-20 pointer-events-none"
+            className="absolute -right-20 -top-20 h-40 w-40 rounded-full blur-[60px] opacity-20 pointer-events-none"
             style={{ background: "var(--grad-purple)" }}
           />
-          <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+          <div className="relative z-10 flex flex-col items-center text-center space-y-3">
             <div className="relative">
               {user.avatarUrl ? (
                 <img
                   src={user.avatarUrl}
                   alt={user.name || "User"}
-                  className={`h-24 w-24 rounded-full object-cover border-4 border-[var(--surface-2)] shadow-xl ${
+                  className={`h-20 w-20 rounded-full object-cover border-2 border-[var(--surface-2)] shadow-sm ${
                     user.status === "SUSPENDED" ? "grayscale opacity-80" : ""
                   }`}
                 />
               ) : (
                 <div
-                  className="h-24 w-24 rounded-full grid place-items-center text-3xl font-bold text-white shadow-xl border-4 border-[var(--surface-2)]"
+                  className="h-20 w-20 rounded-full grid place-items-center text-2xl font-bold text-white shadow-sm border-2 border-[var(--surface-2)]"
                   style={{ background: "var(--grad-purple)" }}
                 >
                   {(user.name || "UN").slice(0, 2).toUpperCase()}
                 </div>
               )}
               {user.status === "SUSPENDED" ? (
-                <span className="absolute bottom-0 right-0 h-5 w-5 rounded-full bg-rose-500 border-2 border-[var(--surface)]" />
+                <span className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-rose-500 border-2 border-[var(--surface)]" />
               ) : (
-                <span className="absolute bottom-0 right-0 h-5 w-5 rounded-full bg-emerald-500 border-2 border-[var(--surface)]" />
+                <span className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-[var(--surface)]" />
               )}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">{user.name}</h2>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
-              <div className="mt-2 flex items-center justify-center gap-2">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <h2 className="text-lg font-bold text-foreground leading-tight">{user.name}</h2>
+              <p className="text-xs text-muted-foreground">{user.email}</p>
+              <div className="mt-2 flex items-center justify-center gap-1.5">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20">
                   {user.role}
                 </span>
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${
                     user.status === "ACTIVE"
                       ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                       : "bg-rose-500/10 text-rose-400 border-rose-500/20"
@@ -72,23 +72,23 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
             </div>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-[var(--hairline)] space-y-3 relative z-10">
+          <div className="mt-4 pt-4 border-t border-[var(--hairline)] space-y-2 relative z-10 flex-1 flex flex-col justify-end">
             {user.phone && (
-              <div className="flex items-center gap-3 text-sm text-muted-foreground bg-[var(--surface-2)]/40 p-2 rounded-lg border border-[var(--hairline)]/50">
-                <Phone className="h-4 w-4 text-indigo-400" />
-                <span className="font-medium text-foreground">{user.phone}</span>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-[var(--surface-2)]/30 p-1.5 rounded-md border border-[var(--hairline)]/30">
+                <Phone className="h-3.5 w-3.5 text-indigo-400" />
+                <span className="font-medium text-foreground truncate">{user.phone}</span>
               </div>
             )}
             {user.highestQualification && (
-              <div className="flex items-center gap-3 text-sm text-muted-foreground bg-[var(--surface-2)]/40 p-2 rounded-lg border border-[var(--hairline)]/50">
-                <GraduationCap className="h-4 w-4 text-purple-400" />
-                <span className="font-medium text-foreground">{user.highestQualification}</span>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-[var(--surface-2)]/30 p-1.5 rounded-md border border-[var(--hairline)]/30">
+                <GraduationCap className="h-3.5 w-3.5 text-purple-400" />
+                <span className="font-medium text-foreground truncate">{user.highestQualification}</span>
               </div>
             )}
             {user.createdAt && (
-              <div className="flex items-center gap-3 text-sm text-muted-foreground bg-[var(--surface-2)]/40 p-2 rounded-lg border border-[var(--hairline)]/50">
-                <Calendar className="h-4 w-4 text-blue-400" />
-                <span className="font-medium text-foreground">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-[var(--surface-2)]/30 p-1.5 rounded-md border border-[var(--hairline)]/30">
+                <Calendar className="h-3.5 w-3.5 text-blue-400" />
+                <span className="font-medium text-foreground truncate">
                   Joined {new Date(user.createdAt).toLocaleDateString()}
                 </span>
               </div>
@@ -97,61 +97,51 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
         </div>
 
         {/* Quick Stats */}
-        <div className="lg:col-span-8 grid gap-4 sm:grid-cols-2">
-          <div className="p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] flex flex-col justify-between hover:bg-[var(--surface-2)] transition shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20">
-                <BookOpen className="h-5 w-5 text-purple-400" />
-              </div>
-              <span className="text-sm font-semibold text-muted-foreground">Assigned Courses</span>
+        <div className="lg:col-span-8 xl:col-span-9 grid gap-3 grid-cols-2 items-start content-start">
+          <div className="p-3 rounded-lg border border-[var(--hairline)] bg-[var(--surface)] flex items-center gap-3 hover:bg-[var(--surface-2)] transition shadow-sm">
+            <div className="p-2 rounded-md bg-purple-500/10 border border-purple-500/20">
+              <BookOpen className="h-4 w-4 text-purple-400" />
             </div>
             <div>
-              <div className="text-3xl font-black text-white font-mono">{assignedCourses.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Courses currently managing</p>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">Assigned Courses</span>
+              <div className="text-lg font-bold text-white font-mono leading-none">{assignedCourses.length}</div>
             </div>
           </div>
 
-          <div className="p-6 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] flex flex-col justify-between hover:bg-[var(--surface-2)] transition shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
-                <Users className="h-5 w-5 text-indigo-400" />
-              </div>
-              <span className="text-sm font-semibold text-muted-foreground">Total Students</span>
+          <div className="p-3 rounded-lg border border-[var(--hairline)] bg-[var(--surface)] flex items-center gap-3 hover:bg-[var(--surface-2)] transition shadow-sm">
+            <div className="p-2 rounded-md bg-indigo-500/10 border border-indigo-500/20">
+              <Users className="h-4 w-4 text-indigo-400" />
             </div>
             <div>
-              <div className="text-3xl font-black text-white font-mono">{totalStudents}</div>
-              <p className="text-xs text-muted-foreground mt-1">Across all assigned courses</p>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">Total Students</span>
+              <div className="text-lg font-bold text-white font-mono leading-none">{totalStudents}</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Assigned Courses List */}
-      <div className="rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] overflow-hidden shadow-lg">
-        <div className="p-6 border-b border-[var(--hairline)] bg-[var(--surface-2)]/30 flex items-center justify-between">
+      <div className="rounded-xl border border-[var(--hairline)] bg-[var(--surface)] overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-[var(--hairline)] bg-[var(--surface-2)]/30 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-white font-display">Teaching Portfolio</h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Courses assigned to this instructor.
-            </p>
+            <h3 className="text-base font-bold text-white font-display">Teaching Portfolio</h3>
           </div>
-          <Award className="h-8 w-8 text-purple-400/20" />
+          <Award className="h-5 w-5 text-purple-400/30" />
         </div>
-        <div className="p-6">
+        <div className="p-4">
           {assignedCourses.length === 0 ? (
-            <div className="p-12 text-center border border-dashed border-[var(--hairline)] rounded-xl bg-[var(--surface-2)]/30 flex flex-col items-center">
-              <BookOpen className="h-10 w-10 text-muted-foreground/40 mb-3" />
-              <p className="text-sm font-semibold text-foreground/80">No courses assigned</p>
-              <p className="text-xs text-muted-foreground mt-1">This instructor is not managing any courses.</p>
+            <div className="p-8 text-center border border-dashed border-[var(--hairline)] rounded-lg bg-[var(--surface-2)]/30 flex flex-col items-center">
+              <BookOpen className="h-8 w-8 text-muted-foreground/40 mb-2" />
+              <p className="text-sm font-medium text-foreground/80">No courses assigned</p>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {assignedCourses.map((course) => (
                 <div
                   key={course.id}
-                  className="group relative flex flex-col p-4 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)]/30 hover:bg-[var(--surface-2)] transition-all overflow-hidden"
+                  className="group relative flex flex-col p-3 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2)]/30 hover:bg-[var(--surface-2)] transition-all overflow-hidden"
                 >
-                  <div className="relative w-full h-32 rounded-lg overflow-hidden mb-4 border border-[var(--hairline)] bg-black/40">
+                  <div className="relative w-full h-24 rounded-md overflow-hidden mb-3 border border-[var(--hairline)] bg-black/40">
                     {course.thumbnailUrl ? (
                       <img
                         src={course.thumbnailUrl}
@@ -160,26 +150,26 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
                       />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-purple-400/50">
-                        <BookOpen className="h-8 w-8 mb-2" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">No Cover</span>
+                        <BookOpen className="h-6 w-6 mb-1" />
+                        <span className="text-[9px] font-bold uppercase tracking-wider">No Cover</span>
                       </div>
                     )}
-                    <div className="absolute top-2 right-2 bg-[var(--surface)]/80 backdrop-blur border border-[var(--hairline)] text-white px-2 py-0.5 rounded text-[10px] font-bold shadow-md">
+                    <div className="absolute top-1.5 right-1.5 bg-[var(--surface)]/80 backdrop-blur border border-[var(--hairline)] text-white px-1.5 py-0.5 rounded text-[9px] font-bold shadow-sm">
                       {course.level}
                     </div>
                   </div>
 
                   <div className="flex-1 flex flex-col">
-                    <h4 className="font-bold text-sm text-white line-clamp-2 leading-tight mb-2 group-hover:text-purple-400 transition-colors">
+                    <h4 className="font-semibold text-xs text-white line-clamp-2 leading-tight mb-3 group-hover:text-purple-400 transition-colors">
                       {course.title}
                     </h4>
 
-                    <div className="mt-auto flex items-center justify-between border-t border-[var(--hairline)] pt-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                      <div className="flex items-center gap-1.5">
-                        <Users className="h-3.5 w-3.5" />
+                    <div className="mt-auto flex items-center justify-between border-t border-[var(--hairline)] pt-2 text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      <div className="flex items-center gap-1">
+                        <Users className="h-3 w-3" />
                         <span>{course.enrollmentCount || 0} Students</span>
                       </div>
-                      <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                         ${course.price || 0}
                       </div>
                     </div>

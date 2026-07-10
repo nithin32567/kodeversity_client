@@ -77,17 +77,19 @@ export function AdminUserDetailsPage() {
     .filter((e) => e.course); // Only show if course exists
 
   return (
-    <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 max-w-[1400px] mx-auto w-full overflow-y-auto">
-      <div className="flex items-center gap-4">
+    <main className="flex-1 p-4 md:p-6 space-y-4 max-w-[1400px] mx-auto w-full overflow-y-auto">
+      <div className="flex items-center gap-3">
         <Link
           to="/admin/users"
-          className="p-2 rounded-lg border border-[var(--hairline)] hover:bg-[var(--surface-2)] transition"
+          className="p-2 rounded-lg border border-[var(--hairline)] hover:bg-[var(--surface-2)] transition bg-[var(--surface)] shadow-sm"
         >
-          <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+          <ArrowLeft className="h-4 w-4 text-muted-foreground" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight md:text-3xl font-display">User Details</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-xl font-bold tracking-tight md:text-2xl font-display leading-none">
+            {user.name ? `${user.name}'s Details` : "User Details"}
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">
             View information, enrollments, and assigned courses.
           </p>
         </div>
