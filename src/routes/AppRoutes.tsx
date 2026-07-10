@@ -17,6 +17,9 @@ const AdminDashboard = lazy(() =>
 const AdminUsersPage = lazy(() =>
   import("@/pages/admin/AdminUsersPage").then((m) => ({ default: m.AdminUsersPage })),
 );
+const AdminUserDetailsPage = lazy(() =>
+  import("@/pages/admin/AdminUserDetailsPage").then((m) => ({ default: m.AdminUserDetailsPage })),
+);
 const AdminCoursesPage = lazy(() =>
   import("@/pages/admin/AdminCoursesPage").then((m) => ({ default: m.AdminCoursesPage })),
 );
@@ -52,6 +55,11 @@ const AdminManageCoursePage = lazy(() =>
 const AdminPreviewCoursePage = lazy(() =>
   import("@/pages/admin/AdminPreviewCoursePage").then((m) => ({
     default: m.AdminPreviewCoursePage,
+  })),
+);
+const UnlockRequestsPage = lazy(() =>
+  import("@/presentation/features/admin/pages/UnlockRequests").then((m) => ({
+    default: m.UnlockRequests,
   })),
 );
 
@@ -140,6 +148,7 @@ export function AppRoutes() {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsersPage />} />
+            <Route path="users/:userId" element={<AdminUserDetailsPage />} />
             {/* /admin/students alias for sidebar links */}
             <Route path="students" element={<AdminUsersPage />} />
             <Route path="analytics" element={<AdminAnalyticsPage />} />
@@ -153,6 +162,7 @@ export function AppRoutes() {
             <Route path="inactive-users" element={<AdminInactiveUsersPage />} />
             <Route path="instructors" element={<AdminInstructorsPage />} />
             <Route path="live-classes" element={<AdminLiveClassesPage />} />
+            <Route path="unlock-requests" element={<UnlockRequestsPage />} />
           </Route>
 
           <Route
@@ -171,6 +181,7 @@ export function AppRoutes() {
             <Route path="courses" element={<InstructorCoursesPage />} />
             <Route path="meetings" element={<InstructorMeetingsPage />} />
             <Route path="batches" element={<InstructorBatchesPage />} />
+            <Route path="unlock-requests" element={<UnlockRequestsPage />} />
           </Route>
 
           <Route

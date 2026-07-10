@@ -97,7 +97,7 @@ export function PlaygroundManager() {
       title: "Delete Profile",
       message: `Are you sure you want to delete the "${name}" baseline profile?`,
       confirmText: "Delete",
-      destructive: true
+      destructive: true,
     });
     if (!isConfirmed) return;
     setIsDeleting(true);

@@ -22,10 +22,12 @@ export function useAdminEnrollStudent() {
       );
       // Invalidate RTK Query cache tags
       dispatch(baseApi.util.invalidateTags(["Courses", "Analytics"]));
+      return data;
     } catch (error) {
       const err = error as Error & { message?: string };
       console.error("Enrollment error:", err);
       toast.error(err.message || "Failed to enroll student.");
+      throw error;
     }
   };
 

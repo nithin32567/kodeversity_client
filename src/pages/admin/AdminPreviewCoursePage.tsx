@@ -15,7 +15,6 @@ import {
   Award,
   Play,
 } from "lucide-react";
-import { findCourseBySlug } from "@/presentation/features/student-learning/components/data";
 import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
 import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
@@ -23,8 +22,6 @@ import { PlaygroundWorkspace } from "@/presentation/features/playground";
 import type { ChapterType } from "@/domain/course";
 import type { PlaygroundConfig } from "@/domain/playground";
 import { TerminalSquare } from "lucide-react";
-
-type LessonStatus = "done" | "current" | "locked";
 
 export interface ChapterDisplay {
   id: string;
@@ -37,110 +34,11 @@ export interface ChapterDisplay {
   playgroundConfig?: PlaygroundConfig;
 }
 
-const mockModules = [
-  {
-    id: "mod-1",
-    title: "Module 1: Introduction",
-    open: true,
-    done: 3,
-    total: 5,
-    chapters: [
-      {
-        id: "chap-1",
-        title: "Welcome to the course",
-        duration: 312,
-        status: "done" as LessonStatus,
-        type: "VIDEO" as ChapterType,
-        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-      },
-      {
-        id: "chap-2",
-        title: "Setup tools and environment",
-        duration: 465,
-        status: "done" as LessonStatus,
-        type: "DOCUMENT" as ChapterType,
-        documentUrl:
-          "https://raw.githubusercontent.com/mdn/beginner-html-site-scripted/master/index.html",
-      },
-      {
-        id: "chap-3",
-        title: "React basics",
-        duration: 1110,
-        status: "current" as LessonStatus,
-        type: "VIDEO" as ChapterType,
-        videoUrl: "https://www.w3schools.com/html/movie.mp4",
-      },
-      {
-        id: "chap-4",
-        title: "Interactive Lab Playground",
-        duration: 1500,
-        status: "locked" as LessonStatus,
-        type: "PLAYGROUND" as ChapterType,
-        playgroundConfig: {
-          pg: "6659f131a9de4f16462740bc",
-          pgname: "1VMPG",
-          playground: "ubuntu2404n1",
-          difficulty: "easy" as const,
-          maxScore: 100,
-        },
-      },
-      {
-        id: "chap-5",
-        title: "Components and Props",
-        duration: 940,
-        status: "locked" as LessonStatus,
-        type: "VIDEO" as ChapterType,
-        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-      },
-    ],
-  },
-  {
-    id: "mod-2",
-    title: "Module 2: Components Deep Dive",
-    open: true,
-    done: 0,
-    total: 3,
-    chapters: [
-      {
-        id: "chap-6",
-        title: "State and Lifecycle",
-        duration: 990,
-        status: "locked" as LessonStatus,
-        type: "VIDEO" as ChapterType,
-        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-      },
-      {
-        id: "chap-7",
-        title: "Docker Engine Lab",
-        duration: 1800,
-        status: "locked" as LessonStatus,
-        type: "PLAYGROUND" as ChapterType,
-        playgroundConfig: {
-          pg: "665afc8a8b1a8d052a234f9a",
-          pgname: "DOCKERPG",
-          playground: "ubuntu2404n1-docker",
-          difficulty: "medium" as const,
-          maxScore: 150,
-        },
-      },
-      {
-        id: "chap-8",
-        title: "Conditional Rendering",
-        duration: 685,
-        status: "locked" as LessonStatus,
-        type: "VIDEO" as ChapterType,
-        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-      },
-    ],
-  },
-];
-
 const tabs = ["Overview", "Notes", "Resources", "Q&A", "Reviews (2.1K)"];
 
 export function AdminPreviewCoursePage() {
   const { slug } = useParams<{ slug: string }>();
-  const staticCourse = slug ? findCourseBySlug(slug) : null;
-  const { data: realCourse, isLoading: isCourseLoading } = useCourse(slug || "mock-course");
+  const { data: realCourse, isLoading: isCourseLoading } = useCourse(slug || "");
   const [activeTab, setActiveTab] = useState("Overview");
   const [open, setOpen] = useState<Record<number, boolean>>({
     0: true,
@@ -152,8 +50,8 @@ export function AdminPreviewCoursePage() {
   const glow = useAccentRgb();
 
   const resolvedModules =
-    realCourse?.modules && realCourse.modules.length > 0 ? realCourse.modules : mockModules;
-  const courseTitle = realCourse?.title || staticCourse?.title || "Course Player";
+    realCourse?.modules && realCourse.modules.length > 0 ? realCourse.modules : [];
+  const courseTitle = realCourse?.title || "Course Player";
   const courseId = realCourse?.id || "mock-course-id";
 
   const allChapters = (resolvedModules as { chapters?: unknown[] }[]).flatMap(
@@ -164,9 +62,7 @@ export function AdminPreviewCoursePage() {
   const activeChapter =
     allChapters.find((c) => c.id === selectedChapterId) || allChapters[0] || null;
 
-  const [completedChapters, setCompletedChapters] = useState<Set<string>>(
-    new Set(["chap-1", "chap-2"]),
-  );
+  const [completedChapters, setCompletedChapters] = useState<Set<string>>(new Set());
 
   const markChapterComplete = (id: string) => {
     setCompletedChapters((prev) => {
@@ -486,7 +382,11 @@ export function AdminPreviewCoursePage() {
                 desc="Apply what you learned in a hands-on assignment."
                 cta="View Assignment"
               />
-              <ProgressTile />
+              <ProgressTile
+                progressPercentage={progressPercentage}
+                completedCount={completedCount}
+                totalChapters={totalChapters}
+              />
             </div>
           </div>
 
@@ -652,8 +552,17 @@ function ActionTile({
   );
 }
 
-function ProgressTile() {
+function ProgressTile({
+  progressPercentage,
+  completedCount,
+  totalChapters,
+}: {
+  progressPercentage: number;
+  completedCount: number;
+  totalChapters: number;
+}) {
   const glow = useAccentRgb();
+  const lockedCount = Math.max(0, totalChapters - completedCount);
   return (
     <MagicBentoCard
       className="flex h-full flex-col rounded-2xl border border-border bg-card p-4"
@@ -666,25 +575,24 @@ function ProgressTile() {
         <div
           className="relative grid h-16 w-16 shrink-0 place-items-center rounded-full"
           style={{
-            background:
-              "conic-gradient(rgb(16 185 129) 0deg 270deg, color-mix(in oklab, var(--foreground) 10%, transparent) 270deg 360deg)",
+            background: `conic-gradient(rgb(16 185 129) 0deg ${progressPercentage * 3.6}deg, color-mix(in oklab, var(--foreground) 10%, transparent) ${progressPercentage * 3.6}deg 360deg)`,
           }}
         >
           <div className="grid h-12 w-12 place-items-center rounded-full bg-card text-center">
-            <span className="text-[11px] font-bold leading-none text-emerald-400">75%</span>
+            <span className="text-[11px] font-bold leading-none text-emerald-400">
+              {progressPercentage}%
+            </span>
             <span className="text-[9px] leading-tight text-muted-foreground">Completed</span>
           </div>
         </div>
         <ul className="flex-1 space-y-1.5 text-xs">
           <li className="flex items-center gap-2">
             <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />{" "}
-            <span>3 Completed</span>
+            <span>{completedCount} Completed</span>
           </li>
           <li className="flex items-center gap-2">
-            <PlayCircle className="h-3.5 w-3.5 shrink-0 text-primary" /> <span>1 In Progress</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> <span>1 Locked</span>
+            <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />{" "}
+            <span>{lockedCount} Locked</span>
           </li>
         </ul>
       </div>

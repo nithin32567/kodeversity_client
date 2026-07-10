@@ -210,7 +210,7 @@ export function InstructorMeetingsPage() {
       title: "Cancel Class",
       message: `Are you sure you want to cancel the class "${title}"?`,
       confirmText: "Cancel Class",
-      destructive: true
+      destructive: true,
     });
     if (!confirmCancel) return;
 

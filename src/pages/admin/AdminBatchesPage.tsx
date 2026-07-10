@@ -259,7 +259,7 @@ export function AdminBatchesPage() {
       title: "Remove Student",
       message: `Are you sure you want to remove ${studentName || "this student"} from "${selectedBatch.name}"?`,
       confirmText: "Remove",
-      destructive: true
+      destructive: true,
     });
     if (!confirmRemove) return;
 
@@ -351,7 +351,7 @@ export function AdminBatchesPage() {
       title: "Delete Batch",
       message: `Are you sure you want to delete batch "${batchName}"? This action cannot be undone.`,
       confirmText: "Delete",
-      destructive: true
+      destructive: true,
     });
     if (!confirmDelete) return;
 

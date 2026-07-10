@@ -2007,7 +2007,7 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
       title: "Suspend Course",
       message: "Are you sure you want to suspend this course?",
       confirmText: "Suspend",
-      destructive: true
+      destructive: true,
     });
     if (isConfirmed) {
       try {
@@ -2027,7 +2027,7 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
       title: "Delete Course",
       message: "Are you sure you want to delete this course?",
       confirmText: "Delete",
-      destructive: true
+      destructive: true,
     });
     if (isConfirmed) {
       try {
@@ -2264,7 +2264,7 @@ export function CourseManagementDashboard({ slug }: { slug: string }) {
           >
             <PlayCircle className="h-4 w-4" /> Preview Course
           </Link>
-          
+
           {isAdmin && (
             <>
               <button

@@ -18,6 +18,7 @@ import type { Course } from "@/domain/course";
 import type { User } from "@/domain/user";
 import { useAdminEnrollStudent } from "@/presentation/features/admin-enrollments/hooks/useAdminEnrollment";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
+import { AccessOverrideToggle } from "@/presentation/features/admin-enrollments/components/AccessOverrideToggle";
 
 export function AdminEnrollmentsPage() {
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
@@ -34,6 +35,13 @@ export function AdminEnrollmentsPage() {
   // Loading & Error States
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+
+  // Recent enrollment for AccessOverrideToggle
+  const [recentEnrollment, setRecentEnrollment] = useState<{
+    id: string;
+    student: { name: string | null; email: string };
+    course: { title: string };
+  } | null>(null);
 
   // Mutation hook
   const enrollMutation = useAdminEnrollStudent();
@@ -86,12 +94,19 @@ export function AdminEnrollmentsPage() {
   const handleEnroll = async () => {
     if (!selectedStudent || !selectedCourse) return;
 
-    await enrollMutation.mutate({
-      studentId: selectedStudent.id,
-      courseId: selectedCourse.id,
-    });
-    setSelectedStudent(null);
-    setSelectedCourse(null);
+    try {
+      const data = await enrollMutation.mutate({
+        studentId: selectedStudent.id,
+        courseId: selectedCourse.id,
+      });
+      if (data) {
+        setRecentEnrollment(data);
+      }
+      setSelectedStudent(null);
+      setSelectedCourse(null);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   if (isAuthLoading) {
@@ -389,6 +404,38 @@ export function AdminEnrollmentsPage() {
               </div>
             </div>
           </div>
+
+          {recentEnrollment && (
+            <div className="lg:col-span-12 p-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 shadow-xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-emerald-400 flex items-center gap-2">
+                  <Check className="h-5 w-5" />
+                  Successfully Enrolled!
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground">
+                    {recentEnrollment.student.name || recentEnrollment.student.email}
+                  </span>{" "}
+                  now has access to{" "}
+                  <span className="font-semibold text-foreground">
+                    {recentEnrollment.course.title}
+                  </span>
+                  .
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-1.5 shrink-0 bg-[var(--surface)] p-3 rounded-xl border border-[var(--hairline)]">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                  Access Strategy
+                </span>
+                <AccessOverrideToggle
+                  enrollmentId={recentEnrollment.id}
+                  currentStrategy="SEQUENTIAL"
+                  studentName={recentEnrollment.student.name || recentEnrollment.student.email}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
     </main>

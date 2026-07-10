@@ -75,7 +75,7 @@ export function AdminInactiveUsersPage() {
       title: "Delete User",
       message: "Are you sure you want to delete this user?",
       confirmText: "Delete",
-      destructive: true
+      destructive: true,
     });
     if (!isConfirmed) return;
 

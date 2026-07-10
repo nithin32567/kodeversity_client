@@ -37,6 +37,7 @@ import { PlaygroundWorkspace } from "@/presentation/features/playground";
 import type { Chapter, ChapterType } from "@/domain/course";
 import type { PlaygroundConfig } from "@/domain/playground";
 import { TerminalSquare } from "lucide-react";
+import { ModuleCompletionBanner } from "@/presentation/features/student-learning/components/ModuleCompletionBanner";
 
 type LessonStatus = "done" | "current" | "locked";
 
@@ -189,12 +190,24 @@ export function LessonPage() {
     new Set(["chap-1", "chap-2"]),
   );
 
+  // Tracks which module just had its final lesson completed → triggers banner
+  const [completedModuleId, setCompletedModuleId] = useState<string | null>(null);
+
   const markChapterComplete = (id: string) => {
     setCompletedChapters((prev) => {
       const next = new Set(prev);
       next.add(id);
       return next;
     });
+
+    // Check if this chapter is the last in its module → show completion banner
+    for (const mod of resolvedModules as { id: string; chapters?: { id: string }[] }[]) {
+      const chapters = mod.chapters ?? [];
+      if (chapters.length > 0 && chapters[chapters.length - 1].id === id) {
+        setCompletedModuleId(mod.id);
+        break;
+      }
+    }
   };
 
   const handleNextLesson = () => {
@@ -431,6 +444,24 @@ export function LessonPage() {
               </div>
             )}
 
+            {/* Module Completion Banner — fires when the final lesson of a module finishes */}
+            {completedModuleId &&
+              (() => {
+                const modList = resolvedModules as { id: string; title: string }[];
+                const modIndex = modList.findIndex((m) => m.id === completedModuleId);
+                const completedMod = modList[modIndex];
+                const nextMod = modList[modIndex + 1];
+                return completedMod ? (
+                  <ModuleCompletionBanner
+                    courseSlug={slug ?? "mock-course"}
+                    moduleId={completedMod.id}
+                    moduleName={completedMod.title}
+                    nextModuleName={nextMod?.title}
+                    onApproved={() => setCompletedModuleId(null)}
+                  />
+                ) : null;
+              })()}
+
             {}
             <div className="flex flex-wrap items-center gap-x-7 gap-y-2 border-b border-border">
               {tabs.map((t) => (
@@ -618,66 +649,140 @@ export function LessonPage() {
               </div>
 
               <div className="mt-4 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 [scrollbar-color:color-mix(in_srgb,var(--primary)_45%,transparent)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[color-mix(in_srgb,var(--primary)_45%,transparent)] [&::-webkit-scrollbar-thumb:hover]:bg-[color-mix(in_srgb,var(--primary)_70%,transparent)] [&::-webkit-scrollbar-track]:bg-transparent">
-                {resolvedModules.map((m, i) => (
-                  <div key={m.title} className="rounded-lg border border-border bg-background/30">
-                    <button
-                      onClick={() => setOpen((s) => ({ ...s, [i]: !s[i] }))}
-                      className="flex w-full items-center justify-between px-3 py-2.5 text-left"
-                    >
-                      <span className="flex items-center gap-2 text-sm font-medium">
-                        {open[i] ? (
-                          <ChevronDown className="h-4 w-4" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4" />
-                        )}
-                        {m.title}
-                      </span>
-                    </button>
-                    {open[i] && m.chapters && m.chapters.length > 0 && (
-                      <ul className="border-t border-border px-2 py-2 space-y-1">
-                        {m.chapters.map((ch, idx) => {
-                          const isCurrent = activeChapter?.id === ch.id;
-                          const isCompleted = completedChapters.has(ch.id);
+                {(
+                  resolvedModules as {
+                    id: string;
+                    title: string;
+                    isLocked?: boolean;
+                    chapters?: ((typeof allChapters)[0] & {
+                      isLocked?: boolean;
+                      progress?: number;
+                    })[];
+                  }[]
+                ).map((m, i) => {
+                  // Per-module stats
+                  const modChapters = (m.chapters ?? []) as ((typeof allChapters)[0] & {
+                    isLocked?: boolean;
+                    progress?: number;
+                  })[];
+                  const modCompleted = modChapters.filter((c) =>
+                    completedChapters.has(c.id),
+                  ).length;
+                  const modTotal = modChapters.length;
+                  const modProgressPct =
+                    modTotal > 0 ? Math.round((modCompleted / modTotal) * 100) : 0;
+                  const isModuleLocked = !!m.isLocked;
 
-                          return (
-                            <li key={ch.id}>
-                              <button
-                                onClick={() => setSelectedChapterId(ch.id)}
-                                className={`flex w-full items-center justify-between rounded-md px-2 py-2 text-xs transition text-left ${
-                                  isCurrent
-                                    ? "border border-primary/40 bg-primary-soft text-primary font-medium"
-                                    : "hover:bg-foreground/[0.04] text-foreground/80"
-                                }`}
-                              >
-                                <span className="flex min-w-0 items-center gap-2">
-                                  {isCompleted ? (
-                                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
-                                  ) : isCurrent ? (
-                                    <PlayCircle className="h-4 w-4 shrink-0 text-primary animate-pulse" />
-                                  ) : ch.type === "PLAYGROUND" ? (
-                                    <TerminalSquare className="h-4 w-4 shrink-0 text-purple-400" />
-                                  ) : ch.type === "DOCUMENT" ? (
-                                    <FileText className="h-4 w-4 shrink-0 text-amber-400" />
-                                  ) : ch.type === "QUIZ" ? (
-                                    <ListChecks className="h-4 w-4 shrink-0 text-emerald-400" />
-                                  ) : (
-                                    <PlayCircle className="h-4 w-4 shrink-0 text-muted-foreground/60" />
-                                  )}
-                                  <span className="truncate">
-                                    {idx + 1}. {ch.title}
+                  return (
+                    <div
+                      key={m.id ?? m.title}
+                      className={`rounded-lg border bg-background/30 transition-all ${isModuleLocked ? "border-border/50 opacity-60" : "border-border"}`}
+                    >
+                      {/* Module accordion header */}
+                      <button
+                        onClick={() => !isModuleLocked && setOpen((s) => ({ ...s, [i]: !s[i] }))}
+                        disabled={isModuleLocked}
+                        aria-disabled={isModuleLocked}
+                        className={`flex w-full items-center justify-between px-3 py-2.5 text-left ${
+                          isModuleLocked ? "cursor-not-allowed" : ""
+                        }`}
+                      >
+                        <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
+                          {isModuleLocked ? (
+                            <Lock className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+                          ) : open[i] ? (
+                            <ChevronDown className="h-4 w-4 shrink-0" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 shrink-0" />
+                          )}
+                          <span className="truncate">{m.title}</span>
+                        </span>
+                        {/* Per-module mini progress pill */}
+                        {!isModuleLocked && (
+                          <span className="ml-2 shrink-0 text-[10px] text-muted-foreground tabular-nums">
+                            {modCompleted}/{modTotal}
+                          </span>
+                        )}
+                      </button>
+
+                      {/* Per-module progress bar */}
+                      {!isModuleLocked && modTotal > 0 && (
+                        <div className="mx-3 mb-1 h-0.5 w-[calc(100%-1.5rem)] overflow-hidden rounded-full bg-foreground/10">
+                          <div
+                            className="h-full rounded-full bg-[image:var(--gradient-primary)] transition-all duration-500"
+                            style={{ width: `${modProgressPct}%` }}
+                          />
+                        </div>
+                      )}
+
+                      {open[i] && !isModuleLocked && modChapters.length > 0 && (
+                        <ul className="border-t border-border px-2 py-2 space-y-1">
+                          {modChapters.map((ch, idx) => {
+                            const isCurrent = activeChapter?.id === ch.id;
+                            // A chapter is "completed" if it's in the set, OR if backend progress >= 90
+                            const isCompleted =
+                              completedChapters.has(ch.id) ||
+                              (ch.progress != null && ch.progress >= 90);
+                            const isChapterLocked = !!ch.isLocked;
+
+                            return (
+                              <li key={ch.id}>
+                                <button
+                                  onClick={() => !isChapterLocked && setSelectedChapterId(ch.id)}
+                                  disabled={isChapterLocked}
+                                  aria-disabled={isChapterLocked}
+                                  title={isChapterLocked ? "This lesson is locked" : undefined}
+                                  className={`flex w-full items-center justify-between rounded-md px-2 py-2 text-xs transition text-left ${
+                                    isChapterLocked
+                                      ? "opacity-50 cursor-not-allowed text-muted-foreground"
+                                      : isCurrent
+                                        ? "border border-primary/40 bg-primary-soft text-primary font-medium"
+                                        : "hover:bg-foreground/[0.04] text-foreground/80"
+                                  }`}
+                                >
+                                  <span className="flex min-w-0 items-center gap-2">
+                                    {/* Leading icon: locked > completed > current > type-based */}
+                                    {isChapterLocked ? (
+                                      <Lock className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+                                    ) : isCompleted ? (
+                                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+                                    ) : isCurrent ? (
+                                      <PlayCircle className="h-4 w-4 shrink-0 text-primary animate-pulse" />
+                                    ) : ch.type === "PLAYGROUND" ? (
+                                      <TerminalSquare className="h-4 w-4 shrink-0 text-purple-400" />
+                                    ) : ch.type === "DOCUMENT" ? (
+                                      <FileText className="h-4 w-4 shrink-0 text-amber-400" />
+                                    ) : ch.type === "QUIZ" ? (
+                                      <ListChecks className="h-4 w-4 shrink-0 text-emerald-400" />
+                                    ) : (
+                                      <PlayCircle className="h-4 w-4 shrink-0 text-muted-foreground/60" />
+                                    )}
+                                    <span className="truncate">
+                                      {idx + 1}. {ch.title}
+                                    </span>
                                   </span>
-                                </span>
-                                <span className="ml-2 shrink-0 text-[10px] text-muted-foreground">
-                                  {formatDuration(ch.duration)}
-                                </span>
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </div>
-                ))}
+
+                                  {/* Trailing: either progress bar or duration */}
+                                  {isCompleted ? (
+                                    <span className="ml-2 shrink-0 inline-flex h-4 w-4 place-items-center justify-center rounded-full bg-emerald-500/15">
+                                      <CheckCircle2 className="h-2.5 w-2.5 text-emerald-400" />
+                                    </span>
+                                  ) : isChapterLocked ? (
+                                    <Lock className="ml-2 h-3 w-3 shrink-0 text-muted-foreground/40" />
+                                  ) : (
+                                    <span className="ml-2 shrink-0 text-[10px] text-muted-foreground">
+                                      {formatDuration(ch.duration)}
+                                    </span>
+                                  )}
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </MagicBentoCard>
 

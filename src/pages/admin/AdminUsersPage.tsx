@@ -4,19 +4,9 @@ import {
   Search,
   Users,
   AlertCircle,
-  Phone,
-  GraduationCap,
-  Calendar,
-  BookOpen,
   RefreshCw,
   UserPlus,
-  Edit2,
-  ShieldOff,
-  UserCheck,
-  Trash2,
-  Loader2,
 } from "lucide-react";
-import { X } from "lucide-react";
 import { toast } from "sonner";
 import { managementService } from "@/infrastructure/admin/managementService";
 import type { User } from "@/domain/user";
@@ -30,15 +20,7 @@ import {
   ActionModal,
   type ActionType,
 } from "@/presentation/features/admin-users/components/ActionModal";
-
-export interface Student extends User {
-  phone?: string;
-  highestQualification?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  enrolledCourses?: unknown[];
-  chapterProgress?: unknown[];
-}
+import { StudentCard, type Student } from "@/presentation/features/admin-users/components/StudentCard";
 
 export function AdminUsersPage() {
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
@@ -254,114 +236,14 @@ export function AdminUsersPage() {
             const isProcessing = processingIds.has(student.id);
 
             return (
-              <div
+              <StudentCard
                 key={student.id}
-                className={`flex flex-col p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--surface)] transition relative ${
-                  isProcessing ? "opacity-70 pointer-events-none" : "hover:bg-[var(--surface-2)]"
-                }`}
-              >
-                {isProcessing && (
-                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/20 rounded-2xl backdrop-blur-sm">
-                    <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
-                  </div>
-                )}
-
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    {student.avatarUrl ? (
-                      <img
-                        src={student.avatarUrl}
-                        alt={student.name}
-                        className={`h-12 w-12 rounded-full object-cover border border-[var(--hairline)] ${activeTab === "SUSPENDED" ? "grayscale opacity-60" : ""}`}
-                      />
-                    ) : (
-                      <div
-                        className={`h-12 w-12 rounded-full grid place-items-center text-white text-sm font-semibold border border-[var(--hairline)] ${activeTab === "SUSPENDED" ? "bg-zinc-700" : ""}`}
-                        style={activeTab === "ACTIVE" ? { background: "var(--grad-purple)" } : {}}
-                      >
-                        {(student.name || "UN").slice(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                    {activeTab === "ACTIVE" ? (
-                      <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-[var(--surface)]" />
-                    ) : (
-                      <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-rose-500 ring-2 ring-[var(--surface)] flex items-center justify-center">
-                        <X className="h-2.5 w-2.5 text-white" />
-                      </span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-semibold truncate text-foreground">
-                      {student.name}
-                    </div>
-                    <div className="text-xs text-muted-foreground truncate">{student.email}</div>
-                    <div className="mt-1 text-[10px] uppercase font-bold tracking-wider text-blue-400">
-                      {student.role || "STUDENT"}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <button
-                      onClick={() => openEditModal(student)}
-                      className="h-7 w-7 rounded-md grid place-items-center border border-[var(--hairline)] text-muted-foreground hover:text-indigo-400 hover:bg-[var(--surface-2)] transition cursor-pointer"
-                      title="Edit Profile"
-                    >
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </button>
-                    {activeTab === "ACTIVE" ? (
-                      <button
-                        onClick={() => openActionModal("SUSPEND", student)}
-                        className="h-7 w-7 rounded-md grid place-items-center border border-[var(--hairline)] text-muted-foreground hover:text-amber-500 hover:bg-[var(--surface-2)] transition cursor-pointer"
-                        title="Suspend Account"
-                      >
-                        <ShieldOff className="h-3.5 w-3.5" />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => openActionModal("ACTIVATE", student)}
-                        className="h-7 w-7 rounded-md grid place-items-center border border-[var(--hairline)] text-muted-foreground hover:text-emerald-500 hover:bg-[var(--surface-2)] transition cursor-pointer"
-                        title="Activate Account"
-                      >
-                        <UserCheck className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-2 mt-4 pt-4 border-t border-[var(--hairline)]">
-                  {student.phone && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Phone className="h-3.5 w-3.5" />
-                      <span>{student.phone}</span>
-                    </div>
-                  )}
-                  {student.highestQualification && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <GraduationCap className="h-3.5 w-3.5" />
-                      <span>{student.highestQualification}</span>
-                    </div>
-                  )}
-                  {student.createdAt && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span>Joined: {new Date(student.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <BookOpen className="h-3.5 w-3.5" />
-                      <span>Enrolled Courses: {student.enrolledCourses?.length || 0}</span>
-                    </div>
-
-                    <button
-                      onClick={() => openActionModal("DELETE", student)}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-500 hover:text-white px-2 py-1 rounded border border-rose-500/30 hover:bg-rose-500 transition cursor-pointer"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
+                student={student}
+                activeTab={activeTab}
+                isProcessing={isProcessing}
+                onEdit={openEditModal}
+                onAction={openActionModal}
+              />
             );
           })}
         </div>

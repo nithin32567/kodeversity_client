@@ -101,7 +101,7 @@ export function MeetingRoomPage() {
               title: "Warning",
               message: `Warning: Do not leave the classroom tab! (${newViolations}/3 violations)`,
               confirmText: "I understand",
-              cancelText: "" // hide cancel button
+              cancelText: "", // hide cancel button
             });
           }
           return newViolations;

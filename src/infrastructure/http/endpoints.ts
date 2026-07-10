@@ -50,6 +50,11 @@ export const endpoints = {
     markComplete: (courseSlug: string, lessonId: string) =>
       `${PROGRESS_URL}/progress/${courseSlug}/lessons/${lessonId}/complete`,
     certificates: `${PROGRESS_URL}/certificates`,
+    // Curriculum gating — student facing
+    requestUnlock: (courseSlug: string, moduleId: string) =>
+      `${PROGRESS_URL}/progress/${courseSlug}/modules/${moduleId}/request-unlock`,
+    moduleLockStatus: (courseSlug: string) =>
+      `${PROGRESS_URL}/progress/${courseSlug}/module-lock-status`,
   },
   challenge: {
     list: `${CHALLENGE_URL}/challenges`,
@@ -82,6 +87,14 @@ export const endpoints = {
     suspendedUsers: `${AUTH_URL}/api/admin/users/suspended`,
     updateUserStatus: (id: string) => `${AUTH_URL}/api/admin/users/${id}/status`,
     deleteUser: (id: string) => `${AUTH_URL}/api/admin/users/${id}`,
+    // Curriculum gating
+    pendingUnlockRequests: `${COURSE_URL}/api/v1/modules/pending-requests`,
+    approveUnlockRequest: (requestId: string) =>
+      `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}/approve`,
+    rejectUnlockRequest: (requestId: string) =>
+      `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}/reject`,
+    accessOverride: (enrollmentId: string) =>
+      `${COURSE_URL}/api/v1/enrollments/${enrollmentId}/access-override`,
   },
   instructor: {
     myCourses: `${COURSE_URL}/api/instructor/courses`,
@@ -98,6 +111,13 @@ export const endpoints = {
 
     meetings: `${MEETING_URL}/api/meetings`,
     meetingsByBatch: (batchId: string) => `${MEETING_URL}/api/meetings/batch/${batchId}`,
+
+    // Curriculum gating — instructor-facing unlock requests
+    pendingUnlockRequests: `${COURSE_URL}/api/v1/modules/pending-requests`,
+    approveUnlockRequest: (requestId: string) =>
+      `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}/approve`,
+    rejectUnlockRequest: (requestId: string) =>
+      `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}/reject`,
   },
   playground: {
     generateId: (pg: string, pgname: string, playground: string, from: string, fromId: string) =>

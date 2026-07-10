@@ -38,6 +38,7 @@ export const baseApi = createApi({
     "Meetings",
     "Playgrounds",
     "Progress",
+    "UnlockRequests",
   ],
   endpoints: () => ({}),
 });

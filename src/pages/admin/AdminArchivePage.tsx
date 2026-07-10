@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { useGetArchivedCoursesQuery, useSuspendCourseMutation, useRestoreCourseMutation } from "@/features/admin/adminApi";
+import {
+  useGetArchivedCoursesQuery,
+  useSuspendCourseMutation,
+  useRestoreCourseMutation,
+} from "@/features/admin/adminApi";
 import { Archive, RotateCcw, AlertCircle, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";

@@ -226,6 +226,10 @@ function CourseGridCard({ course, index }: { course: Course; index: number }) {
     BEGINNER_TO_ADVANCED: "Beginner to Advanced",
   };
 
+  const accurateLessonsCount = course.modules
+    ? course.modules.reduce((acc, module) => acc + (module.chapters?.length || 0), 0)
+    : course.lessonsCount || 0;
+
   return (
     <MagicBentoCard
       className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
@@ -297,7 +301,7 @@ function CourseGridCard({ course, index }: { course: Course; index: number }) {
             <Clock className="h-3 w-3" /> {hours} Hours
           </span>
           <span className="inline-flex items-center gap-1">
-            <BookOpen className="h-3 w-3" /> {course.lessonsCount} Lessons
+            <BookOpen className="h-3 w-3" /> {accurateLessonsCount} Lessons
           </span>
           <span>{levelLabel[course.level] ?? course.level}</span>
         </div>
