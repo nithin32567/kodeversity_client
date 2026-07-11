@@ -55,8 +55,14 @@ function computeAverageRating(reviews: Course["reviews"]): number {
 }
 
 function formatDuration(seconds: number): string {
-  const hours = Math.round(seconds / 3600);
-  return hours > 0 ? `${hours}` : "<1";
+  if (!seconds || seconds === 0) return "0 mins";
+  if (seconds < 3600) {
+    const mins = Math.round(seconds / 60);
+    return `${mins} mins`;
+  }
+  const hours = (seconds / 3600).toFixed(2);
+  const cleanHours = parseFloat(hours);
+  return `${cleanHours} hrs`;
 }
 
 function formatPrice(price: number, currency: string): string {
@@ -203,7 +209,14 @@ function CourseGridCard({ course, index }: { course: Course; index: number }) {
   const badge = badgeCycle[index % badgeCycle.length];
   const avgRating = computeAverageRating(course.reviews);
   const reviewCount = course.reviews?.length ?? 0;
-  const hours = formatDuration(course.totalDuration);
+  let accurateDuration = course.modules?.reduce(
+    (acc, mod) => acc + (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) || 0),
+    0
+  );
+  if (!accurateDuration || accurateDuration === 0) {
+    accurateDuration = course.totalDuration || 0;
+  }
+  const hours = formatDuration(accurateDuration);
   const price = formatPrice(course.price, course.currency);
   const originalPrice = course.discountPrice
     ? formatPrice(course.discountPrice, course.currency)

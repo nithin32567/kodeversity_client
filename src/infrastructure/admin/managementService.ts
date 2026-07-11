@@ -36,7 +36,9 @@ export interface BatchStudent {
 export interface EnrolledStudentItem {
   id: string;
   purchasedAt: string;
+  studentId: string;
   student?: {
+    id: string;
     name?: string | null;
     email: string;
   } | null;

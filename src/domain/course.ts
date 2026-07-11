@@ -28,6 +28,7 @@ export interface Chapter {
   type: ChapterType;
   videoUrl: string | null;
   duration: number | null;
+  durationInSeconds?: number | null;
   documentUrl: string | null;
   moduleId: string;
   quizzes: Quiz[];

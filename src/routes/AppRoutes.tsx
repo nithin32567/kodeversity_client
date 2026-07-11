@@ -83,6 +83,11 @@ const InstructorBatchesPage = lazy(() =>
     default: m.InstructorBatchesPage,
   })),
 );
+const InstructorManageCoursePage = lazy(() =>
+  import("@/pages/instructor/InstructorManageCoursePage").then((m) => ({
+    default: m.InstructorManageCoursePage,
+  })),
+);
 
 const StudentDashboard = lazy(() =>
   import("@/pages/student/StudentDashboard").then((m) => ({ default: m.StudentDashboard })),
@@ -179,6 +184,8 @@ export function AppRoutes() {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<InstructorDashboard />} />
             <Route path="courses" element={<InstructorCoursesPage />} />
+            <Route path="courses/:slug" element={<InstructorManageCoursePage />} />
+            <Route path="courses/view/:slug" element={<AdminPreviewCoursePage />} />
             <Route path="meetings" element={<InstructorMeetingsPage />} />
             <Route path="batches" element={<InstructorBatchesPage />} />
             <Route path="unlock-requests" element={<UnlockRequestsPage />} />

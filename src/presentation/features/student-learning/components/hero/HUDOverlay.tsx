@@ -32,7 +32,7 @@ export function HUDOverlay({ mouse }: Props) {
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10 flex flex-col">
-      {}
+      { }
       <header className="flex items-start justify-between p-4 md:p-10 text-[11px] uppercase tracking-[0.2em] text-foreground/80">
         <div className="pointer-events-auto flex items-center gap-2 md:gap-3">
           <span className="inline-block size-2 rounded-full bg-cyan shadow-[0_0_12px_var(--accent-cyan)]" />
@@ -63,7 +63,7 @@ export function HUDOverlay({ mouse }: Props) {
         <MobileMenu />
       </header>
 
-      {}
+      { }
       <main className="flex flex-1 items-center justify-center px-4 text-center md:px-6">
         <div className="max-w-3xl">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan/30 bg-cyan/5 px-3 py-1 text-[9px] uppercase tracking-[0.25em] text-cyan md:mb-6 md:text-[10px]">
@@ -105,7 +105,7 @@ export function HUDOverlay({ mouse }: Props) {
         </div>
       </main>
 
-      {}
+      { }
       <footer className="grid grid-cols-2 gap-3 p-4 text-[9px] uppercase tracking-[0.18em] text-muted-foreground md:grid-cols-4 md:gap-4 md:p-10 md:text-[10px] md:tracking-[0.2em]">
         <div>
           <div className="text-foreground/40">PTR</div>
@@ -180,11 +180,10 @@ function ThemeToggle() {
         />
       </button>
       <div
-        className={`absolute right-0 top-12 z-50 origin-top-right transition-all duration-200 ${
-          open
+        className={`absolute right-0 top-12 z-50 origin-top-right transition-all duration-200 ${open
             ? "scale-100 opacity-100 translate-y-0"
             : "pointer-events-none scale-95 opacity-0 -translate-y-1"
-        }`}
+          }`}
       >
         <div
           className="flex flex-col gap-2 rounded-2xl border border-border/80 bg-card/95 p-3 backdrop-blur-xl"
@@ -203,9 +202,8 @@ function ThemeToggle() {
                   setAccent(c.value);
                   setOpen(false);
                 }}
-                className={`flex items-center gap-3 rounded-xl border px-3 py-2 text-left transition-all hover:bg-foreground/[0.05] ${
-                  active ? "border-foreground/30" : "border-transparent"
-                }`}
+                className={`flex items-center gap-3 rounded-xl border px-3 py-2 text-left transition-all hover:bg-foreground/[0.05] ${active ? "border-foreground/30" : "border-transparent"
+                  }`}
               >
                 <span
                   className="size-5 shrink-0 rounded-full"
@@ -252,9 +250,8 @@ function PlaygroundsNavItem() {
         Playgrounds
       </a>
       <div
-        className={`absolute left-1/2 top-full z-50 -translate-x-1/2 pt-4 transition-all duration-150 ${
-          open ? "opacity-100 translate-y-0" : "pointer-events-none opacity-0 -translate-y-1"
-        }`}
+        className={`absolute left-1/2 top-full z-50 -translate-x-1/2 pt-4 transition-all duration-150 ${open ? "opacity-100 translate-y-0" : "pointer-events-none opacity-0 -translate-y-1"
+          }`}
         onMouseEnter={show}
         onMouseLeave={hide}
       >

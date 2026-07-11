@@ -37,7 +37,14 @@ export function CourseGridCard({ course, index }: CourseGridCardProps) {
   const badge = badgeCycle[index % badgeCycle.length];
   const avgRating = computeAverageRating(course.reviews);
   const reviewCount = course.reviews?.length ?? 0;
-  const hours = formatDurationShort(course.totalDuration);
+  let accurateDuration = course.modules?.reduce(
+    (acc, mod) => acc + (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) || 0),
+    0
+  );
+  if (!accurateDuration || accurateDuration === 0) {
+    accurateDuration = course.totalDuration || 0;
+  }
+  const hours = formatDurationShort(accurateDuration);
   const price = formatPrice(course.price, course.currency);
   const originalPrice = course.discountPrice
     ? formatPrice(course.discountPrice, course.currency)
@@ -120,7 +127,7 @@ export function CourseGridCard({ course, index }: CourseGridCardProps) {
 
         <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground">
           <span className="inline-flex items-center gap-1">
-            <Clock className="h-3 w-3" /> {hours} Hours
+            <Clock className="h-3 w-3" /> {hours}
           </span>
           <span className="inline-flex items-center gap-1">
             <BookOpen className="h-3 w-3" /> {course.lessonsCount} Lessons

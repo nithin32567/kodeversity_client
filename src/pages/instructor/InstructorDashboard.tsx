@@ -17,6 +17,7 @@ import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import { instructorService } from "@/infrastructure/instructor/instructorService";
 import type { Course } from "@/domain/course";
 import type { InstructorBatch } from "@/infrastructure/instructor/instructorService";
+import { liveClassesService } from "@/infrastructure/admin/liveClassesService";
 import { toast } from "sonner";
 import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
@@ -28,6 +29,8 @@ export function InstructorDashboard() {
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [batches, setBatches] = useState<InstructorBatch[]>([]);
+  const [studentCount, setStudentCount] = useState<number>(0);
+  const [meetingCount, setMeetingCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   const fetchDashboardData = useCallback(async () => {
@@ -41,8 +44,19 @@ export function InstructorDashboard() {
       setCourses(myCourses);
 
       const myCourseIds = new Set(myCourses.map((c) => c.id));
-      const myBatches = fetchedBatches.filter((b) => myCourseIds.has(b.courseId));
+      const myBatches = fetchedBatches.filter((b) => myCourseIds.has(b.courseId) || b.instructorId === user?.id);
       setBatches(myBatches);
+
+      const [rosters, meetings] = await Promise.all([
+        Promise.all(myBatches.map(b => instructorService.getBatchRoster(b.id))),
+        Promise.all(myBatches.map(b => liveClassesService.getMeetingsByBatch(b.id)))
+      ]);
+
+      const uniqueStudents = new Set<string>();
+      rosters.flat().forEach(r => uniqueStudents.add(r.studentId));
+      setStudentCount(uniqueStudents.size);
+      
+      setMeetingCount(meetings.flat().length);
     } catch (err) {
       console.error("Failed to load dashboard data:", err);
       toast.error("Error loading dashboard data.");
@@ -106,14 +120,14 @@ export function InstructorDashboard() {
           glow={glow}
           icon={<Users className="h-5 w-5 text-emerald-400" />}
           title="Students Managed"
-          value={124}
+          value={studentCount}
           desc="Total enrolled students"
         />
         <StatCard
           glow={glow}
           icon={<Video className="h-5 w-5 text-rose-400" />}
           title="Meetings Conducted"
-          value={18}
+          value={meetingCount}
           desc="Interactive video sessions"
         />
       </div>

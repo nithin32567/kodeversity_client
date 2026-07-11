@@ -45,6 +45,7 @@ export interface ChapterDisplay {
   id: string;
   title: string;
   duration?: number;
+  durationInSeconds?: number | null;
   status?: string;
   type?: string;
   videoUrl?: string;
@@ -242,7 +243,7 @@ export function LessonPage() {
   const completedCount = allChapters.filter((c) => completedChapters.has(c.id)).length;
   const progressPercentage =
     totalChapters > 0 ? Math.round((completedCount / totalChapters) * 100) : 0;
-  const totalDurationSeconds = allChapters.reduce((acc, ch) => acc + (ch.duration || 0), 0);
+  const totalDurationSeconds = allChapters.reduce((acc, ch) => acc + (ch.durationInSeconds || ch.duration || 0), 0);
   const totalDurationStr = `${Math.floor(totalDurationSeconds / 3600)}h ${Math.floor((totalDurationSeconds % 3600) / 60)}m`;
 
   return (
@@ -514,7 +515,7 @@ export function LessonPage() {
                       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <PlayCircle className="h-3.5 w-3.5" />{" "}
-                          {formatDuration(activeChapter.duration)}
+                          {formatDuration(activeChapter.durationInSeconds || activeChapter.duration)}
                         </span>
                         <span className="flex items-center gap-1">
                           <BarChart3 className="h-3.5 w-3.5" />{" "}
@@ -771,7 +772,7 @@ export function LessonPage() {
                                     <Lock className="ml-2 h-3 w-3 shrink-0 text-muted-foreground/40" />
                                   ) : (
                                     <span className="ml-2 shrink-0 text-[10px] text-muted-foreground">
-                                      {formatDuration(ch.duration)}
+                                      {formatDuration(ch.durationInSeconds || ch.duration)}
                                     </span>
                                   )}
                                 </button>

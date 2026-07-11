@@ -41,9 +41,9 @@ export function CourseCurriculum({ modules }: CourseCurriculumProps) {
                                 </span>
                               )}
                             </div>
-                            {chap.duration ? (
+                            {chap.durationInSeconds || chap.duration ? (
                               <span className="text-xs text-muted-foreground">
-                                {formatChapterDuration(chap.duration)}
+                                {formatChapterDuration(chap.durationInSeconds || chap.duration)}
                               </span>
                             ) : null}
                           </li>

@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import {
   ArrowLeft,
   ChevronDown,
@@ -39,6 +40,9 @@ const tabs = ["Overview", "Notes", "Resources", "Q&A", "Reviews (2.1K)"];
 export function AdminPreviewCoursePage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: realCourse, isLoading: isCourseLoading } = useCourse(slug || "");
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
+  const backLink = isAdmin ? `/admin/courses/${slug || ""}` : `/instructor/courses/${slug || ""}`;
   const [activeTab, setActiveTab] = useState("Overview");
   const [open, setOpen] = useState<Record<number, boolean>>({
     0: true,
@@ -104,14 +108,25 @@ export function AdminPreviewCoursePage() {
   const completedCount = allChapters.filter((c) => completedChapters.has(c.id)).length;
   const progressPercentage =
     totalChapters > 0 ? Math.round((completedCount / totalChapters) * 100) : 0;
-  const totalDurationSeconds = allChapters.reduce((acc, ch) => acc + (ch.duration || 0), 0);
-  const totalDurationStr = `${Math.floor(totalDurationSeconds / 3600)}h ${Math.floor((totalDurationSeconds % 3600) / 60)}m`;
+  const totalDurationSeconds = allChapters.reduce((acc, ch) => acc + (ch.durationInSeconds || ch.duration || 0), 0);
+  const formatCourseDuration = (seconds: number) => {
+    if (!seconds) return "0s";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    const parts = [];
+    if (h > 0) parts.push(`${h}h`);
+    if (m > 0 || h > 0) parts.push(`${m}m`);
+    parts.push(`${s}s`);
+    return parts.join(" ");
+  };
+  const totalDurationStr = formatCourseDuration(totalDurationSeconds);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-[1600px] px-6 py-6">
         <Link
-          to={`/admin/courses/${slug || ""}`}
+          to={backLink}
           className="mb-4 inline-flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Dashboard

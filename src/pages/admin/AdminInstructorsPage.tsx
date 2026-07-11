@@ -13,6 +13,7 @@ import {
   Trash2,
   Loader2,
   X,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { managementService } from "@/infrastructure/admin/managementService";
@@ -289,6 +290,13 @@ export function AdminInstructorsPage() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-1.5">
+                    <Link
+                      to={`/admin/users/${instructor.id}`}
+                      className="h-7 w-7 rounded-md grid place-items-center border border-[var(--hairline)] text-muted-foreground hover:text-blue-400 hover:bg-[var(--surface-2)] transition cursor-pointer"
+                      title="View Details"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </Link>
                     <button
                       onClick={() => openEditModal(instructor)}
                       className="h-7 w-7 rounded-md grid place-items-center border border-[var(--hairline)] text-muted-foreground hover:text-indigo-400 hover:bg-[var(--surface-2)] transition cursor-pointer"

@@ -16,8 +16,14 @@ const levelLabels: Record<string, string> = {
 };
 
 function formatDuration(seconds: number): string {
-  const hours = Math.round(seconds / 3600);
-  return hours > 0 ? `${hours} hr${hours > 1 ? "s" : ""}` : "<1 hr";
+  if (!seconds || seconds === 0) return "0 mins";
+  if (seconds < 3600) {
+    const mins = Math.round(seconds / 60);
+    return `${mins} mins`;
+  }
+  const hours = (seconds / 3600).toFixed(2);
+  const cleanHours = parseFloat(hours);
+  return `${cleanHours} hrs`;
 }
 
 function formatPrice(price: number, currency: string): string {
@@ -40,6 +46,14 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
   const accurateLessonsCount = course.modules
     ? course.modules.reduce((acc, module) => acc + (module.chapters?.length || 0), 0)
     : course.lessonsCount || 0;
+
+  let accurateDuration = course.modules?.reduce(
+    (acc, mod) => acc + (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) || 0),
+    0
+  );
+  if (!accurateDuration || accurateDuration === 0) {
+    accurateDuration = course.totalDuration || 0;
+  }
 
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
@@ -69,7 +83,7 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
         { }
         <span className="absolute bottom-3 right-3 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold bg-black/60 backdrop-blur-sm text-slate-300 ring-1 ring-white/10">
           <Clock className="h-3 w-3" />
-          {formatDuration(course.totalDuration)}
+          {formatDuration(accurateDuration)}
         </span>
       </div>
 

@@ -7,13 +7,26 @@ export function computeAverageRating(reviews: Course["reviews"]): number {
 }
 
 export function formatDuration(seconds: number): string {
-  const hours = Math.round(seconds / 3600);
-  return hours > 0 ? `${hours} Hours` : "<1 Hour";
+  if (!seconds) return "0s";
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  const parts = [];
+  if (h > 0) parts.push(`${h}h`);
+  if (m > 0 || h > 0) parts.push(`${m}m`);
+  parts.push(`${s}s`);
+  return parts.join(" ");
 }
 
 export function formatDurationShort(seconds: number): string {
-  const hours = Math.round(seconds / 3600);
-  return hours > 0 ? `${hours}` : "<1";
+  if (!seconds || seconds === 0) return "0 mins";
+  if (seconds < 3600) {
+    const mins = Math.round(seconds / 60);
+    return `${mins} mins`;
+  }
+  const hours = (seconds / 3600).toFixed(2);
+  const cleanHours = parseFloat(hours);
+  return `${cleanHours} hrs`;
 }
 
 export function formatChapterDuration(seconds: number | null): string {
