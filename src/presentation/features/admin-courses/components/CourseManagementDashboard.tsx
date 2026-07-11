@@ -1819,10 +1819,6 @@ function EditDetailsTab({
             </option>
           ))}
         </select>
-        <p className="text-[11px] text-muted-foreground">
-          Linked via <code className="font-mono text-primary/80">instructorId</code> on the Course
-          model.
-        </p>
       </div>
 
       {isInstructor && (

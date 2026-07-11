@@ -228,10 +228,10 @@ export function LessonPage() {
 
   if (isCourseLoading) {
     return (
-      <main className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-muted-foreground animate-pulse">
+      <main className="relative flex-1 w-full overflow-hidden bg-background flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 border-2 border-[var(--accent-cyan)] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground animate-pulse">
             Loading course player workspace...
           </p>
         </div>
@@ -247,13 +247,13 @@ export function LessonPage() {
   const totalDurationStr = `${Math.floor(totalDurationSeconds / 3600)}h ${Math.floor((totalDurationSeconds % 3600) / 60)}m`;
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-[1600px] px-6 py-6">
+    <main className="relative flex-1 w-full overflow-hidden bg-background py-8 md:py-12">
+      <div className="relative mx-auto max-w-7xl px-4 md:px-6 space-y-6 md:space-y-8">
         <Link
           to={`/student/courses/${slug!}`}
-          className="mb-4 inline-flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          className="group/btn inline-flex w-fit items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-muted-foreground hover:text-[var(--accent-cyan)] transition-colors mb-2"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Dashboard
+          <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover/btn:-translate-x-1" /> Back to Course
         </Link>
 
         <MagicBentoSection
@@ -837,18 +837,18 @@ function ActionTile({
 }) {
   const glow = useAccentRgb();
   const btnClass =
-    "mt-3 inline-flex items-center justify-center gap-2 rounded-lg bg-primary-soft px-3 py-2 text-xs font-medium text-primary hover:bg-primary/15";
+    "mt-4 flex items-center justify-center gap-2 rounded-full border border-[var(--accent-cyan)]/30 bg-[var(--accent-cyan)]/5 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--accent-cyan)] transition-colors hover:bg-[var(--accent-cyan)]/20 hover:text-white";
   return (
     <MagicBentoCard
-      className="flex h-full flex-col rounded-2xl border border-border bg-card p-4"
+      className="group relative flex h-full flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:border-[var(--accent-cyan)] hover:shadow-[0_0_30px_-10px_var(--accent-cyan)]"
       glowColor={glow}
       enableStars={false}
       enableMagnetism={false}
     >
-      <div className="flex items-center gap-2 text-sm font-semibold">
+      <div className="flex items-center gap-2 text-sm font-bold font-mono uppercase tracking-wide">
         {icon} {title}
       </div>
-      <p className="mt-2 flex-1 text-xs text-muted-foreground">{desc}</p>
+      <p className="mt-2 flex-1 text-[11px] text-muted-foreground leading-relaxed">{desc}</p>
       {to ? (
         <Link to={to as string} className={btnClass}>
           <Folder className="h-3.5 w-3.5" /> {cta}
@@ -866,35 +866,35 @@ function ProgressTile() {
   const glow = useAccentRgb();
   return (
     <MagicBentoCard
-      className="flex h-full flex-col rounded-2xl border border-border bg-card p-4"
+      className="group relative flex h-full flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:border-[var(--accent-violet)] hover:shadow-[0_0_30px_-10px_var(--accent-violet)]"
       glowColor={glow}
       enableStars={false}
       enableMagnetism={false}
     >
-      <div className="text-sm font-semibold">Lesson Progress</div>
+      <div className="text-sm font-bold font-mono uppercase tracking-wide text-foreground">Lesson Progress</div>
       <div className="mt-2 flex flex-1 items-center gap-3">
         <div
           className="relative grid h-16 w-16 shrink-0 place-items-center rounded-full"
           style={{
             background:
-              "conic-gradient(rgb(16 185 129) 0deg 270deg, color-mix(in oklab, var(--foreground) 10%, transparent) 270deg 360deg)",
+              "conic-gradient(var(--accent-violet) 0deg 270deg, color-mix(in oklab, var(--foreground) 10%, transparent) 270deg 360deg)",
           }}
         >
-          <div className="grid h-12 w-12 place-items-center rounded-full bg-card text-center">
-            <span className="text-[11px] font-bold leading-none text-emerald-400">75%</span>
-            <span className="text-[9px] leading-tight text-muted-foreground">Completed</span>
+          <div className="grid h-12 w-12 place-items-center rounded-full bg-card text-center border border-[var(--accent-violet)]/20 shadow-[0_0_15px_-5px_var(--accent-violet)]">
+            <span className="text-[11px] font-bold leading-none text-[var(--accent-violet)] font-mono">75%</span>
+            <span className="text-[7px] font-mono tracking-widest uppercase leading-tight text-muted-foreground mt-0.5">Completed</span>
           </div>
         </div>
-        <ul className="flex-1 space-y-1.5 text-xs">
+        <ul className="flex-1 space-y-1.5 text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
           <li className="flex items-center gap-2">
             <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />{" "}
             <span>3 Completed</span>
           </li>
           <li className="flex items-center gap-2">
-            <PlayCircle className="h-3.5 w-3.5 shrink-0 text-primary" /> <span>1 In Progress</span>
+            <PlayCircle className="h-3.5 w-3.5 shrink-0 text-[var(--accent-cyan)] animate-pulse" /> <span>1 In Progress</span>
           </li>
           <li className="flex items-center gap-2">
-            <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> <span>1 Locked</span>
+            <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" /> <span>1 Locked</span>
           </li>
         </ul>
       </div>
@@ -904,12 +904,12 @@ function ProgressTile() {
 
 function Stat({ value, label, icon }: { value: string; label: string; icon?: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-border bg-background/30 px-2 py-2">
-      <div className="flex items-center justify-center gap-1 text-xs font-semibold text-foreground">
+    <div className="rounded-xl border border-border bg-card/40 p-2 text-center">
+      <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-foreground font-mono uppercase">
         {icon}
         {value}
       </div>
-      <div className="text-[10px] text-muted-foreground">{label}</div>
+      <div className="mt-1 text-[9px] font-mono tracking-widest uppercase text-muted-foreground">{label}</div>
     </div>
   );
 }
@@ -944,8 +944,8 @@ function PlaygroundLaunchGate({
     <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#07060f] relative overflow-hidden">
       {}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-primary/5 blur-[100px]" />
-        <div className="absolute top-1/4 right-1/4 h-[200px] w-[200px] rounded-full bg-violet-500/5 blur-[80px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-[var(--accent-cyan)]/10 blur-[100px]" />
+        <div className="absolute top-1/4 right-1/4 h-[200px] w-[200px] rounded-full bg-[var(--accent-violet)]/10 blur-[80px]" />
       </div>
 
       {}
@@ -961,17 +961,17 @@ function PlaygroundLaunchGate({
       <div className="relative z-10 flex flex-col items-center text-center max-w-lg w-full">
         {}
         <div className="relative mb-6">
-          <div className="h-20 w-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-[0_0_40px_-8px_var(--primary)]">
-            <TerminalSquare className="h-9 w-9 text-primary" />
+          <div className="h-20 w-20 rounded-2xl bg-[var(--accent-cyan)]/10 border border-[var(--accent-cyan)]/20 flex items-center justify-center shadow-[0_0_40px_-8px_var(--accent-cyan)]">
+            <TerminalSquare className="h-9 w-9 text-[var(--accent-cyan)]" />
           </div>
-          <div className="absolute -inset-1 rounded-2xl border border-primary/10 animate-ping" />
+          <div className="absolute -inset-1 rounded-2xl border border-[var(--accent-cyan)]/20 animate-ping" />
         </div>
 
         {}
-        <p className="text-xs font-bold uppercase tracking-widest text-primary/60 mb-2">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent-cyan)]/80 mb-2">
           Interactive Lab
         </p>
-        <h2 className="text-2xl font-bold text-foreground mb-2 font-display">{chapter.title}</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2 font-mono uppercase tracking-tight">{chapter.title}</h2>
         <p className="text-sm text-muted-foreground mb-6 max-w-sm">
           This lesson includes a live cloud sandbox environment. Click below to provision your
           isolated workspace — it will be ready in about 60 seconds.
@@ -1000,7 +1000,7 @@ function PlaygroundLaunchGate({
         <button
           id="launch-playground-btn"
           onClick={onLaunch}
-          className="group relative inline-flex items-center gap-2.5 px-8 py-3.5 rounded-2xl bg-[image:var(--gradient-primary)] text-primary-foreground font-bold text-sm shadow-[var(--shadow-primary)] hover:scale-[1.03] active:scale-[0.98] transition-transform"
+          className="group relative inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-violet)] text-background font-bold text-[11px] uppercase tracking-[0.2em] shadow-[0_0_20px_var(--accent-cyan)] hover:scale-[1.03] active:scale-[0.98] transition-all"
         >
           <TerminalSquare className="h-4 w-4" />
           Launch Lab Environment

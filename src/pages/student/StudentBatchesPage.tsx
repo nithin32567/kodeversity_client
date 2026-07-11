@@ -17,8 +17,11 @@ import {
   type Batch,
   type BatchStudent,
 } from "@/infrastructure/admin/managementService";
+import { MagicBentoCard } from "@/presentation/global/MagicBento";
+import { useAccentRgb } from "@/presentation/lib/useAccent";
 
 export function StudentBatchesPage() {
+  const glow = useAccentRgb();
   const { user, isLoading: isAuthLoading } = useAuth();
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,8 +76,8 @@ export function StudentBatchesPage() {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
-          <RefreshCw className="h-8 w-8 text-indigo-400 animate-spin" />
-          <p className="text-sm text-muted-foreground">Retrieving batch roster and cohorts...</p>
+          <RefreshCw className="h-8 w-8 text-[var(--accent-cyan)] animate-spin" />
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Retrieving batch roster and cohorts...</p>
         </div>
       </div>
     );
@@ -100,249 +103,269 @@ export function StudentBatchesPage() {
   ];
 
   return (
-    <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 overflow-y-auto max-w-[1400px] mx-auto w-full">
-      {batches.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-border bg-card/10 text-center">
-          <Layers className="h-12 w-12 text-muted-foreground/45 mb-3" />
-          <h3 className="font-semibold text-lg text-foreground/80">No batches assigned</h3>
-          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-            You are not currently enrolled in any cohort batches. Contact support if this is an
-            error.
-          </p>
-        </div>
-      ) : (
-        <div className="grid gap-6 lg:grid-cols-3 items-start">
-          {}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
-              My Cohorts
-            </h3>
+    <main className="relative flex-1 w-full overflow-hidden bg-background py-8 md:py-12">
+      <div className="relative mx-auto max-w-7xl px-4 md:px-6 space-y-6 md:space-y-8">
+        {batches.length === 0 ? (
+          <article className="group relative flex flex-col rounded-2xl border border-dashed border-border bg-card/10 p-16 text-center transition-all hover:border-[var(--accent-cyan)]/50 hover:bg-[var(--accent-cyan)]/5 items-center justify-center">
+            <Layers className="h-12 w-12 text-muted-foreground/45 mb-4 group-hover:text-[var(--accent-cyan)]/60 transition-colors" />
+            <h3 className="font-bold text-base text-foreground/80 font-mono tracking-tight uppercase">No batches assigned</h3>
+            <p className="text-[10px] font-mono tracking-widest text-muted-foreground mt-2 max-w-sm uppercase">
+              You are not currently enrolled in any cohort batches. Contact support if this is an error.
+            </p>
+          </article>
+        ) : (
+          <div className="grid gap-8 lg:grid-cols-3 items-start">
+            {/* Sidebar */}
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase mb-4">
+                My Cohorts
+              </h3>
 
-            <div className="grid gap-3">
-              {batches.map((batch) => {
-                const isSelected = selectedBatch?.id === batch.id;
-                return (
+              <div className="grid gap-3">
+                {batches.map((batch) => {
+                  const isSelected = selectedBatch?.id === batch.id;
+                  return (
+                    <div
+                      key={batch.id}
+                      onClick={() => setSelectedBatch(batch)}
+                      className={`group relative flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
+                        isSelected
+                          ? "border-[var(--accent-cyan)] bg-card shadow-[0_0_20px_-5px_var(--accent-cyan)]"
+                          : "border-border bg-card hover:border-[var(--accent-cyan)]/50 hover:bg-card/80"
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <h4
+                          className={`font-bold text-sm truncate uppercase tracking-wide font-mono ${
+                            isSelected ? "text-[var(--accent-cyan)]" : "text-foreground group-hover:text-[var(--accent-cyan)]"
+                          } transition-colors`}
+                        >
+                          {batch.name}
+                        </h4>
+                        <p className="text-[9px] text-muted-foreground mt-1 font-mono uppercase tracking-widest">
+                          Code: {batch.code} • Status: {batch.status}
+                        </p>
+                      </div>
+                      <ChevronRight
+                        className={`h-4 w-4 shrink-0 transition-all ${
+                          isSelected ? "text-[var(--accent-cyan)] translate-x-1" : "text-muted-foreground group-hover:text-[var(--accent-cyan)] group-hover:translate-x-1"
+                        }`}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Main Content Pane */}
+            <div className="lg:col-span-2 space-y-4">
+              {selectedBatch && (
+                <MagicBentoCard
+                  className="group relative flex flex-col rounded-2xl border border-border bg-card p-6 md:p-8 transition-all hover:border-[var(--accent-violet)] hover:shadow-[0_0_30px_-10px_var(--accent-violet)] overflow-hidden space-y-6"
+                  glowColor={glow}
+                  enableStars={false}
+                >
+                  {/* Decorative Pattern */}
                   <div
-                    key={batch.id}
-                    onClick={() => setSelectedBatch(batch)}
-                    className={`p-4 rounded-xl border cursor-pointer transition flex justify-between items-center bg-card hover:bg-card/80 ${
-                      isSelected
-                        ? "border-primary shadow-md shadow-primary/5 bg-card/60"
-                        : "border-border"
-                    }`}
-                  >
-                    <div className="min-w-0">
-                      <h4
-                        className={`font-semibold text-sm truncate ${isSelected ? "text-indigo-400" : "text-foreground"}`}
-                      >
-                        {batch.name}
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-                        Code: {batch.code} • Status: {batch.status}
+                    className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none"
+                    style={{
+                      backgroundImage: `radial-gradient(var(--border) 1px, transparent 1px)`,
+                      backgroundSize: "12px 12px",
+                    }}
+                  />
+
+                  <div className="relative z-10">
+                    <div>
+                      <h2 className="text-2xl font-bold tracking-tight text-foreground font-mono uppercase">
+                        {selectedBatch.name}
+                      </h2>
+                      <p className="text-[10px] font-mono tracking-widest text-muted-foreground mt-2 uppercase">
+                        Course Topic: {selectedBatch.course?.name || "LMS Curriculum Block"}
                       </p>
                     </div>
-                    <ChevronRight
-                      className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${isSelected ? "translate-x-1" : ""}`}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
 
-          {}
-          <div className="lg:col-span-2 space-y-4">
-            {selectedBatch && (
-              <div className="p-6 rounded-2xl border border-border bg-card shadow-lg space-y-5">
-                {}
-                <div>
-                  <h2 className="text-xl font-bold tracking-tight text-white font-display">
-                    {selectedBatch.name}
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Course Topic: {selectedBatch.course?.name || "LMS Curriculum Block"}
-                  </p>
-                </div>
+                    {/* Tabs */}
+                    <div className="flex border-b border-border/60 pb-px gap-6 mt-6 overflow-x-auto [scrollbar-width:none]">
+                      <button
+                        onClick={() => setActiveTab("schedule")}
+                        className={`pb-3 text-[10px] font-semibold uppercase tracking-[0.2em] border-b-2 transition-colors whitespace-nowrap ${
+                          activeTab === "schedule"
+                            ? "border-[var(--accent-violet)] text-[var(--accent-violet)]"
+                            : "border-transparent text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Schedule
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("announcements")}
+                        className={`pb-3 text-[10px] font-semibold uppercase tracking-[0.2em] border-b-2 transition-colors whitespace-nowrap ${
+                          activeTab === "announcements"
+                            ? "border-[var(--accent-violet)] text-[var(--accent-violet)]"
+                            : "border-transparent text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Announcements
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("classmates")}
+                        className={`pb-3 text-[10px] font-semibold uppercase tracking-[0.2em] border-b-2 transition-colors whitespace-nowrap ${
+                          activeTab === "classmates"
+                            ? "border-[var(--accent-violet)] text-[var(--accent-violet)]"
+                            : "border-transparent text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Roster Classmates
+                      </button>
+                    </div>
 
-                {}
-                <div className="flex border-b border-border pb-0.5 gap-4">
-                  <button
-                    onClick={() => setActiveTab("schedule")}
-                    className={`pb-2.5 text-xs font-semibold uppercase tracking-wider border-b-2 transition ${
-                      activeTab === "schedule"
-                        ? "border-indigo-500 text-indigo-400 font-bold"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    Schedule
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("announcements")}
-                    className={`pb-2.5 text-xs font-semibold uppercase tracking-wider border-b-2 transition ${
-                      activeTab === "announcements"
-                        ? "border-indigo-500 text-indigo-400 font-bold"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    Announcements
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("classmates")}
-                    className={`pb-2.5 text-xs font-semibold uppercase tracking-wider border-b-2 transition ${
-                      activeTab === "classmates"
-                        ? "border-indigo-500 text-indigo-400 font-bold"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    Roster Classmates
-                  </button>
-                </div>
-
-                {}
-                <div className="min-h-[220px]">
-                  {activeTab === "schedule" && (
-                    <div className="space-y-4">
-                      <div className="p-4 rounded-xl border border-border bg-card/35 space-y-3">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-white">
-                          <Calendar className="h-4 w-4 text-indigo-400" />
-                          <span>Timeline Duration</span>
-                        </div>
-                        <div className="grid gap-2 sm:grid-cols-2 text-xs text-muted-foreground">
-                          <div>
-                            Start Date:{" "}
-                            <strong className="text-foreground">
-                              {new Date(selectedBatch.startDate).toLocaleDateString("en-US", {
-                                weekday: "short",
-                                month: "long",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </strong>
+                    {/* Tab Content */}
+                    <div className="min-h-[220px] mt-6">
+                      {activeTab === "schedule" && (
+                        <div className="space-y-4">
+                          <div className="p-5 rounded-2xl border border-border bg-foreground/[0.02] space-y-4">
+                            <div className="flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase text-foreground font-mono">
+                              <Calendar className="h-4 w-4 text-[var(--accent-violet)]" />
+                              <span>Timeline Duration</span>
+                            </div>
+                            <div className="grid gap-4 sm:grid-cols-2 text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
+                              <div>
+                                Start Date:{" "}
+                                <strong className="text-foreground block mt-1">
+                                  {new Date(selectedBatch.startDate).toLocaleDateString("en-US", {
+                                    weekday: "short",
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </strong>
+                              </div>
+                              {selectedBatch.endDate && (
+                                <div>
+                                  End Date:{" "}
+                                  <strong className="text-foreground block mt-1">
+                                    {new Date(selectedBatch.endDate).toLocaleDateString("en-US", {
+                                      weekday: "short",
+                                      month: "long",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })}
+                                  </strong>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          {selectedBatch.endDate && (
-                            <div>
-                              End Date:{" "}
-                              <strong className="text-foreground">
-                                {new Date(selectedBatch.endDate).toLocaleDateString("en-US", {
-                                  weekday: "short",
-                                  month: "long",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
-                              </strong>
+
+                          <div className="p-5 rounded-2xl border border-border bg-foreground/[0.02] space-y-3">
+                            <div className="flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase text-foreground font-mono">
+                              <Clock className="h-4 w-4 text-[var(--accent-cyan)]" />
+                              <span>Weekly Commitment</span>
+                            </div>
+                            <p className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground leading-relaxed">
+                              Scheduled live lectures will load directly under the{" "}
+                              <strong className="text-foreground">Live Classes</strong> sidebar item. Make sure you check this
+                              calendar daily.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {activeTab === "announcements" && (
+                        <div className="space-y-4">
+                          {simulatedAnnouncements.map((ann) => (
+                            <div
+                              key={ann.id}
+                              className="p-5 rounded-2xl border border-border bg-foreground/[0.02] hover:bg-foreground/[0.04] transition-colors space-y-3"
+                            >
+                              <div className="flex justify-between items-start gap-4">
+                                <h4 className="font-bold text-sm text-foreground flex items-center gap-2 font-mono uppercase tracking-wide">
+                                  <Megaphone className="h-4 w-4 text-[var(--accent-violet)] shrink-0" />
+                                  {ann.title}
+                                </h4>
+                                <span className="text-[9px] font-mono tracking-widest uppercase text-[var(--accent-cyan)] shrink-0 bg-[var(--accent-cyan)]/10 px-2 py-1 rounded">
+                                  {ann.date}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground leading-relaxed ml-6">
+                                {ann.content}
+                              </p>
+                              <div className="text-[9px] font-mono tracking-widest uppercase text-muted-foreground/80 text-right">
+                                By: <strong className="text-foreground">{ann.author}</strong>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {activeTab === "classmates" && (
+                        <div className="space-y-4">
+                          {rosterLoading ? (
+                            <div className="flex items-center justify-center py-10 gap-3 text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
+                              <RefreshCw className="h-4 w-4 animate-spin text-[var(--accent-violet)]" />
+                              <span>Fetching cohort classmates...</span>
+                            </div>
+                          ) : roster.length === 0 ? (
+                            <div className="text-center py-10 text-[10px] font-mono tracking-widest uppercase text-muted-foreground flex flex-col items-center justify-center gap-3">
+                              <Users className="h-8 w-8 text-muted-foreground/30 mb-1" />
+                              <span>Roster classmate listing is currently empty.</span>
+                            </div>
+                          ) : (
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              {roster.map((r) => {
+                                const isMe = r.studentId === user?.id;
+                                const classMateInitials = (r.student.name || "Student")
+                                  .split(" ")
+                                  .map((w) => w[0])
+                                  .join("")
+                                  .toUpperCase();
+
+                                return (
+                                  <div
+                                    key={r.id}
+                                    className={`p-4 rounded-xl border flex items-center gap-4 bg-foreground/[0.02] hover:bg-foreground/[0.04] transition-colors ${
+                                      isMe ? "border-[var(--accent-cyan)]/30" : "border-border"
+                                    }`}
+                                  >
+                                    <div
+                                      className="h-10 w-10 shrink-0 rounded-full grid place-items-center text-background text-[11px] font-bold font-mono"
+                                      style={{
+                                        background: isMe
+                                          ? "linear-gradient(135deg, var(--accent-cyan), var(--accent-violet))"
+                                          : "var(--border)",
+                                        color: isMe ? "var(--background)" : "var(--foreground)"
+                                      }}
+                                    >
+                                      {classMateInitials}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="text-xs font-bold text-foreground truncate flex items-center gap-2 font-mono uppercase tracking-wide">
+                                        <span className="truncate">
+                                          {r.student.name || "Enrolled Student"}
+                                        </span>
+                                        {isMe && (
+                                          <span className="px-1.5 py-0.5 rounded text-[8px] tracking-widest bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)] border border-[var(--accent-cyan)]/20 shrink-0">
+                                            YOU
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="text-[9px] font-mono tracking-widest uppercase text-muted-foreground truncate mt-1">
+                                        {r.student.email}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
-                      </div>
-
-                      <div className="p-4 rounded-xl border border-border bg-card/35 space-y-3">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-white">
-                          <Clock className="h-4 w-4 text-purple-400" />
-                          <span>Weekly Commitment</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Scheduled live lectures will load directly under the{" "}
-                          <strong>Live Classes</strong> sidebar item. Make sure you check this
-                          calendar daily.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === "announcements" && (
-                    <div className="space-y-4">
-                      {simulatedAnnouncements.map((ann) => (
-                        <div
-                          key={ann.id}
-                          className="p-4 rounded-xl border border-border bg-card/20 hover:bg-card/40 transition space-y-2"
-                        >
-                          <div className="flex justify-between items-start gap-3">
-                            <h4 className="font-bold text-xs text-white flex items-center gap-1.5">
-                              <Megaphone className="h-3.5 w-3.5 text-indigo-400" />
-                              {ann.title}
-                            </h4>
-                            <span className="text-[9px] font-mono text-muted-foreground shrink-0">
-                              {ann.date}
-                            </span>
-                          </div>
-                          <p className="text-xs text-muted-foreground leading-relaxed">
-                            {ann.content}
-                          </p>
-                          <div className="text-[10px] text-muted-foreground/80 text-right">
-                            By: <strong>{ann.author}</strong>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {activeTab === "classmates" && (
-                    <div className="space-y-3">
-                      {rosterLoading ? (
-                        <div className="flex items-center justify-center py-8 gap-2 text-xs text-muted-foreground">
-                          <RefreshCw className="h-4 w-4 animate-spin text-indigo-400" />
-                          <span>Fetching cohort classmates...</span>
-                        </div>
-                      ) : roster.length === 0 ? (
-                        <div className="text-center py-8 text-xs text-muted-foreground flex flex-col items-center justify-center gap-1">
-                          <Users className="h-7 w-7 text-muted-foreground/40 mb-1" />
-                          <span>Roster classmate listing is currently empty.</span>
-                        </div>
-                      ) : (
-                        <div className="grid gap-2 sm:grid-cols-2">
-                          {roster.map((r) => {
-                            const isMe = r.studentId === user?.id;
-                            const classMateInitials = (r.student.name || "Student")
-                              .split(" ")
-                              .map((w) => w[0])
-                              .join("")
-                              .toUpperCase();
-
-                            return (
-                              <div
-                                key={r.id}
-                                className={`p-3 rounded-lg border flex items-center gap-3 bg-card/10 hover:bg-card/30 transition ${
-                                  isMe ? "border-primary/20" : "border-border"
-                                }`}
-                              >
-                                <div
-                                  className="h-8 w-8 rounded-full grid place-items-center text-white text-[11px] font-bold"
-                                  style={{
-                                    background: isMe
-                                      ? "var(--gradient-primary)"
-                                      : "var(--gradient-primary-soft)",
-                                  }}
-                                >
-                                  {classMateInitials}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="text-xs font-semibold text-white truncate flex items-center gap-1.5">
-                                    <span className="truncate">
-                                      {r.student.name || "Enrolled Student"}
-                                    </span>
-                                    {isMe && (
-                                      <span className="px-1.5 py-0.5 rounded text-[8px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase font-bold shrink-0">
-                                        You
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="text-[10px] text-muted-foreground truncate">
-                                    {r.student.email}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
                       )}
                     </div>
-                  )}
-                </div>
-              </div>
-            )}
+                  </div>
+                </MagicBentoCard>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </main>
   );
 }

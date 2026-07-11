@@ -6,29 +6,39 @@ import { useAccentRgb } from "@/presentation/lib/useAccent";
 export function StudentCertificatesPage() {
   const glow = useAccentRgb();
   return (
-    <main className="flex-1 flex items-center justify-center p-6 min-h-[400px]">
-      <MagicBentoCard
-        className="max-w-md w-full p-8 rounded-2xl border border-border bg-card text-center space-y-5 shadow-xl"
-        glowColor={glow}
-        enableStars
-      >
-        <div className="mx-auto w-fit p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-          <Award className="h-8 w-8" />
-        </div>
-        <div className="space-y-2">
-          <div className="mx-auto inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/5 px-3 py-1 text-xs font-semibold text-indigo-400">
-            <Sparkles className="h-3.5 w-3.5" />
-            Under Development
+    <main className="relative flex-1 w-full overflow-hidden bg-background py-8 md:py-12 flex items-center justify-center min-h-[400px]">
+      <div className="relative mx-auto max-w-7xl px-4 md:px-6 w-full flex justify-center">
+        <MagicBentoCard
+          className="group relative flex flex-col rounded-2xl border border-border bg-card p-10 max-w-md w-full transition-all hover:border-[var(--accent-cyan)] hover:shadow-[0_0_30px_-10px_var(--accent-cyan)] text-center space-y-6"
+          glowColor={glow}
+          enableStars
+        >
+          {/* Decorative Pattern */}
+          <div
+            className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none"
+            style={{
+              backgroundImage: `radial-gradient(var(--border) 1px, transparent 1px)`,
+              backgroundSize: "12px 12px",
+            }}
+          />
+          <div className="mx-auto w-fit p-4 rounded-2xl bg-gradient-to-br from-[var(--accent-cyan)]/10 to-[var(--accent-violet)]/10 border border-[var(--accent-cyan)]/20 text-[var(--accent-cyan)]">
+            <Award className="h-10 w-10" />
           </div>
-          <h2 className="text-xl font-bold tracking-tight text-white font-display">
-            Student Certificates
-          </h2>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Your earned credentials, verified course completion badges, and printable PDF
-            certificates will be available right here upon course completion.
-          </p>
-        </div>
-      </MagicBentoCard>
+          <div className="space-y-4 relative z-10">
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-[var(--accent-cyan)]/30 bg-[var(--accent-cyan)]/5 px-3 py-1 text-[9px] uppercase tracking-[0.25em] text-[var(--accent-cyan)]">
+              <span className="size-1.5 rounded-full bg-[var(--accent-cyan)] animate-pulse" />
+              Under Development
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground font-mono uppercase">
+              Student Certificates
+            </h2>
+            <p className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground leading-relaxed">
+              Your earned credentials, verified course completion badges, and printable PDF
+              certificates will be available right here upon course completion.
+            </p>
+          </div>
+        </MagicBentoCard>
+      </div>
     </main>
   );
 }
