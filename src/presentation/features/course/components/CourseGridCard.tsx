@@ -38,8 +38,11 @@ export function CourseGridCard({ course, index }: CourseGridCardProps) {
   const avgRating = computeAverageRating(course.reviews);
   const reviewCount = course.reviews?.length ?? 0;
   let accurateDuration = course.modules?.reduce(
-    (acc, mod) => acc + (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) || 0),
-    0
+    (acc, mod) =>
+      acc +
+      (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) ||
+        0),
+    0,
   );
   if (!accurateDuration || accurateDuration === 0) {
     accurateDuration = course.totalDuration || 0;

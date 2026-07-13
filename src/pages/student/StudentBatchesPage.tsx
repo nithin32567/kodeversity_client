@@ -77,7 +77,9 @@ export function StudentBatchesPage() {
       <div className="flex-1 flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="h-8 w-8 text-[var(--accent-cyan)] animate-spin" />
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Retrieving batch roster and cohorts...</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            Retrieving batch roster and cohorts...
+          </p>
         </div>
       </div>
     );
@@ -108,9 +110,12 @@ export function StudentBatchesPage() {
         {batches.length === 0 ? (
           <article className="group relative flex flex-col rounded-2xl border border-dashed border-border bg-card/10 p-16 text-center transition-all hover:border-[var(--accent-cyan)]/50 hover:bg-[var(--accent-cyan)]/5 items-center justify-center">
             <Layers className="h-12 w-12 text-muted-foreground/45 mb-4 group-hover:text-[var(--accent-cyan)]/60 transition-colors" />
-            <h3 className="font-bold text-base text-foreground/80 font-mono tracking-tight uppercase">No batches assigned</h3>
+            <h3 className="font-bold text-base text-foreground/80 font-mono tracking-tight uppercase">
+              No batches assigned
+            </h3>
             <p className="text-[10px] font-mono tracking-widest text-muted-foreground mt-2 max-w-sm uppercase">
-              You are not currently enrolled in any cohort batches. Contact support if this is an error.
+              You are not currently enrolled in any cohort batches. Contact support if this is an
+              error.
             </p>
           </article>
         ) : (
@@ -137,7 +142,9 @@ export function StudentBatchesPage() {
                       <div className="min-w-0">
                         <h4
                           className={`font-bold text-sm truncate uppercase tracking-wide font-mono ${
-                            isSelected ? "text-[var(--accent-cyan)]" : "text-foreground group-hover:text-[var(--accent-cyan)]"
+                            isSelected
+                              ? "text-[var(--accent-cyan)]"
+                              : "text-foreground group-hover:text-[var(--accent-cyan)]"
                           } transition-colors`}
                         >
                           {batch.name}
@@ -148,7 +155,9 @@ export function StudentBatchesPage() {
                       </div>
                       <ChevronRight
                         className={`h-4 w-4 shrink-0 transition-all ${
-                          isSelected ? "text-[var(--accent-cyan)] translate-x-1" : "text-muted-foreground group-hover:text-[var(--accent-cyan)] group-hover:translate-x-1"
+                          isSelected
+                            ? "text-[var(--accent-cyan)] translate-x-1"
+                            : "text-muted-foreground group-hover:text-[var(--accent-cyan)] group-hover:translate-x-1"
                         }`}
                       />
                     </div>
@@ -262,8 +271,8 @@ export function StudentBatchesPage() {
                             </div>
                             <p className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground leading-relaxed">
                               Scheduled live lectures will load directly under the{" "}
-                              <strong className="text-foreground">Live Classes</strong> sidebar item. Make sure you check this
-                              calendar daily.
+                              <strong className="text-foreground">Live Classes</strong> sidebar
+                              item. Make sure you check this calendar daily.
                             </p>
                           </div>
                         </div>
@@ -331,7 +340,7 @@ export function StudentBatchesPage() {
                                         background: isMe
                                           ? "linear-gradient(135deg, var(--accent-cyan), var(--accent-violet))"
                                           : "var(--border)",
-                                        color: isMe ? "var(--background)" : "var(--foreground)"
+                                        color: isMe ? "var(--background)" : "var(--foreground)",
                                       }}
                                     >
                                       {classMateInitials}

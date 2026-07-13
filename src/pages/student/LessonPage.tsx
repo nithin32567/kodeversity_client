@@ -243,7 +243,10 @@ export function LessonPage() {
   const completedCount = allChapters.filter((c) => completedChapters.has(c.id)).length;
   const progressPercentage =
     totalChapters > 0 ? Math.round((completedCount / totalChapters) * 100) : 0;
-  const totalDurationSeconds = allChapters.reduce((acc, ch) => acc + (ch.durationInSeconds || ch.duration || 0), 0);
+  const totalDurationSeconds = allChapters.reduce(
+    (acc, ch) => acc + (ch.durationInSeconds || ch.duration || 0),
+    0,
+  );
   const totalDurationStr = `${Math.floor(totalDurationSeconds / 3600)}h ${Math.floor((totalDurationSeconds % 3600) / 60)}m`;
 
   return (
@@ -253,7 +256,8 @@ export function LessonPage() {
           to={`/student/courses/${slug!}`}
           className="group/btn inline-flex w-fit items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-muted-foreground hover:text-[var(--accent-cyan)] transition-colors mb-2"
         >
-          <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover/btn:-translate-x-1" /> Back to Course
+          <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover/btn:-translate-x-1" />{" "}
+          Back to Course
         </Link>
 
         <MagicBentoSection
@@ -515,7 +519,9 @@ export function LessonPage() {
                       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <PlayCircle className="h-3.5 w-3.5" />{" "}
-                          {formatDuration(activeChapter.durationInSeconds || activeChapter.duration)}
+                          {formatDuration(
+                            activeChapter.durationInSeconds || activeChapter.duration,
+                          )}
                         </span>
                         <span className="flex items-center gap-1">
                           <BarChart3 className="h-3.5 w-3.5" />{" "}
@@ -871,7 +877,9 @@ function ProgressTile() {
       enableStars={false}
       enableMagnetism={false}
     >
-      <div className="text-sm font-bold font-mono uppercase tracking-wide text-foreground">Lesson Progress</div>
+      <div className="text-sm font-bold font-mono uppercase tracking-wide text-foreground">
+        Lesson Progress
+      </div>
       <div className="mt-2 flex flex-1 items-center gap-3">
         <div
           className="relative grid h-16 w-16 shrink-0 place-items-center rounded-full"
@@ -881,8 +889,12 @@ function ProgressTile() {
           }}
         >
           <div className="grid h-12 w-12 place-items-center rounded-full bg-card text-center border border-[var(--accent-violet)]/20 shadow-[0_0_15px_-5px_var(--accent-violet)]">
-            <span className="text-[11px] font-bold leading-none text-[var(--accent-violet)] font-mono">75%</span>
-            <span className="text-[7px] font-mono tracking-widest uppercase leading-tight text-muted-foreground mt-0.5">Completed</span>
+            <span className="text-[11px] font-bold leading-none text-[var(--accent-violet)] font-mono">
+              75%
+            </span>
+            <span className="text-[7px] font-mono tracking-widest uppercase leading-tight text-muted-foreground mt-0.5">
+              Completed
+            </span>
           </div>
         </div>
         <ul className="flex-1 space-y-1.5 text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
@@ -891,7 +903,8 @@ function ProgressTile() {
             <span>3 Completed</span>
           </li>
           <li className="flex items-center gap-2">
-            <PlayCircle className="h-3.5 w-3.5 shrink-0 text-[var(--accent-cyan)] animate-pulse" /> <span>1 In Progress</span>
+            <PlayCircle className="h-3.5 w-3.5 shrink-0 text-[var(--accent-cyan)] animate-pulse" />{" "}
+            <span>1 In Progress</span>
           </li>
           <li className="flex items-center gap-2">
             <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" /> <span>1 Locked</span>
@@ -909,7 +922,9 @@ function Stat({ value, label, icon }: { value: string; label: string; icon?: Rea
         {icon}
         {value}
       </div>
-      <div className="mt-1 text-[9px] font-mono tracking-widest uppercase text-muted-foreground">{label}</div>
+      <div className="mt-1 text-[9px] font-mono tracking-widest uppercase text-muted-foreground">
+        {label}
+      </div>
     </div>
   );
 }
@@ -971,7 +986,9 @@ function PlaygroundLaunchGate({
         <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent-cyan)]/80 mb-2">
           Interactive Lab
         </p>
-        <h2 className="text-2xl font-bold text-foreground mb-2 font-mono uppercase tracking-tight">{chapter.title}</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2 font-mono uppercase tracking-tight">
+          {chapter.title}
+        </h2>
         <p className="text-sm text-muted-foreground mb-6 max-w-sm">
           This lesson includes a live cloud sandbox environment. Click below to provision your
           isolated workspace — it will be ready in about 60 seconds.

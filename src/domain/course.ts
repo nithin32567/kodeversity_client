@@ -10,6 +10,7 @@ export interface Instructor {
   avatarUrl: string | null;
   designation: string;
   bio: string;
+  role?: string;
 }
 
 export interface Quiz {

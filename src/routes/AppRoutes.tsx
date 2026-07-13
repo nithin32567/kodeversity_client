@@ -173,10 +173,7 @@ export function AppRoutes() {
           <Route
             path="/instructor"
             element={
-              <ProtectedRoute
-                allowedRoles={[UserRole.INSTRUCTOR, UserRole.ADMIN]}
-                loginPath="/admin/login"
-              >
+              <ProtectedRoute allowedRoles={[UserRole.INSTRUCTOR]} loginPath="/admin/login">
                 <PortalLayout />
               </ProtectedRoute>
             }
@@ -194,7 +191,7 @@ export function AppRoutes() {
           <Route
             path="/student"
             element={
-              <ProtectedRoute allowedRoles={[UserRole.STUDENT, UserRole.ADMIN]} loginPath="/login">
+              <ProtectedRoute allowedRoles={[UserRole.STUDENT]} loginPath="/login">
                 <PortalLayout />
               </ProtectedRoute>
             }

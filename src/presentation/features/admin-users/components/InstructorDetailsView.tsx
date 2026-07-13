@@ -1,14 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import {
-  BookOpen,
-  Calendar,
-  GraduationCap,
-  Phone,
-  Users,
-  Award,
-  Eye,
-} from "lucide-react";
+import { BookOpen, Calendar, GraduationCap, Phone, Users, Award, Eye } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -20,7 +12,10 @@ import {
 } from "recharts";
 import type { Course } from "@/domain/course";
 import type { Student } from "./StudentCard";
-import { managementService, type EnrolledStudentItem } from "@/infrastructure/admin/managementService";
+import {
+  managementService,
+  type EnrolledStudentItem,
+} from "@/infrastructure/admin/managementService";
 
 export interface InstructorDetailsViewProps {
   user: Student; // Using the Student interface as a base User profile
@@ -32,7 +27,10 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
   const [courseStudents, setCourseStudents] = useState<Record<string, EnrolledStudentItem[]>>({});
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
 
-  const assignedCourses = useMemo(() => courses.filter((c) => c.instructorId === user.id), [courses, user.id]);
+  const assignedCourses = useMemo(
+    () => courses.filter((c) => c.instructorId === user.id),
+    [courses, user.id],
+  );
 
   useEffect(() => {
     async function fetchStudents() {
@@ -44,7 +42,7 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
           assignedCourses.map(async (course) => {
             const students = await managementService.getEnrolledStudents(course.id);
             results[course.id] = students;
-          })
+          }),
         );
         setCourseStudents(results);
       } catch (err) {
@@ -56,20 +54,31 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
     fetchStudents();
   }, [assignedCourses]);
 
-  const totalStudents = assignedCourses.reduce((acc, curr) => acc + (courseStudents[curr.id]?.length || curr.enrollmentCount || 0), 0);
+  const totalStudents = assignedCourses.reduce(
+    (acc, curr) => acc + (courseStudents[curr.id]?.length || curr.enrollmentCount || 0),
+    0,
+  );
 
   const chartData = assignedCourses.map((c) => ({
-    name: c.title && c.title.length > 15 
-      ? c.title.substring(0, 15) + "..." 
-      : c.title || "Unknown",
+    name: c.title && c.title.length > 15 ? c.title.substring(0, 15) + "..." : c.title || "Unknown",
     students: courseStudents[c.id]?.length || c.enrollmentCount || 0,
   }));
 
   const allStudentsList = useMemo(() => {
-    const list: Array<{ student: any, courseName: string, purchasedAt: string, enrollmentId: string, studentId: string }> = [];
-    assignedCourses.forEach(course => {
+    const list: Array<{
+      student: {
+        id: string;
+        name?: string | null;
+        email: string;
+      };
+      courseName: string;
+      purchasedAt: string;
+      enrollmentId: string;
+      studentId: string;
+    }> = [];
+    assignedCourses.forEach((course) => {
       const students = courseStudents[course.id] || [];
-      students.forEach(s => {
+      students.forEach((s) => {
         if (s.student) {
           list.push({
             student: s.student,
@@ -148,7 +157,9 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
             {user.highestQualification && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-[var(--surface-2)]/30 p-1.5 rounded-md border border-[var(--hairline)]/30">
                 <GraduationCap className="h-3.5 w-3.5 text-purple-400" />
-                <span className="font-medium text-foreground truncate">{user.highestQualification}</span>
+                <span className="font-medium text-foreground truncate">
+                  {user.highestQualification}
+                </span>
               </div>
             )}
             {user.createdAt && (
@@ -169,8 +180,12 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
               <BookOpen className="h-4 w-4 text-purple-400" />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">Assigned Courses</span>
-              <div className="text-lg font-bold text-white font-mono leading-none">{assignedCourses.length}</div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">
+                Assigned Courses
+              </span>
+              <div className="text-lg font-bold text-white font-mono leading-none">
+                {assignedCourses.length}
+              </div>
             </div>
           </div>
 
@@ -179,8 +194,12 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
               <Users className="h-4 w-4 text-indigo-400" />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">Total Students</span>
-              <div className="text-lg font-bold text-white font-mono leading-none">{totalStudents}</div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">
+                Total Students
+              </span>
+              <div className="text-lg font-bold text-white font-mono leading-none">
+                {totalStudents}
+              </div>
             </div>
           </div>
         </div>
@@ -216,35 +235,40 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
             {/* Chart Section */}
             {assignedCourses.length > 0 && (
               <div className="rounded-xl border border-[var(--hairline)] bg-[var(--surface)] overflow-hidden shadow-sm p-4 shrink-0">
-                <h3 className="text-sm font-bold text-white font-display mb-4">Students per Course</h3>
+                <h3 className="text-sm font-bold text-white font-display mb-4">
+                  Students per Course
+                </h3>
                 <div className="h-56 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <BarChart
+                      data={chartData}
+                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                      <XAxis 
-                        dataKey="name" 
+                      <XAxis
+                        dataKey="name"
                         stroke="#888888"
                         fontSize={10}
                         tickLine={false}
                         axisLine={false}
                       />
-                      <YAxis 
-                        stroke="#888888" 
-                        fontSize={10}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <RechartsTooltip 
-                        cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
-                        contentStyle={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--hairline)', borderRadius: '8px', fontSize: '12px' }}
-                        itemStyle={{ color: '#fff' }}
-                        formatter={(value: number) => [value, 'Students']}
+                      <YAxis stroke="#888888" fontSize={10} tickLine={false} axisLine={false} />
+                      <RechartsTooltip
+                        cursor={{ fill: "rgba(255, 255, 255, 0.05)" }}
+                        contentStyle={{
+                          backgroundColor: "var(--surface-2)",
+                          border: "1px solid var(--hairline)",
+                          borderRadius: "8px",
+                          fontSize: "12px",
+                        }}
+                        itemStyle={{ color: "#fff" }}
+                        formatter={(value: number) => [value, "Students"]}
                       />
                       <Bar dataKey="students" fill="url(#colorStudents)" radius={[4, 4, 0, 0]} />
                       <defs>
                         <linearGradient id="colorStudents" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0.8}/>
+                          <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0.8} />
                         </linearGradient>
                       </defs>
                     </BarChart>
@@ -257,7 +281,9 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
             <div className="rounded-xl border border-[var(--hairline)] bg-[var(--surface)] overflow-hidden shadow-sm flex-1 flex flex-col">
               <div className="p-4 border-b border-[var(--hairline)] bg-[var(--surface-2)]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-white font-display">Teaching Portfolio</h3>
+                  <h3 className="text-base font-bold text-white font-display">
+                    Teaching Portfolio
+                  </h3>
                   <span className="bg-purple-500/20 text-purple-400 py-0.5 px-2 rounded-full text-[10px] font-bold">
                     {assignedCourses.length}
                   </span>
@@ -287,7 +313,9 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
                           ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center text-purple-400/50">
                               <BookOpen className="h-6 w-6 mb-1" />
-                              <span className="text-[9px] font-bold uppercase tracking-wider">No Cover</span>
+                              <span className="text-[9px] font-bold uppercase tracking-wider">
+                                No Cover
+                              </span>
                             </div>
                           )}
                           <div className="absolute top-1.5 right-1.5 bg-[var(--surface)]/80 backdrop-blur border border-[var(--hairline)] text-white px-1.5 py-0.5 rounded text-[9px] font-bold shadow-sm">
@@ -303,7 +331,10 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
                           <div className="mt-auto flex items-center justify-between border-t border-[var(--hairline)] pt-2 text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">
                             <div className="flex items-center gap-1">
                               <Users className="h-3 w-3" />
-                              <span>{courseStudents[course.id]?.length || course.enrollmentCount || 0} Students</span>
+                              <span>
+                                {courseStudents[course.id]?.length || course.enrollmentCount || 0}{" "}
+                                Students
+                              </span>
                             </div>
                             <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                               ${course.price || 0}
@@ -338,13 +369,18 @@ export function InstructorDetailsView({ user, courses }: InstructorDetailsViewPr
               ) : (
                 <div className="divide-y divide-[var(--hairline)]">
                   {allStudentsList.map((item) => (
-                    <div key={item.enrollmentId} className="flex items-center justify-between p-4 hover:bg-[var(--surface-2)] transition-colors">
+                    <div
+                      key={item.enrollmentId}
+                      className="flex items-center justify-between p-4 hover:bg-[var(--surface-2)] transition-colors"
+                    >
                       <div className="flex items-center gap-4">
                         <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 text-purple-400 flex items-center justify-center font-bold text-sm border border-purple-500/20 shadow-sm">
                           {(item.student.name || "UN").slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-semibold text-sm text-foreground">{item.student.name || "Unknown Student"}</div>
+                          <div className="font-semibold text-sm text-foreground">
+                            {item.student.name || "Unknown Student"}
+                          </div>
                           <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
                             <BookOpen className="h-3 w-3" />
                             {item.courseName}

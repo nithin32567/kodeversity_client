@@ -41,6 +41,25 @@ export const studentService = {
     }
   },
 
+  updateStudent: async (
+    studentId: string,
+    data: Partial<{ phone: string; highestQualification: string; name: string }>,
+  ) => {
+    try {
+      const response = await apiClient.patch<{ success: boolean; data: unknown }>(
+        `${COURSE_URL}/api/students/${studentId}`,
+        data,
+      );
+      if (response && typeof response === "object" && "data" in response) {
+        return response.data;
+      }
+      return null;
+    } catch (err) {
+      console.error("Failed to update student:", err);
+      throw err;
+    }
+  },
+
   getStudentEnrollments: async (studentId: string): Promise<StudentEnrollment[]> => {
     const students = await studentService.getStudents();
     const student = students.find((s) => s.id === studentId);

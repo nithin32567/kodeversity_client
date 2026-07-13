@@ -5,7 +5,13 @@ import { instructorService } from "@/infrastructure/instructor/instructorService
 
 const LEVELS = ["BEGINNER", "INTERMEDIATE", "ADVANCED", "BEGINNER_TO_ADVANCED"];
 
-export function CreateCourseModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+export function CreateCourseModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");

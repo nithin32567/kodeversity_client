@@ -81,7 +81,10 @@ export function StudentCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold truncate text-foreground">
-            <Link to={`/admin/users/${student.id}`} className="hover:underline hover:text-purple-400 transition">
+            <Link
+              to={`/admin/users/${student.id}`}
+              className="hover:underline hover:text-purple-400 transition"
+            >
               {student.name}
             </Link>
           </div>

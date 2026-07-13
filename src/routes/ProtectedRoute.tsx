@@ -40,6 +40,16 @@ export function ProtectedRoute({
   }
 
   if (allowedRoles && role && !allowedRoles.includes(role)) {
+    const path = location.pathname;
+    const isAdminPath = path === "/admin" || path.startsWith("/admin/");
+    const isInstructorPath = path === "/instructor" || path.startsWith("/instructor/");
+
+    if (role === UserRole.STUDENT && (isAdminPath || isInstructorPath)) {
+      return <Navigate to="/" replace />;
+    }
+    if (role === UserRole.INSTRUCTOR && isAdminPath) {
+      return <Navigate to="/" replace />;
+    }
     return <Navigate to={dashboardForRole(role)} replace />;
   }
 

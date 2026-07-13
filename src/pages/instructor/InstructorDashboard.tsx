@@ -44,18 +44,20 @@ export function InstructorDashboard() {
       setCourses(myCourses);
 
       const myCourseIds = new Set(myCourses.map((c) => c.id));
-      const myBatches = fetchedBatches.filter((b) => myCourseIds.has(b.courseId) || b.instructorId === user?.id);
+      const myBatches = fetchedBatches.filter(
+        (b) => myCourseIds.has(b.courseId) || b.instructorId === user?.id,
+      );
       setBatches(myBatches);
 
       const [rosters, meetings] = await Promise.all([
-        Promise.all(myBatches.map(b => instructorService.getBatchRoster(b.id))),
-        Promise.all(myBatches.map(b => liveClassesService.getMeetingsByBatch(b.id)))
+        Promise.all(myBatches.map((b) => instructorService.getBatchRoster(b.id))),
+        Promise.all(myBatches.map((b) => liveClassesService.getMeetingsByBatch(b.id))),
       ]);
 
       const uniqueStudents = new Set<string>();
-      rosters.flat().forEach(r => uniqueStudents.add(r.studentId));
+      rosters.flat().forEach((r) => uniqueStudents.add(r.studentId));
       setStudentCount(uniqueStudents.size);
-      
+
       setMeetingCount(meetings.flat().length);
     } catch (err) {
       console.error("Failed to load dashboard data:", err);

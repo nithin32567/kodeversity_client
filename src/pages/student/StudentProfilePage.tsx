@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   User,
   Mail,
@@ -13,7 +13,7 @@ import {
   ExternalLink,
   PlayCircle,
   Play,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import { studentService, type StudentEnrollment } from "@/infrastructure/student/studentService";
@@ -21,6 +21,7 @@ import { managementService } from "@/infrastructure/admin/managementService";
 import type { Course } from "@/domain/course";
 import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
+import { StudentProfileEditModal } from "./StudentProfileEditModal";
 
 export function StudentProfilePage() {
   const glow = useAccentRgb();
@@ -33,49 +34,51 @@ export function StudentProfilePage() {
   const [enrollments, setEnrollments] = useState<StudentEnrollment[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+
+  const loadProfileData = useCallback(async () => {
+    if (isAuthLoading || !user) return;
+    setLoading(true);
+    try {
+      const [students, fetchedCourses] = await Promise.all([
+        studentService.getStudents(),
+        managementService.getCourses(),
+      ]);
+
+      const matchedStudent = students.find((s) => s.id === user.id);
+      if (matchedStudent) {
+        setProfileDetail({
+          phone: (matchedStudent as { phone?: string | null }).phone || null,
+          highestQualification:
+            (matchedStudent as { highestQualification?: string | null }).highestQualification ||
+            null,
+          createdAt: (matchedStudent as { createdAt?: string }).createdAt,
+        });
+        setEnrollments(matchedStudent.enrolledCourses || []);
+      } else {
+        const fallbackEnrollments = await studentService.getStudentEnrollments(user.id);
+        setEnrollments(fallbackEnrollments);
+      }
+      setCourses(fetchedCourses);
+    } catch (err) {
+      console.error("Failed to load profile details:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthLoading, user]);
 
   useEffect(() => {
-    if (isAuthLoading || !user) return;
-
-    const loadProfileData = async () => {
-      setLoading(true);
-      try {
-        const [students, fetchedCourses] = await Promise.all([
-          studentService.getStudents(),
-          managementService.getCourses(),
-        ]);
-
-        const matchedStudent = students.find((s) => s.id === user.id);
-        if (matchedStudent) {
-          setProfileDetail({
-            phone: (matchedStudent as { phone?: string | null }).phone || null,
-            highestQualification:
-              (matchedStudent as { highestQualification?: string | null }).highestQualification ||
-              null,
-            createdAt: (matchedStudent as { createdAt?: string }).createdAt,
-          });
-          setEnrollments(matchedStudent.enrolledCourses || []);
-        } else {
-          const fallbackEnrollments = await studentService.getStudentEnrollments(user.id);
-          setEnrollments(fallbackEnrollments);
-        }
-        setCourses(fetchedCourses);
-      } catch (err) {
-        console.error("Failed to load profile details:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     void loadProfileData();
-  }, [isAuthLoading, user]);
+  }, [loadProfileData]);
 
   if (isAuthLoading || loading) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="h-8 w-8 text-[var(--accent-cyan)] animate-spin" />
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Loading your profile information...</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            Loading your profile information...
+          </p>
         </div>
       </div>
     );
@@ -93,6 +96,20 @@ export function StudentProfilePage() {
 
   return (
     <main className="relative flex-1 w-full overflow-hidden bg-background py-8 md:py-12">
+      {user && (
+        <StudentProfileEditModal
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          userId={user.id}
+          initialData={{
+            name: user.name,
+            phone: profileDetail?.phone,
+            highestQualification: profileDetail?.highestQualification,
+            email: user.email,
+          }}
+          onSuccess={loadProfileData}
+        />
+      )}
       <div className="relative mx-auto max-w-7xl px-4 md:px-6 space-y-8 md:space-y-12">
         {/* Profile Header Bento Card */}
         <MagicBentoCard
@@ -114,7 +131,9 @@ export function StudentProfilePage() {
             {/* Avatar */}
             <div
               className="h-24 w-24 sm:h-28 sm:w-28 rounded-full grid place-items-center text-background text-3xl font-mono font-bold border border-white/20 shadow-[0_0_30px_var(--accent-cyan)] shrink-0"
-              style={{ background: "linear-gradient(135deg, var(--accent-cyan), var(--accent-violet))" }}
+              style={{
+                background: "linear-gradient(135deg, var(--accent-cyan), var(--accent-violet))",
+              }}
             >
               {user?.name
                 ? user.name
@@ -130,13 +149,23 @@ export function StudentProfilePage() {
             {/* User Info */}
             <div className="flex-1 space-y-4">
               <div>
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[var(--accent-cyan)]/30 bg-[var(--accent-cyan)]/5 px-3 py-1 text-[9px] uppercase tracking-[0.25em] text-[var(--accent-cyan)]">
-                  <span className="size-1.5 rounded-full bg-[var(--accent-cyan)] animate-pulse" />
-                  Role: {user?.role || "STUDENT"}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[var(--accent-cyan)]/30 bg-[var(--accent-cyan)]/5 px-3 py-1 text-[9px] uppercase tracking-[0.25em] text-[var(--accent-cyan)]">
+                      <span className="size-1.5 rounded-full bg-[var(--accent-cyan)] animate-pulse" />
+                      Role: {user?.role || "STUDENT"}
+                    </div>
+                    <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground font-mono">
+                      {user?.name || "Student Name"}
+                    </h2>
+                  </div>
+                  <button
+                    onClick={() => setEditModalOpen(true)}
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--accent-cyan)]/30 bg-[var(--accent-cyan)]/5 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--accent-cyan)] transition-colors hover:bg-[var(--accent-cyan)]/20"
+                  >
+                    Edit Profile
+                  </button>
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground font-mono">
-                  {user?.name || "Student Name"}
-                </h2>
               </div>
 
               {/* Details Grid */}
@@ -151,9 +180,7 @@ export function StudentProfilePage() {
                   <div className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--accent-violet)]/10 border border-[var(--accent-violet)]/20 text-[var(--accent-violet)] group-hover/item:bg-[var(--accent-violet)]/20 transition-colors">
                     <Phone className="h-4 w-4" />
                   </div>
-                  <span className="truncate">
-                    {profileDetail?.phone || "+91 XXXXX XXXXX"}
-                  </span>
+                  <span className="truncate">{profileDetail?.phone || "+91 XXXXX XXXXX"}</span>
                 </div>
                 <div className="flex items-center gap-3 text-muted-foreground group/item hover:text-foreground transition-colors">
                   <div className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--accent-cyan)]/10 border border-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] group-hover/item:bg-[var(--accent-cyan)]/20 transition-colors">
@@ -200,7 +227,9 @@ export function StudentProfilePage() {
           {purchasedCourses.length === 0 ? (
             <article className="group relative flex flex-col rounded-2xl border border-dashed border-border bg-card/10 p-16 text-center transition-all hover:border-[var(--accent-cyan)]/50 hover:bg-[var(--accent-cyan)]/5 items-center justify-center">
               <Award className="h-12 w-12 text-muted-foreground/45 mb-4 group-hover:text-[var(--accent-cyan)]/60 transition-colors" />
-              <h3 className="font-bold text-base text-foreground/80 font-mono tracking-tight uppercase">No active purchases found</h3>
+              <h3 className="font-bold text-base text-foreground/80 font-mono tracking-tight uppercase">
+                No active purchases found
+              </h3>
               <p className="text-[10px] font-mono tracking-widest text-muted-foreground mt-2 max-w-sm uppercase">
                 It seems you haven't bought or registered in any courses yet.
               </p>
@@ -212,7 +241,10 @@ export function StudentProfilePage() {
               </Link>
             </article>
           ) : (
-            <MagicBentoSection className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" glowColor={glow}>
+            <MagicBentoSection
+              className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+              glowColor={glow}
+            >
               {purchasedCourses.map((enroll) => (
                 <MagicBentoCard
                   key={enroll.id}

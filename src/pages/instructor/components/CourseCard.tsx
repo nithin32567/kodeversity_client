@@ -28,10 +28,19 @@ function formatDuration(seconds: number | undefined): string {
   return `${cleanHours} hrs`;
 }
 
-export function CourseCard({ course, onManage }: { course: Course; onManage: (slug: string) => void }) {
+export function CourseCard({
+  course,
+  onManage,
+}: {
+  course: Course;
+  onManage: (slug: string) => void;
+}) {
   let accurateDuration = course.modules?.reduce(
-    (acc, mod) => acc + (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) || 0),
-    0
+    (acc, mod) =>
+      acc +
+      (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) ||
+        0),
+    0,
   );
   if (!accurateDuration || accurateDuration === 0) {
     accurateDuration = course.totalDuration || 0;

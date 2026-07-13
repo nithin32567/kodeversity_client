@@ -179,8 +179,12 @@ export function StudentCoursesPage() {
 
         {!isLoading && !isError && filtered.length === 0 && (
           <div className="flex flex-col items-center gap-2 text-center py-10">
-            <p className="text-base font-bold text-foreground font-mono uppercase tracking-tight">No courses found</p>
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Try a different search term.</p>
+            <p className="text-base font-bold text-foreground font-mono uppercase tracking-tight">
+              No courses found
+            </p>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              Try a different search term.
+            </p>
           </div>
         )}
       </div>
@@ -213,8 +217,11 @@ function CourseGridCard({ course, index }: { course: Course; index: number }) {
   const avgRating = computeAverageRating(course.reviews);
   const reviewCount = course.reviews?.length ?? 0;
   let accurateDuration = course.modules?.reduce(
-    (acc, mod) => acc + (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) || 0),
-    0
+    (acc, mod) =>
+      acc +
+      (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) ||
+        0),
+    0,
   );
   if (!accurateDuration || accurateDuration === 0) {
     accurateDuration = course.totalDuration || 0;
@@ -253,9 +260,7 @@ function CourseGridCard({ course, index }: { course: Course; index: number }) {
       particleCount={10}
       enableTilt
     >
-      <div
-        className="relative grid aspect-[16/10] place-items-center overflow-hidden bg-gradient-to-br from-[var(--accent-cyan)]/5 to-[var(--accent-violet)]/5"
-      >
+      <div className="relative grid aspect-[16/10] place-items-center overflow-hidden bg-gradient-to-br from-[var(--accent-cyan)]/5 to-[var(--accent-violet)]/5">
         <div
           className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none"
           style={{
@@ -320,7 +325,8 @@ function CourseGridCard({ course, index }: { course: Course; index: number }) {
             <Clock className="h-3 w-3 text-[var(--accent-violet)]" /> {hours} Hours
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <BookOpen className="h-3 w-3 text-[var(--accent-cyan)]" /> {accurateLessonsCount} Lessons
+            <BookOpen className="h-3 w-3 text-[var(--accent-cyan)]" /> {accurateLessonsCount}{" "}
+            Lessons
           </span>
         </div>
 
@@ -328,9 +334,13 @@ function CourseGridCard({ course, index }: { course: Course; index: number }) {
           <span className="font-mono text-xl font-bold text-foreground">{price}</span>
           {originalPrice && (
             <>
-              <span className="text-xs text-muted-foreground line-through font-mono">{originalPrice}</span>
+              <span className="text-xs text-muted-foreground line-through font-mono">
+                {originalPrice}
+              </span>
               {discountPct && (
-                <span className="text-[10px] font-bold text-[var(--accent-cyan)] font-mono uppercase tracking-widest bg-[var(--accent-cyan)]/10 px-1.5 py-0.5 rounded ml-1">{discountPct}% OFF</span>
+                <span className="text-[10px] font-bold text-[var(--accent-cyan)] font-mono uppercase tracking-widest bg-[var(--accent-cyan)]/10 px-1.5 py-0.5 rounded ml-1">
+                  {discountPct}% OFF
+                </span>
               )}
             </>
           )}

@@ -1,12 +1,6 @@
 import { Link, useNavigate, useParams, Navigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useMemo } from "react";
-import {
-  Search,
-  Users,
-  AlertCircle,
-  RefreshCw,
-  UserPlus,
-} from "lucide-react";
+import { Search, Users, AlertCircle, RefreshCw, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { managementService } from "@/infrastructure/admin/managementService";
 import type { User } from "@/domain/user";
@@ -20,7 +14,10 @@ import {
   ActionModal,
   type ActionType,
 } from "@/presentation/features/admin-users/components/ActionModal";
-import { StudentCard, type Student } from "@/presentation/features/admin-users/components/StudentCard";
+import {
+  StudentCard,
+  type Student,
+} from "@/presentation/features/admin-users/components/StudentCard";
 
 export function AdminUsersPage() {
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();

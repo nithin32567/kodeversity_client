@@ -28,6 +28,7 @@ export interface ChapterDisplay {
   id: string;
   title: string;
   duration?: number;
+  durationInSeconds?: number;
   status?: string;
   type?: string;
   videoUrl?: string;
@@ -108,7 +109,10 @@ export function AdminPreviewCoursePage() {
   const completedCount = allChapters.filter((c) => completedChapters.has(c.id)).length;
   const progressPercentage =
     totalChapters > 0 ? Math.round((completedCount / totalChapters) * 100) : 0;
-  const totalDurationSeconds = allChapters.reduce((acc, ch) => acc + (ch.durationInSeconds || ch.duration || 0), 0);
+  const totalDurationSeconds = allChapters.reduce(
+    (acc, ch) => acc + (ch.durationInSeconds || ch.duration || 0),
+    0,
+  );
   const formatCourseDuration = (seconds: number) => {
     if (!seconds) return "0s";
     const h = Math.floor(seconds / 3600);
@@ -149,7 +153,7 @@ export function AdminPreviewCoursePage() {
                         config={activeChapter.playgroundConfig}
                         from="course"
                         fromId={courseId}
-                        onStop={() => {}}
+                        onStop={() => { }}
                         onMarkComplete={() => markChapterComplete(activeChapter.id)}
                       />
                     ) : (
@@ -234,9 +238,10 @@ export function AdminPreviewCoursePage() {
                     <div className="relative aspect-[16/9] w-full bg-[#07060f] flex items-center justify-center">
                       {activeChapter.videoUrl ? (
                         activeChapter.videoUrl.includes("youtube.com") ||
-                        activeChapter.videoUrl.includes("youtu.be") ? (
+                          activeChapter.videoUrl.includes("youtu.be") ? (
                           <iframe
-                            src={`https://www.youtube.com/embed/${activeChapter.videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/)?.[1]}?autoplay=0&rel=0&controls=1`}
+                            src={`https://www.youtube.com/embed/${activeChapter.videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/)?.[1]
+                              }?autoplay=0&rel=0&controls=0&modestbranding=1`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
                             className="w-full h-full border-0"
@@ -312,11 +317,10 @@ export function AdminPreviewCoursePage() {
                 <button
                   key={t}
                   onClick={() => setActiveTab(t)}
-                  className={`relative -mb-px py-3 text-sm transition-colors ${
-                    activeTab === t
-                      ? "font-semibold text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`relative -mb-px py-3 text-sm transition-colors ${activeTab === t
+                    ? "font-semibold text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   {t}
                   {activeTab === t && (
@@ -463,11 +467,10 @@ export function AdminPreviewCoursePage() {
                             <li key={ch.id}>
                               <button
                                 onClick={() => setSelectedChapterId(ch.id)}
-                                className={`flex w-full items-center justify-between rounded-md px-2 py-2 text-xs transition text-left ${
-                                  isCurrent
-                                    ? "border border-primary/40 bg-primary-soft text-primary font-medium"
-                                    : "hover:bg-foreground/[0.04] text-foreground/80"
-                                }`}
+                                className={`flex w-full items-center justify-between rounded-md px-2 py-2 text-xs transition text-left ${isCurrent
+                                  ? "border border-primary/40 bg-primary-soft text-primary font-medium"
+                                  : "hover:bg-foreground/[0.04] text-foreground/80"
+                                  }`}
                               >
                                 <span className="flex min-w-0 items-center gap-2">
                                   {isCompleted ? (

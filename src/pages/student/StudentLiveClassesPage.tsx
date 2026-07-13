@@ -8,7 +8,7 @@ import {
   RefreshCw,
   AlertCircle,
   HelpCircle,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 import { studentService } from "@/infrastructure/student/studentService";
@@ -67,7 +67,9 @@ export function StudentLiveClassesPage() {
       <div className="flex-1 flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="h-8 w-8 text-[var(--accent-cyan)] animate-spin" />
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Syncing your active classes schedule...</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            Syncing your active classes schedule...
+          </p>
         </div>
       </div>
     );
@@ -81,7 +83,6 @@ export function StudentLiveClassesPage() {
   return (
     <main className="relative flex-1 w-full overflow-hidden bg-background py-8 md:py-12">
       <div className="relative mx-auto max-w-7xl px-4 md:px-6 space-y-6 md:space-y-8">
-        
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border/60">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground font-mono uppercase flex items-center gap-3">
@@ -106,7 +107,9 @@ export function StudentLiveClassesPage() {
         {meetings.length === 0 ? (
           <article className="group relative flex flex-col rounded-2xl border border-dashed border-border bg-card/10 p-16 text-center transition-all hover:border-[var(--accent-cyan)]/50 hover:bg-[var(--accent-cyan)]/5 items-center justify-center">
             <Video className="h-12 w-12 text-muted-foreground/45 mb-4 group-hover:text-[var(--accent-cyan)]/60 transition-colors" />
-            <h3 className="font-bold text-base text-foreground/80 font-mono tracking-tight uppercase">No sessions assigned</h3>
+            <h3 className="font-bold text-base text-foreground/80 font-mono tracking-tight uppercase">
+              No sessions assigned
+            </h3>
             <p className="text-[10px] font-mono tracking-widest text-muted-foreground mt-2 max-w-sm uppercase">
               There are no live classes scheduled for your batches at the moment.
             </p>
@@ -162,7 +165,8 @@ export function StudentLiveClassesPage() {
                         <div className="pt-4 border-t border-border/60 flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-muted-foreground mt-auto">
                           <Clock className="h-3.5 w-3.5 text-red-400" />
                           <span>
-                            Duration: <strong className="text-foreground">{meeting.duration} mins</strong>
+                            Duration:{" "}
+                            <strong className="text-foreground">{meeting.duration} mins</strong>
                           </span>
                         </div>
 

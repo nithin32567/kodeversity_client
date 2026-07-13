@@ -7,6 +7,13 @@ import {
 import { Archive, RotateCcw, AlertCircle, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";
+import type { Course } from "@/domain/course";
+
+interface ArchivedCourse extends Course {
+  isSuspended?: boolean;
+  isDeleted?: boolean;
+  deletedAt?: string | null;
+}
 
 export function AdminArchivePage() {
   const { data: courses = [], isLoading, isError, refetch } = useGetArchivedCoursesQuery();
@@ -15,8 +22,10 @@ export function AdminArchivePage() {
   const [activeTab, setActiveTab] = useState<"suspended" | "deleted">("suspended");
   const { confirm } = useConfirm();
 
-  const suspendedCourses = courses.filter((c: any) => c.isSuspended && !c.isDeleted);
-  const deletedCourses = courses.filter((c: any) => c.isDeleted);
+  const suspendedCourses = (courses as ArchivedCourse[]).filter(
+    (c) => c.isSuspended && !c.isDeleted,
+  );
+  const deletedCourses = (courses as ArchivedCourse[]).filter((c) => c.isDeleted);
 
   const displayCourses = activeTab === "suspended" ? suspendedCourses : deletedCourses;
 
@@ -102,7 +111,7 @@ export function AdminArchivePage() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {displayCourses.map((course: any) => (
+          {(displayCourses as ArchivedCourse[]).map((course) => (
             <div
               key={course.id}
               className="flex items-center justify-between p-4 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)]/80 transition"

@@ -46,9 +46,9 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
   const avgProgress =
     enrolledCoursesList.length > 0
       ? Math.round(
-        enrolledCoursesList.reduce((acc, curr) => acc + (curr.completedPercent || 0), 0) /
-        enrolledCoursesList.length,
-      )
+          enrolledCoursesList.reduce((acc, curr) => acc + (curr.completedPercent || 0), 0) /
+            enrolledCoursesList.length,
+        )
       : 0;
 
   const paymentPendingList = enrolledCoursesList.filter((e) => {
@@ -64,9 +64,10 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
   });
 
   const chartData = enrolledCoursesList.map((e) => ({
-    name: e.course?.title && e.course.title.length > 15 
-      ? e.course.title.substring(0, 15) + "..." 
-      : e.course?.title || "Unknown",
+    name:
+      e.course?.title && e.course.title.length > 15
+        ? e.course.title.substring(0, 15) + "..."
+        : e.course?.title || "Unknown",
     progress: e.completedPercent || 0,
   }));
 
@@ -86,8 +87,9 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
                 <img
                   src={user.avatarUrl}
                   alt={user.name || "User"}
-                  className={`h-20 w-20 rounded-full object-cover border-2 border-[var(--surface-2)] shadow-sm ${user.status === "SUSPENDED" ? "grayscale opacity-80" : ""
-                    }`}
+                  className={`h-20 w-20 rounded-full object-cover border-2 border-[var(--surface-2)] shadow-sm ${
+                    user.status === "SUSPENDED" ? "grayscale opacity-80" : ""
+                  }`}
                 />
               ) : (
                 <div
@@ -111,10 +113,11 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
                   {user.role}
                 </span>
                 <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${user.status === "ACTIVE"
-                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                    : "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                    }`}
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${
+                    user.status === "ACTIVE"
+                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                      : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                  }`}
                 >
                   {user.status || "ACTIVE"}
                 </span>
@@ -132,7 +135,9 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
             {user.highestQualification && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-[var(--surface-2)]/30 p-1.5 rounded-md border border-[var(--hairline)]/30">
                 <GraduationCap className="h-3.5 w-3.5 text-purple-400" />
-                <span className="font-medium text-foreground truncate">{user.highestQualification}</span>
+                <span className="font-medium text-foreground truncate">
+                  {user.highestQualification}
+                </span>
               </div>
             )}
             {user.createdAt && (
@@ -153,8 +158,12 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
               <BookOpen className="h-4 w-4 text-indigo-400" />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">Enrolled</span>
-              <div className="text-lg font-bold text-white font-mono leading-none">{enrolledCoursesList.length}</div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">
+                Enrolled
+              </span>
+              <div className="text-lg font-bold text-white font-mono leading-none">
+                {enrolledCoursesList.length}
+              </div>
             </div>
           </div>
 
@@ -163,8 +172,12 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
               <Award className="h-4 w-4 text-emerald-400" />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">Completed</span>
-              <div className="text-lg font-bold text-white font-mono leading-none">{completedCount}</div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">
+                Completed
+              </span>
+              <div className="text-lg font-bold text-white font-mono leading-none">
+                {completedCount}
+              </div>
             </div>
           </div>
 
@@ -173,8 +186,12 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
               <div className="p-1.5 rounded-md bg-purple-500/10 border border-purple-500/20">
                 <Target className="h-3 w-3 text-purple-400" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Avg Progress</span>
-              <span className="ml-auto text-xs font-bold text-white font-mono leading-none">{avgProgress}%</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Avg Progress
+              </span>
+              <span className="ml-auto text-xs font-bold text-white font-mono leading-none">
+                {avgProgress}%
+              </span>
             </div>
             <div className="w-full h-1 bg-[var(--surface-2)] rounded-full overflow-hidden">
               <div
@@ -185,26 +202,31 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
           </div>
 
           <div
-            className={`p-3 rounded-lg border flex items-center gap-3 transition shadow-sm ${hasPaymentPending
-              ? "border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10"
-              : "border-[var(--hairline)] bg-[var(--surface)] hover:bg-[var(--surface-2)]"
-              }`}
+            className={`p-3 rounded-lg border flex items-center gap-3 transition shadow-sm ${
+              hasPaymentPending
+                ? "border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10"
+                : "border-[var(--hairline)] bg-[var(--surface)] hover:bg-[var(--surface-2)]"
+            }`}
           >
             <div
-              className={`p-2 rounded-md border ${hasPaymentPending
-                ? "bg-amber-500/10 border-amber-500/20"
-                : "bg-emerald-500/10 border-emerald-500/20"
-                }`}
+              className={`p-2 rounded-md border ${
+                hasPaymentPending
+                  ? "bg-amber-500/10 border-amber-500/20"
+                  : "bg-emerald-500/10 border-emerald-500/20"
+              }`}
             >
               <CreditCard
                 className={`h-4 w-4 ${hasPaymentPending ? "text-amber-400" : "text-emerald-400"}`}
               />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">Payment</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-0.5">
+                Payment
+              </span>
               <div
-                className={`text-sm font-bold leading-none ${hasPaymentPending ? "text-amber-400" : "text-emerald-400"
-                  }`}
+                className={`text-sm font-bold leading-none ${
+                  hasPaymentPending ? "text-amber-400" : "text-emerald-400"
+                }`}
               >
                 {hasPaymentPending ? `${paymentPendingList.length} Pending` : "Cleared"}
               </div>
@@ -218,37 +240,44 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
         {/* Chart Section */}
         {enrolledCoursesList.length > 0 && (
           <div className="rounded-xl border border-[var(--hairline)] bg-[var(--surface)] overflow-hidden shadow-sm p-4 shrink-0">
-            <h3 className="text-sm font-bold text-white font-display mb-4">Course Progress Overview</h3>
+            <h3 className="text-sm font-bold text-white font-display mb-4">
+              Course Progress Overview
+            </h3>
             <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                  <XAxis 
-                    dataKey="name" 
+                  <XAxis
+                    dataKey="name"
                     stroke="#888888"
                     fontSize={10}
                     tickLine={false}
                     axisLine={false}
                   />
-                  <YAxis 
-                    stroke="#888888" 
+                  <YAxis
+                    stroke="#888888"
                     fontSize={10}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => `${value}%`}
                     domain={[0, 100]}
                   />
-                  <RechartsTooltip 
-                    cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
-                    contentStyle={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--hairline)', borderRadius: '8px', fontSize: '12px' }}
-                    itemStyle={{ color: '#fff' }}
-                    formatter={(value: number) => [`${value}%`, 'Progress']}
+                  <RechartsTooltip
+                    cursor={{ fill: "rgba(255, 255, 255, 0.05)" }}
+                    contentStyle={{
+                      backgroundColor: "var(--surface-2)",
+                      border: "1px solid var(--hairline)",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                    }}
+                    itemStyle={{ color: "#fff" }}
+                    formatter={(value: number) => [`${value}%`, "Progress"]}
                   />
                   <Bar dataKey="progress" fill="url(#colorProgress)" radius={[4, 4, 0, 0]} />
                   <defs>
                     <linearGradient id="colorProgress" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.8}/>
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.8} />
                     </linearGradient>
                   </defs>
                 </BarChart>
@@ -291,7 +320,9 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
             {filteredCourses.length === 0 ? (
               <div className="p-8 h-full flex flex-col justify-center items-center text-center border border-dashed border-[var(--hairline)] rounded-lg bg-[var(--surface-2)]/30">
                 <AlertCircle className="h-8 w-8 text-muted-foreground/40 mb-2" />
-                <p className="text-sm font-medium text-foreground/80">No courses match this filter</p>
+                <p className="text-sm font-medium text-foreground/80">
+                  No courses match this filter
+                </p>
               </div>
             ) : (
               <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
@@ -341,10 +372,11 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
                             </div>
                             <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden shadow-inner">
                               <div
-                                className={`h-full rounded-full transition-all duration-1000 ${enrollment.isCompleted
-                                  ? "bg-emerald-400"
-                                  : "bg-gradient-to-r from-purple-500 to-indigo-500"
-                                  }`}
+                                className={`h-full rounded-full transition-all duration-1000 ${
+                                  enrollment.isCompleted
+                                    ? "bg-emerald-400"
+                                    : "bg-gradient-to-r from-purple-500 to-indigo-500"
+                                }`}
                                 style={{ width: `${enrollment.completedPercent}%` }}
                               />
                             </div>
@@ -356,10 +388,11 @@ export function StudentDetailsView({ user, courses, enrollments }: StudentDetail
                               <span>{new Date(enrollment.purchasedAt).toLocaleDateString()}</span>
                             </div>
                             <div
-                              className={`flex items-center gap-1 px-1.5 py-0.5 rounded border ${isPaid
-                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                                }`}
+                              className={`flex items-center gap-1 px-1.5 py-0.5 rounded border ${
+                                isPaid
+                                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                  : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                              }`}
                             >
                               {isPaid ? "Paid" : "Pending"}
                             </div>

@@ -62,7 +62,9 @@ export function StudentDashboard() {
       <div className="flex-1 flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="h-8 w-8 text-[var(--accent-cyan)] animate-spin" />
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Gathering your progress and schedule...</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            Gathering your progress and schedule...
+          </p>
         </div>
       </div>
     );
@@ -122,7 +124,9 @@ export function StudentDashboard() {
               <h2 className="font-mono text-3xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-4xl md:text-5xl">
                 Welcome back,
                 <br />
-                <span className="text-[var(--accent-cyan)] drop-shadow-[0_0_24px_var(--accent-cyan)]">{user?.name || "Student"}! 👋</span>
+                <span className="text-[var(--accent-cyan)] drop-shadow-[0_0_24px_var(--accent-cyan)]">
+                  {user?.name || "Student"}! 👋
+                </span>
               </h2>
               <p className="mt-5 max-w-xl text-xs leading-relaxed text-muted-foreground sm:text-sm md:mt-6 md:text-base">
                 Here is an overview of your cohort learning journey, live sessions timeline, and
@@ -153,8 +157,12 @@ export function StudentDashboard() {
               <BookOpen className="h-5 w-5" />
             </div>
             <div className="mt-5">
-              <div className="text-[10px] font-medium tracking-widest text-muted-foreground uppercase font-mono">Courses Enrolled</div>
-              <div className="text-left text-3xl font-bold leading-tight text-foreground group-hover:text-[var(--accent-cyan)] transition-colors mt-2">{enrolledCount}</div>
+              <div className="text-[10px] font-medium tracking-widest text-muted-foreground uppercase font-mono">
+                Courses Enrolled
+              </div>
+              <div className="text-left text-3xl font-bold leading-tight text-foreground group-hover:text-[var(--accent-cyan)] transition-colors mt-2">
+                {enrolledCount}
+              </div>
             </div>
           </MagicBentoCard>
 
@@ -167,8 +175,12 @@ export function StudentDashboard() {
               <Layers className="h-5 w-5" />
             </div>
             <div className="mt-5">
-              <div className="text-[10px] font-medium tracking-widest text-muted-foreground uppercase font-mono">Cohort Batches</div>
-              <div className="text-left text-3xl font-bold leading-tight text-foreground group-hover:text-[var(--accent-cyan)] transition-colors mt-2">{activeBatchesCount}</div>
+              <div className="text-[10px] font-medium tracking-widest text-muted-foreground uppercase font-mono">
+                Cohort Batches
+              </div>
+              <div className="text-left text-3xl font-bold leading-tight text-foreground group-hover:text-[var(--accent-cyan)] transition-colors mt-2">
+                {activeBatchesCount}
+              </div>
             </div>
           </MagicBentoCard>
 
@@ -181,8 +193,12 @@ export function StudentDashboard() {
               <Award className="h-5 w-5" />
             </div>
             <div className="mt-5">
-              <div className="text-[10px] font-medium tracking-widest text-muted-foreground uppercase font-mono">Certificates Earned</div>
-              <div className="text-left text-3xl font-bold leading-tight text-foreground group-hover:text-[var(--accent-cyan)] transition-colors mt-2">{completedCourses}</div>
+              <div className="text-[10px] font-medium tracking-widest text-muted-foreground uppercase font-mono">
+                Certificates Earned
+              </div>
+              <div className="text-left text-3xl font-bold leading-tight text-foreground group-hover:text-[var(--accent-cyan)] transition-colors mt-2">
+                {completedCourses}
+              </div>
             </div>
           </MagicBentoCard>
 
@@ -195,8 +211,12 @@ export function StudentDashboard() {
               <Clock className="h-5 w-5" />
             </div>
             <div className="mt-5">
-              <div className="text-[10px] font-medium tracking-widest text-muted-foreground uppercase font-mono">Average Progress</div>
-              <div className="text-left text-3xl font-bold leading-tight text-foreground group-hover:text-[var(--accent-cyan)] transition-colors mt-2">{averageProgress}%</div>
+              <div className="text-[10px] font-medium tracking-widest text-muted-foreground uppercase font-mono">
+                Average Progress
+              </div>
+              <div className="text-left text-3xl font-bold leading-tight text-foreground group-hover:text-[var(--accent-cyan)] transition-colors mt-2">
+                {averageProgress}%
+              </div>
             </div>
           </MagicBentoCard>
         </MagicBentoSection>
@@ -297,7 +317,9 @@ export function StudentDashboard() {
               {upcomingMeetings.length === 0 ? (
                 <div className="text-center py-10 text-muted-foreground flex flex-col items-center justify-center gap-3">
                   <Video className="h-10 w-10 text-muted-foreground/30 group-hover/schedule:text-[var(--accent-violet)]/50 transition-colors" />
-                  <span className="text-[10px] font-mono uppercase tracking-widest">No upcoming classes.</span>
+                  <span className="text-[10px] font-mono uppercase tracking-widest">
+                    No upcoming classes.
+                  </span>
                 </div>
               ) : (
                 <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-border group-hover/schedule:before:bg-[var(--accent-violet)]/20 before:transition-colors">

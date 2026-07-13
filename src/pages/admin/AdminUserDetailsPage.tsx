@@ -1,6 +1,13 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
-import { ArrowLeft, BookOpen, User as UserIcon, Calendar, GraduationCap, Phone } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  User as UserIcon,
+  Calendar,
+  GraduationCap,
+  Phone,
+} from "lucide-react";
 import { managementService } from "@/infrastructure/admin/managementService";
 import { studentService, type StudentEnrollment } from "@/infrastructure/student/studentService";
 import type { User } from "@/domain/user";
@@ -20,18 +27,19 @@ export function AdminUserDetailsPage() {
     if (!userId) return;
     setIsLoading(true);
     try {
-      const [students, suspendedUsers, instructors, allCourses, studentEnrollments] = await Promise.all([
-        managementService.getStudents(),
-        managementService.getSuspendedUsers(),
-        managementService.getInstructors(),
-        managementService.getCourses(),
-        studentService.getStudentEnrollments(userId),
-      ]);
+      const [students, suspendedUsers, instructors, allCourses, studentEnrollments] =
+        await Promise.all([
+          managementService.getStudents(),
+          managementService.getSuspendedUsers(),
+          managementService.getInstructors(),
+          managementService.getCourses(),
+          studentService.getStudentEnrollments(userId),
+        ]);
 
-      const studentsWithRole = students.map(s => ({ ...s, role: s.role || "STUDENT" }));
-      const instructorsWithRole = instructors.map(i => ({ ...i, role: i.role || "INSTRUCTOR" }));
-      const suspendedWithRole = suspendedUsers.map(s => ({ ...s, role: s.role || "STUDENT" }));
-      
+      const studentsWithRole = students.map((s) => ({ ...s, role: s.role || "STUDENT" }));
+      const instructorsWithRole = instructors.map((i) => ({ ...i, role: i.role || "INSTRUCTOR" }));
+      const suspendedWithRole = suspendedUsers.map((s) => ({ ...s, role: s.role || "STUDENT" }));
+
       const allUsers = [...studentsWithRole, ...suspendedWithRole, ...instructorsWithRole];
       const foundUser = allUsers.find((u) => u.id === userId) as Student;
       setUser(foundUser || null);

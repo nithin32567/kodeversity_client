@@ -37,10 +37,10 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
   const discountVal = hasDiscount ? formatPrice(course.discountPrice!, course.currency) : null;
   const initials = course.instructor?.name
     ? course.instructor.name
-      .split(" ")
-      .map((n) => n[0])
-      .slice(0, 2)
-      .join("")
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
     : "IN";
 
   const accurateLessonsCount = course.modules
@@ -48,8 +48,11 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
     : course.lessonsCount || 0;
 
   let accurateDuration = course.modules?.reduce(
-    (acc, mod) => acc + (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) || 0),
-    0
+    (acc, mod) =>
+      acc +
+      (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) ||
+        0),
+    0,
   );
   if (!accurateDuration || accurateDuration === 0) {
     accurateDuration = course.totalDuration || 0;
@@ -59,9 +62,11 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
   const isAdmin = user?.role === "ADMIN";
 
   return (
-    <div className="group flex flex-col rounded-2xl hover:border hover:border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)]/80 hover:shadow-lg
-     hover:shadow-indigo-500/5 hover:-translate-y-0.5 transition duration-350 overflow-hidden">
-      { }
+    <div
+      className="group flex flex-col rounded-2xl hover:border hover:border-[var(--hairline)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)]/80 hover:shadow-lg
+     hover:shadow-indigo-500/5 hover:-translate-y-0.5 transition duration-350 overflow-hidden"
+    >
+      {}
       <div className="relative aspect-[26/10] bg-[var(--surface-2)] border-b border-[var(--hairline)] grid place-items-center overflow-hidden">
         {course.thumbnailUrl ? (
           <img
@@ -75,19 +80,19 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
           </div>
         )}
 
-        { }
+        {}
         <span className="absolute top-3 left-3 px-2 py-1 rounded-md text-[10px] font-bold tracking-wider bg-black/60 backdrop-blur-sm text-indigo-300 ring-1 ring-white/10 uppercase">
           {levelLabels[course.level] || course.level}
         </span>
 
-        { }
+        {}
         <span className="absolute bottom-3 right-3 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold bg-black/60 backdrop-blur-sm text-slate-300 ring-1 ring-white/10">
           <Clock className="h-3 w-3" />
           {formatDuration(accurateDuration)}
         </span>
       </div>
 
-      { }
+      {}
       <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
         <div className="space-y-2">
           <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-indigo-400 transition">
@@ -98,7 +103,7 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
           </p>
         </div>
 
-        { }
+        {}
         <div className="flex items-center gap-4 text-xs text-muted-foreground border-t border-[var(--hairline)] pt-3">
           <div className="flex items-center gap-1">
             <BookOpen className="h-3.5 w-3.5" />
@@ -112,7 +117,7 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
           )}
         </div>
 
-        { }
+        {}
         <div className="flex items-center justify-between border-t border-[var(--hairline)] pt-3">
           <div className="flex items-center gap-2">
             <div className="h-7 w-7 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-semibold grid place-items-center">
@@ -140,7 +145,7 @@ export function CourseCard({ course, onActionSuccess }: CourseCardProps) {
           </div>
         </div>
 
-        { }
+        {}
         <div className="pt-3 mt-1 border-t border-[var(--hairline)] flex gap-2">
           <Link
             to={`/admin/courses/view/${course.slug}`}
