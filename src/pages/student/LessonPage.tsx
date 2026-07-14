@@ -1,17 +1,6 @@
-import { Link, useNavigate, useParams, Navigate } from "react-router-dom";
-import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ArrowLeft,
-  Search,
-  ShoppingCart,
-  Bell,
-  Play,
-  Pause,
-  RotateCcw,
-  RotateCw,
-  Volume2,
-  Maximize,
-  Settings,
   ChevronDown,
   ChevronRight,
   CheckCircle2,
@@ -20,7 +9,6 @@ import {
   FileText,
   ListChecks,
   ClipboardList,
-  Folder,
   BarChart3,
   Bold,
   Italic,
@@ -28,205 +16,55 @@ import {
   ListOrdered,
   Award,
   CheckCheck,
+  Play,
+  TerminalSquare
 } from "lucide-react";
-import { findCourseBySlug } from "@/presentation/features/student-learning/components/data";
 import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
-import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
 import { PlaygroundWorkspace } from "@/presentation/features/playground";
-import type { Chapter, ChapterType } from "@/domain/course";
-import type { PlaygroundConfig } from "@/domain/playground";
-import { TerminalSquare } from "lucide-react";
 import { ModuleCompletionBanner } from "@/presentation/features/student-learning/components/ModuleCompletionBanner";
 
-type LessonStatus = "done" | "current" | "locked";
-
-export interface ChapterDisplay {
-  id: string;
-  title: string;
-  duration?: number;
-  durationInSeconds?: number | null;
-  status?: string;
-  type?: string;
-  videoUrl?: string;
-  documentUrl?: string;
-  playgroundConfig?: PlaygroundConfig;
-}
-
-const mockModules = [
-  {
-    id: "mod-1",
-    title: "Module 1: Introduction",
-    open: true,
-    done: 3,
-    total: 5,
-    chapters: [
-      {
-        id: "chap-1",
-        title: "Welcome to the course",
-        duration: 312,
-        status: "done" as LessonStatus,
-        type: "VIDEO" as ChapterType,
-        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-      },
-      {
-        id: "chap-2",
-        title: "Setup tools and environment",
-        duration: 465,
-        status: "done" as LessonStatus,
-        type: "DOCUMENT" as ChapterType,
-        documentUrl:
-          "https://raw.githubusercontent.com/mdn/beginner-html-site-scripted/master/index.html",
-      },
-      {
-        id: "chap-3",
-        title: "React basics",
-        duration: 1110,
-        status: "current" as LessonStatus,
-        type: "VIDEO" as ChapterType,
-        videoUrl: "https://www.w3schools.com/html/movie.mp4",
-      },
-      {
-        id: "chap-4",
-        title: "Interactive Lab Playground",
-        duration: 1500,
-        status: "locked" as LessonStatus,
-        type: "PLAYGROUND" as ChapterType,
-        playgroundConfig: {
-          pg: "6659f131a9de4f16462740bc",
-          pgname: "1VMPG",
-          playground: "ubuntu2404n1",
-          difficulty: "easy" as const,
-          maxScore: 100,
-        },
-      },
-      {
-        id: "chap-5",
-        title: "Components and Props",
-        duration: 940,
-        status: "locked" as LessonStatus,
-        type: "VIDEO" as ChapterType,
-        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-      },
-    ],
-  },
-  {
-    id: "mod-2",
-    title: "Module 2: Components Deep Dive",
-    open: true,
-    done: 0,
-    total: 3,
-    chapters: [
-      {
-        id: "chap-6",
-        title: "State and Lifecycle",
-        duration: 990,
-        status: "locked" as LessonStatus,
-        type: "VIDEO" as ChapterType,
-        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-      },
-      {
-        id: "chap-7",
-        title: "Docker Engine Lab",
-        duration: 1800,
-        status: "locked" as LessonStatus,
-        type: "PLAYGROUND" as ChapterType,
-        playgroundConfig: {
-          pg: "665afc8a8b1a8d052a234f9a",
-          pgname: "DOCKERPG",
-          playground: "ubuntu2404n1-docker",
-          difficulty: "medium" as const,
-          maxScore: 150,
-        },
-      },
-      {
-        id: "chap-8",
-        title: "Conditional Rendering",
-        duration: 685,
-        status: "locked" as LessonStatus,
-        type: "VIDEO" as ChapterType,
-        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-      },
-    ],
-  },
-];
-
-const tabs = ["Overview", "Notes", "Resources", "Q&A", "Reviews (2.1K)"];
+import { useLessonPage } from "./lesson-page/useLessonPage";
+import { ActionTile, ProgressTile, Stat } from "./lesson-page/components/LessonTiles";
+import { PlaygroundLaunchGate } from "./lesson-page/components/PlaygroundLaunchGate";
+import { tabs } from "./lesson-page/mockData";
+import { formatDuration } from "./lesson-page/utils";
 
 export function LessonPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const { data: realCourse, isLoading: isCourseLoading } = useCourse(slug || "mock-course");
-  const [activeTab, setActiveTab] = useState("Overview");
-  const [open, setOpen] = useState<Record<number, boolean>>({
-    0: true,
-    1: true,
-    2: false,
-    3: false,
-    4: false,
-  });
+  const {
+    slug,
+    isCourseLoading,
+    isContentLoading,
+    courseId,
+    activeTab,
+    setActiveTab,
+    open,
+    setOpen,
+    resolvedModules,
+    courseTitle,
+    allChapters,
+    selectedChapterId,
+    setSelectedChapterId,
+    activeChapter,
+    isVideoLoading,
+    activeVideoUrl,
+    ytContainerRef,
+    playgroundLaunched,
+    setPlaygroundLaunched,
+    completedChapters,
+    completedModuleId,
+    setCompletedModuleId,
+    markChapterComplete,
+    handleNextLesson,
+    totalChapters,
+    completedCount,
+    progressPercentage,
+    totalDurationStr,
+  } = useLessonPage();
+
   const glow = useAccentRgb();
 
-  const resolvedModules =
-    realCourse?.modules && realCourse.modules.length > 0 ? realCourse.modules : mockModules;
-  const courseTitle = realCourse?.title || "Course Player";
-  const courseId = realCourse?.id || "mock-course-id";
-
-  const allChapters = (resolvedModules as { chapters?: unknown[] }[]).flatMap(
-    (m) => (m.chapters ?? []) as ChapterDisplay[],
-  );
-
-  const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
-  const activeChapter =
-    allChapters.find((c) => c.id === selectedChapterId) || allChapters[0] || null;
-
-  const [playgroundLaunched, setPlaygroundLaunched] = useState(false);
-
-  const prevChapterIdRef = useState<string | null>(null);
-  if (prevChapterIdRef[0] !== (activeChapter?.id ?? null)) {
-    prevChapterIdRef[1](activeChapter?.id ?? null);
-    if (playgroundLaunched) setPlaygroundLaunched(false);
-  }
-
-  const [completedChapters, setCompletedChapters] = useState<Set<string>>(
-    new Set(["chap-1", "chap-2"]),
-  );
-
-  // Tracks which module just had its final lesson completed → triggers banner
-  const [completedModuleId, setCompletedModuleId] = useState<string | null>(null);
-
-  const markChapterComplete = (id: string) => {
-    setCompletedChapters((prev) => {
-      const next = new Set(prev);
-      next.add(id);
-      return next;
-    });
-
-    // Check if this chapter is the last in its module → show completion banner
-    for (const mod of resolvedModules as { id: string; chapters?: { id: string }[] }[]) {
-      const chapters = mod.chapters ?? [];
-      if (chapters.length > 0 && chapters[chapters.length - 1].id === id) {
-        setCompletedModuleId(mod.id);
-        break;
-      }
-    }
-  };
-
-  const handleNextLesson = () => {
-    if (!activeChapter) return;
-    const currentIdx = allChapters.findIndex((c) => c.id === activeChapter.id);
-    if (currentIdx !== -1 && currentIdx < allChapters.length - 1) {
-      setSelectedChapterId(allChapters[currentIdx + 1].id);
-    }
-  };
-
-  const formatDuration = (seconds: number | null | undefined) => {
-    if (!seconds) return "00:00";
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  if (isCourseLoading) {
+  if (isCourseLoading || (courseId && isContentLoading)) {
     return (
       <main className="relative flex-1 w-full overflow-hidden bg-background flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
@@ -238,16 +76,6 @@ export function LessonPage() {
       </main>
     );
   }
-
-  const totalChapters = allChapters.length;
-  const completedCount = allChapters.filter((c) => completedChapters.has(c.id)).length;
-  const progressPercentage =
-    totalChapters > 0 ? Math.round((completedCount / totalChapters) * 100) : 0;
-  const totalDurationSeconds = allChapters.reduce(
-    (acc, ch) => acc + (ch.durationInSeconds || ch.duration || 0),
-    0,
-  );
-  const totalDurationStr = `${Math.floor(totalDurationSeconds / 3600)}h ${Math.floor((totalDurationSeconds % 3600) / 60)}m`;
 
   return (
     <main className="relative flex-1 w-full overflow-hidden bg-background py-8 md:py-12">
@@ -265,9 +93,7 @@ export function LessonPage() {
           glowColor={glow}
           spotlightRadius={400}
         >
-          {}
           <div className="flex flex-col gap-6">
-            {}
             {activeChapter ? (
               <>
                 {activeChapter.type === "PLAYGROUND" ? (
@@ -375,19 +201,20 @@ export function LessonPage() {
                     enableMagnetism={false}
                   >
                     <div className="relative aspect-[16/9] w-full bg-[#07060f] flex items-center justify-center">
-                      {activeChapter.videoUrl ? (
-                        activeChapter.videoUrl.includes("youtube.com") ||
-                        activeChapter.videoUrl.includes("youtu.be") ? (
-                          <iframe
-                            src={`https://www.youtube.com/embed/${activeChapter.videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/)?.[1]}?autoplay=0&rel=0&controls=1`}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            className="w-full h-full border-0"
-                            title={activeChapter.title}
-                          />
+                      {isVideoLoading ? (
+                        <div className="flex flex-col items-center justify-center space-y-4">
+                          <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+                          <p className="text-sm text-muted-foreground animate-pulse">
+                            Loading video...
+                          </p>
+                        </div>
+                      ) : activeVideoUrl ? (
+                        activeVideoUrl.includes("youtube.com") ||
+                        activeVideoUrl.includes("youtu.be") ? (
+                          <div ref={ytContainerRef} className="w-full h-full" />
                         ) : (
                           <video
-                            src={activeChapter.videoUrl}
+                            src={activeVideoUrl}
                             controls
                             className="w-full h-full object-contain"
                           />
@@ -449,7 +276,7 @@ export function LessonPage() {
               </div>
             )}
 
-            {/* Module Completion Banner — fires when the final lesson of a module finishes */}
+            {/* Module Completion Banner */}
             {completedModuleId &&
               (() => {
                 const modList = resolvedModules as { id: string; title: string }[];
@@ -467,7 +294,6 @@ export function LessonPage() {
                 ) : null;
               })()}
 
-            {}
             <div className="flex flex-wrap items-center gap-x-7 gap-y-2 border-b border-border">
               {tabs.map((t) => (
                 <button
@@ -487,7 +313,6 @@ export function LessonPage() {
               ))}
             </div>
 
-            {}
             <div className="grid items-stretch gap-5 md:grid-cols-2">
               <MagicBentoCard
                 className="flex h-full flex-col rounded-2xl border border-border bg-card p-5"
@@ -571,7 +396,6 @@ export function LessonPage() {
               </MagicBentoCard>
             </div>
 
-            {}
             <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <ActionTile
                 icon={<FileText className="h-4 w-4 text-emerald-400" />}
@@ -595,7 +419,6 @@ export function LessonPage() {
               <ProgressTile />
             </div>
 
-            {}
             <MagicBentoCard
               className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4"
               glowColor={glow}
@@ -621,9 +444,7 @@ export function LessonPage() {
             </MagicBentoCard>
           </div>
 
-          {}
           <aside className="flex flex-col gap-4">
-            {}
             <MagicBentoCard
               className="rounded-2xl border border-border bg-card px-4 py-3"
               glowColor={glow}
@@ -667,7 +488,6 @@ export function LessonPage() {
                     })[];
                   }[]
                 ).map((m, i) => {
-                  // Per-module stats
                   const modChapters = (m.chapters ?? []) as ((typeof allChapters)[0] & {
                     isLocked?: boolean;
                     progress?: number;
@@ -685,7 +505,6 @@ export function LessonPage() {
                       key={m.id ?? m.title}
                       className={`rounded-lg border bg-background/30 transition-all ${isModuleLocked ? "border-border/50 opacity-60" : "border-border"}`}
                     >
-                      {/* Module accordion header */}
                       <button
                         onClick={() => !isModuleLocked && setOpen((s) => ({ ...s, [i]: !s[i] }))}
                         disabled={isModuleLocked}
@@ -704,7 +523,6 @@ export function LessonPage() {
                           )}
                           <span className="truncate">{m.title}</span>
                         </span>
-                        {/* Per-module mini progress pill */}
                         {!isModuleLocked && (
                           <span className="ml-2 shrink-0 text-[10px] text-muted-foreground tabular-nums">
                             {modCompleted}/{modTotal}
@@ -712,7 +530,6 @@ export function LessonPage() {
                         )}
                       </button>
 
-                      {/* Per-module progress bar */}
                       {!isModuleLocked && modTotal > 0 && (
                         <div className="mx-3 mb-1 h-0.5 w-[calc(100%-1.5rem)] overflow-hidden rounded-full bg-foreground/10">
                           <div
@@ -726,7 +543,6 @@ export function LessonPage() {
                         <ul className="border-t border-border px-2 py-2 space-y-1">
                           {modChapters.map((ch, idx) => {
                             const isCurrent = activeChapter?.id === ch.id;
-                            // A chapter is "completed" if it's in the set, OR if backend progress >= 90
                             const isCompleted =
                               completedChapters.has(ch.id) ||
                               (ch.progress != null && ch.progress >= 90);
@@ -748,7 +564,6 @@ export function LessonPage() {
                                   }`}
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
-                                    {/* Leading icon: locked > completed > current > type-based */}
                                     {isChapterLocked ? (
                                       <Lock className="h-4 w-4 shrink-0 text-muted-foreground/50" />
                                     ) : isCompleted ? (
@@ -769,7 +584,6 @@ export function LessonPage() {
                                     </span>
                                   </span>
 
-                                  {/* Trailing: either progress bar or duration */}
                                   {isCompleted ? (
                                     <span className="ml-2 shrink-0 inline-flex h-4 w-4 place-items-center justify-center rounded-full bg-emerald-500/15">
                                       <CheckCircle2 className="h-2.5 w-2.5 text-emerald-400" />
@@ -823,211 +637,5 @@ export function LessonPage() {
         </MagicBentoSection>
       </div>
     </main>
-  );
-}
-
-function ActionTile({
-  icon,
-  title,
-  desc,
-  cta,
-  to,
-  params,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-  cta: string;
-  to?: string;
-  params?: Record<string, string>;
-}) {
-  const glow = useAccentRgb();
-  const btnClass =
-    "mt-4 flex items-center justify-center gap-2 rounded-full border border-[var(--accent-cyan)]/30 bg-[var(--accent-cyan)]/5 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--accent-cyan)] transition-colors hover:bg-[var(--accent-cyan)]/20 hover:text-white";
-  return (
-    <MagicBentoCard
-      className="group relative flex h-full flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:border-[var(--accent-cyan)] hover:shadow-[0_0_30px_-10px_var(--accent-cyan)]"
-      glowColor={glow}
-      enableStars={false}
-      enableMagnetism={false}
-    >
-      <div className="flex items-center gap-2 text-sm font-bold font-mono uppercase tracking-wide">
-        {icon} {title}
-      </div>
-      <p className="mt-2 flex-1 text-[11px] text-muted-foreground leading-relaxed">{desc}</p>
-      {to ? (
-        <Link to={to as string} className={btnClass}>
-          <Folder className="h-3.5 w-3.5" /> {cta}
-        </Link>
-      ) : (
-        <button className={btnClass}>
-          <Folder className="h-3.5 w-3.5" /> {cta}
-        </button>
-      )}
-    </MagicBentoCard>
-  );
-}
-
-function ProgressTile() {
-  const glow = useAccentRgb();
-  return (
-    <MagicBentoCard
-      className="group relative flex h-full flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:border-[var(--accent-violet)] hover:shadow-[0_0_30px_-10px_var(--accent-violet)]"
-      glowColor={glow}
-      enableStars={false}
-      enableMagnetism={false}
-    >
-      <div className="text-sm font-bold font-mono uppercase tracking-wide text-foreground">
-        Lesson Progress
-      </div>
-      <div className="mt-2 flex flex-1 items-center gap-3">
-        <div
-          className="relative grid h-16 w-16 shrink-0 place-items-center rounded-full"
-          style={{
-            background:
-              "conic-gradient(var(--accent-violet) 0deg 270deg, color-mix(in oklab, var(--foreground) 10%, transparent) 270deg 360deg)",
-          }}
-        >
-          <div className="grid h-12 w-12 place-items-center rounded-full bg-card text-center border border-[var(--accent-violet)]/20 shadow-[0_0_15px_-5px_var(--accent-violet)]">
-            <span className="text-[11px] font-bold leading-none text-[var(--accent-violet)] font-mono">
-              75%
-            </span>
-            <span className="text-[7px] font-mono tracking-widest uppercase leading-tight text-muted-foreground mt-0.5">
-              Completed
-            </span>
-          </div>
-        </div>
-        <ul className="flex-1 space-y-1.5 text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
-          <li className="flex items-center gap-2">
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />{" "}
-            <span>3 Completed</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <PlayCircle className="h-3.5 w-3.5 shrink-0 text-[var(--accent-cyan)] animate-pulse" />{" "}
-            <span>1 In Progress</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" /> <span>1 Locked</span>
-          </li>
-        </ul>
-      </div>
-    </MagicBentoCard>
-  );
-}
-
-function Stat({ value, label, icon }: { value: string; label: string; icon?: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-border bg-card/40 p-2 text-center">
-      <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-foreground font-mono uppercase">
-        {icon}
-        {value}
-      </div>
-      <div className="mt-1 text-[9px] font-mono tracking-widest uppercase text-muted-foreground">
-        {label}
-      </div>
-    </div>
-  );
-}
-
-const DIFFICULTY_META = {
-  easy: { label: "Easy", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-  medium: {
-    label: "Medium",
-    color: "text-amber-400",
-    bg: "bg-amber-500/10 border-amber-500/20",
-  },
-  hard: { label: "Hard", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
-  expert: {
-    label: "Expert",
-    color: "text-purple-400",
-    bg: "bg-purple-500/10 border-purple-500/20",
-  },
-};
-
-function PlaygroundLaunchGate({
-  chapter,
-  onLaunch,
-}: {
-  chapter: ChapterDisplay;
-  onLaunch: () => void;
-}) {
-  const diff = chapter.playgroundConfig?.difficulty ?? "easy";
-  const meta = DIFFICULTY_META[diff] ?? DIFFICULTY_META.easy;
-  const maxScore = chapter.playgroundConfig?.maxScore ?? 100;
-
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#07060f] relative overflow-hidden">
-      {}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-[var(--accent-cyan)]/10 blur-[100px]" />
-        <div className="absolute top-1/4 right-1/4 h-[200px] w-[200px] rounded-full bg-[var(--accent-violet)]/10 blur-[80px]" />
-      </div>
-
-      {}
-      <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage:
-            "linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-        }}
-      />
-
-      <div className="relative z-10 flex flex-col items-center text-center max-w-lg w-full">
-        {}
-        <div className="relative mb-6">
-          <div className="h-20 w-20 rounded-2xl bg-[var(--accent-cyan)]/10 border border-[var(--accent-cyan)]/20 flex items-center justify-center shadow-[0_0_40px_-8px_var(--accent-cyan)]">
-            <TerminalSquare className="h-9 w-9 text-[var(--accent-cyan)]" />
-          </div>
-          <div className="absolute -inset-1 rounded-2xl border border-[var(--accent-cyan)]/20 animate-ping" />
-        </div>
-
-        {}
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent-cyan)]/80 mb-2">
-          Interactive Lab
-        </p>
-        <h2 className="text-2xl font-bold text-foreground mb-2 font-mono uppercase tracking-tight">
-          {chapter.title}
-        </h2>
-        <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-          This lesson includes a live cloud sandbox environment. Click below to provision your
-          isolated workspace — it will be ready in about 60 seconds.
-        </p>
-
-        {}
-        <div className="flex items-center gap-3 mb-8 flex-wrap justify-center">
-          <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold ${meta.bg} ${meta.color}`}
-          >
-            <BarChart3 className="h-3 w-3" />
-            {meta.label}
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-card text-xs font-medium text-muted-foreground">
-            <Award className="h-3 w-3 text-amber-400" />
-            Up to {maxScore} pts
-          </span>
-          {chapter.duration && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-card text-xs font-medium text-muted-foreground">
-              <PlayCircle className="h-3 w-3 text-sky-400" />~{Math.ceil(chapter.duration / 60)} min
-            </span>
-          )}
-        </div>
-
-        {}
-        <button
-          id="launch-playground-btn"
-          onClick={onLaunch}
-          className="group relative inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-violet)] text-background font-bold text-[11px] uppercase tracking-[0.2em] shadow-[0_0_20px_var(--accent-cyan)] hover:scale-[1.03] active:scale-[0.98] transition-all"
-        >
-          <TerminalSquare className="h-4 w-4" />
-          Launch Lab Environment
-          <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-        </button>
-
-        <p className="mt-4 text-[11px] text-muted-foreground/60">
-          Your environment will be automatically destroyed when you leave this lesson.
-        </p>
-      </div>
-    </div>
   );
 }

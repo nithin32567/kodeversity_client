@@ -14,6 +14,11 @@ export const courseApi = baseApi.injectEndpoints({
       providesTags: (_result, _err, slug) => [{ type: "Course", id: slug }],
     }),
 
+    getCourseContent: build.query<unknown, string>({
+      query: (courseId) => ({ url: endpoints.course.content(courseId) }),
+      providesTags: (_result, _err, courseId) => [{ type: "Course", id: `content-${courseId}` }],
+    }),
+
     getCourseLessons: build.query<Lesson[], string>({
       query: (courseSlug) => ({ url: endpoints.course.lessons(courseSlug) }),
       providesTags: (_result, _err, slug) => [{ type: "Course", id: `${slug}-lessons` }],
@@ -38,4 +43,5 @@ export const {
   useGetCourseLessonsQuery,
   useGetLessonByIdQuery,
   useGetChapterVideoQuery,
+  useGetCourseContentQuery,
 } = courseApi;

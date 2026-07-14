@@ -82,7 +82,7 @@ export function StudentLiveClassesPage() {
 
   return (
     <main className="relative flex-1 w-full overflow-hidden bg-background py-8 md:py-12">
-      <div className="relative mx-auto max-w-7xl px-4 md:px-6 space-y-6 md:space-y-8">
+      <div className="relative w-full px-4 md:px-6 space-y-6 md:space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border/60">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground font-mono uppercase flex items-center gap-3">

@@ -106,7 +106,7 @@ export function StudentBatchesPage() {
 
   return (
     <main className="relative flex-1 w-full overflow-hidden bg-background py-8 md:py-12">
-      <div className="relative mx-auto max-w-7xl px-4 md:px-6 space-y-6 md:space-y-8">
+      <div className="relative w-full px-4 md:px-6 space-y-6 md:space-y-8">
         {batches.length === 0 ? (
           <article className="group relative flex flex-col rounded-2xl border border-dashed border-border bg-card/10 p-16 text-center transition-all hover:border-[var(--accent-cyan)]/50 hover:bg-[var(--accent-cyan)]/5 items-center justify-center">
             <Layers className="h-12 w-12 text-muted-foreground/45 mb-4 group-hover:text-[var(--accent-cyan)]/60 transition-colors" />

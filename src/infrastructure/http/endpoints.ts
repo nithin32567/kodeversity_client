@@ -24,6 +24,7 @@ export const endpoints = {
     list: `${COURSE_URL}/api/courses`,
     levels: `${COURSE_URL}/api/courses/levels`,
     bySlug: (slug: string) => `${COURSE_URL}/api/courses/${slug}`,
+    content: (courseId: string) => `${COURSE_URL}/api/v1/courses/${courseId}/content`,
     lessons: (slug: string) => `${COURSE_URL}/api/courses/${slug}/lessons`,
     lessonById: (courseSlug: string, lessonId: string) =>
       `${COURSE_URL}/api/courses/${courseSlug}/lessons/${lessonId}`,
