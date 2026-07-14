@@ -98,10 +98,13 @@ export const endpoints = {
     deleteUser: (id: string) => `${AUTH_URL}/api/admin/users/${id}`,
     // Curriculum gating
     pendingUnlockRequests: `${COURSE_URL}/api/v1/modules/pending-requests`,
+    allUnlockRequests: `${COURSE_URL}/api/v1/modules/unlock-requests`,
     approveUnlockRequest: (requestId: string) =>
       `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}/approve`,
     rejectUnlockRequest: (requestId: string) =>
       `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}/reject`,
+    patchUnlockRequest: (requestId: string) =>
+      `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}`,
     accessOverride: (enrollmentId: string) =>
       `${COURSE_URL}/api/v1/enrollments/${enrollmentId}/access-override`,
   },
@@ -123,10 +126,13 @@ export const endpoints = {
 
     // Curriculum gating — instructor-facing unlock requests
     pendingUnlockRequests: `${COURSE_URL}/api/v1/modules/pending-requests`,
+    myUnlockRequests: `${COURSE_URL}/api/v1/modules/unlock-requests/instructor`,
     approveUnlockRequest: (requestId: string) =>
       `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}/approve`,
     rejectUnlockRequest: (requestId: string) =>
       `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}/reject`,
+    patchUnlockRequest: (requestId: string) =>
+      `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}`,
   },
   playground: {
     generateId: (pg: string, pgname: string, playground: string, from: string, fromId: string) =>

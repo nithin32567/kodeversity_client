@@ -21,6 +21,10 @@ export interface UnlockRequest {
   courseName: string;
   moduleId: string;
   moduleName: string;
+  /** ID of the instructor assigned to this student/course */
+  assignedInstructorId?: string;
+  /** Display name of the assigned instructor */
+  assignedInstructorName?: string;
   status: UnlockRequestStatus;
   createdAt: string;
 }
@@ -40,8 +44,21 @@ export interface AccessOverridePayload {
 
 export const curriculumApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    /** Admin: returns ONLY pending requests (legacy endpoint kept for compat) */
     getPendingUnlockRequests: build.query<UnlockRequest[], void>({
       query: () => ({ url: endpoints.admin.pendingUnlockRequests }),
+      providesTags: ["UnlockRequests"],
+    }),
+
+    /** Admin: returns ALL requests across the platform (all statuses) */
+    getAllUnlockRequests: build.query<UnlockRequest[], void>({
+      query: () => ({ url: endpoints.admin.allUnlockRequests }),
+      providesTags: ["UnlockRequests"],
+    }),
+
+    /** Instructor: returns requests scoped to the authenticated instructor */
+    getInstructorUnlockRequests: build.query<UnlockRequest[], void>({
+      query: () => ({ url: endpoints.instructor.myUnlockRequests }),
       providesTags: ["UnlockRequests"],
     }),
 
@@ -57,6 +74,19 @@ export const curriculumApi = baseApi.injectEndpoints({
       query: (requestId) => ({
         url: endpoints.admin.rejectUnlockRequest(requestId),
         method: "POST",
+      }),
+      invalidatesTags: ["UnlockRequests"],
+    }),
+
+    /** Generic PATCH — update request status to APPROVED or REJECTED */
+    patchUnlockRequest: build.mutation<
+      void,
+      { requestId: string; status: UnlockRequestStatus }
+    >({
+      query: ({ requestId, status }) => ({
+        url: endpoints.admin.patchUnlockRequest(requestId),
+        method: "PATCH",
+        body: { status },
       }),
       invalidatesTags: ["UnlockRequests"],
     }),
@@ -85,8 +115,11 @@ export const curriculumApi = baseApi.injectEndpoints({
 
 export const {
   useGetPendingUnlockRequestsQuery,
+  useGetAllUnlockRequestsQuery,
+  useGetInstructorUnlockRequestsQuery,
   useApproveUnlockRequestMutation,
   useRejectUnlockRequestMutation,
+  usePatchUnlockRequestMutation,
   useSetAccessOverrideMutation,
   useRequestModuleUnlockMutation,
 } = curriculumApi;

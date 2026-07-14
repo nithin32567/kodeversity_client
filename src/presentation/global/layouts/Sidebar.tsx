@@ -29,6 +29,7 @@ import {
   ShieldOff,
   Terminal,
   Archive,
+  Inbox,
 } from "lucide-react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
 
@@ -40,11 +41,11 @@ export type NavItem = {
 
 export const adminManage: NavItem[] = [
   { label: "Courses", icon: BookOpen, to: "/admin/courses" },
-
   { label: "Playgrounds", icon: Terminal, to: "/admin/playground" },
   { label: "Students", icon: Users, to: "/admin/students" },
   { label: "Instructors", icon: GraduationCap, to: "/admin/instructors" },
   { label: "Batches", icon: Layers, to: "/admin/batches" },
+  { label: "Unlock Requests", icon: Inbox, to: "/admin/unlock-requests" },
   { label: "Categories", icon: FolderKanban },
   { label: "Enrollments", icon: ClipboardList, to: "/admin/enrollments" },
   { label: "Certificates", icon: Award },
@@ -74,6 +75,7 @@ export const instructorContent: NavItem[] = [
   { label: "My Courses", icon: BookOpen, to: "/instructor/courses" },
   { label: "My Batches", icon: Layers, to: "/instructor/batches" },
   { label: "Live Classes", icon: Video, to: "/instructor/meetings" },
+  { label: "Unlock Requests", icon: Inbox, to: "/instructor/unlock-requests" },
 ];
 export const instructorTools: NavItem[] = [
   { label: "Assignments", icon: FileText },
