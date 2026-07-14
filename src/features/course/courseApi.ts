@@ -25,6 +25,9 @@ export const courseApi = baseApi.injectEndpoints({
       }),
       providesTags: (_result, _err, { lessonId }) => [{ type: "Course", id: `lesson-${lessonId}` }],
     }),
+    getChapterVideo: build.query<{ success: boolean; videoUrl: string }, string>({
+      query: (chapterId) => ({ url: endpoints.course.fetchChapterVideo(chapterId) }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -34,4 +37,5 @@ export const {
   useGetCourseBySlugQuery,
   useGetCourseLessonsQuery,
   useGetLessonByIdQuery,
+  useGetChapterVideoQuery,
 } = courseApi;

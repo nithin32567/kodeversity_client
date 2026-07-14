@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,

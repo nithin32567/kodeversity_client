@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
+import { useGetChapterVideoQuery } from "@/features/course/courseApi";
 import {
   ArrowLeft,
   ChevronDown,
@@ -17,13 +18,26 @@ import {
   Play,
 } from "lucide-react";
 import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
+import { CustomContextMenu } from "@/components/ui/CustomContextMenu";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
 import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
 import { PlaygroundWorkspace } from "@/presentation/features/playground";
 import type { ChapterType } from "@/domain/course";
 import type { PlaygroundConfig } from "@/domain/playground";
 import { TerminalSquare } from "lucide-react";
+import { usePageProtection } from "@/hooks/usePageProtection";
+import { useExtensionGuard } from "@/components/course-preview/ExtensionGuard";
+import { useYouTubePlayer, formatDuration } from "@/components/course-preview/useYouTubePlayer";
+import {
+  SecurityAlertOverlay,
+  ChapterCompletedOverlay,
+  VideoProgressBar,
+  VideoPlaceholder,
+  LoadingSpinner,
+  InteractionShield,
+} from "@/components/course-preview/PlayerComponents";
 
+// ── Types ──────────────────────────────────────────────────────────────────────
 export interface ChapterDisplay {
   id: string;
   title: string;
@@ -36,14 +50,29 @@ export interface ChapterDisplay {
   playgroundConfig?: PlaygroundConfig;
 }
 
-const tabs = ["Overview", "Notes", "Resources", "Q&A", "Reviews (2.1K)"];
+const TABS = ["Overview", "Notes", "Resources", "Q&A", "Reviews (2.1K)"];
 
+function formatCourseDuration(seconds: number): string {
+  if (!seconds) return "0s";
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  const parts = [];
+  if (h > 0) parts.push(`${h}h`);
+  if (m > 0 || h > 0) parts.push(`${m}m`);
+  parts.push(`${s}s`);
+  return parts.join(" ");
+}
+
+// ── Main Page ──────────────────────────────────────────────────────────────────
 export function AdminPreviewCoursePage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: realCourse, isLoading: isCourseLoading } = useCourse(slug || "");
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
   const backLink = isAdmin ? `/admin/courses/${slug || ""}` : `/instructor/courses/${slug || ""}`;
+  const glow = useAccentRgb();
+
   const [activeTab, setActiveTab] = useState("Overview");
   const [open, setOpen] = useState<Record<number, boolean>>({
     0: true,
@@ -52,59 +81,91 @@ export function AdminPreviewCoursePage() {
     3: false,
     4: false,
   });
-  const glow = useAccentRgb();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
+  const [completedChapters, setCompletedChapters] = useState<Set<string>>(new Set());
 
-  const resolvedModules =
-    realCourse?.modules && realCourse.modules.length > 0 ? realCourse.modules : [];
+  const playerContainerRef = useRef<HTMLDivElement>(null);
+
+  usePageProtection();
+
+  const { isExtensionDetected, reset: resetExtensionGuard } = useExtensionGuard(playerContainerRef);
+
+  const resolvedModules = realCourse?.modules?.length ? realCourse.modules : [];
   const courseTitle = realCourse?.title || "Course Player";
   const courseId = realCourse?.id || "mock-course-id";
-
   const allChapters = (resolvedModules as { chapters?: unknown[] }[]).flatMap(
     (m) => m.chapters ?? [],
   ) as ChapterDisplay[];
 
-  const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
   const activeChapter =
     allChapters.find((c) => c.id === selectedChapterId) || allChapters[0] || null;
 
-  const [completedChapters, setCompletedChapters] = useState<Set<string>>(new Set());
+  const { data: videoData, isFetching: isVideoLoading } = useGetChapterVideoQuery(
+    activeChapter?.id || "",
+    {
+      skip: !activeChapter?.id || activeChapter.type !== "VIDEO",
+    },
+  );
+  const activeVideoUrl = !isVideoLoading && videoData?.success ? videoData.videoUrl : null;
 
-  const markChapterComplete = (id: string) => {
-    setCompletedChapters((prev) => {
-      const next = new Set(prev);
-      next.add(id);
-      return next;
-    });
-  };
+  const markChapterComplete = (id: string) =>
+    setCompletedChapters((prev) => new Set([...prev, id]));
 
   const handleNextLesson = () => {
     if (!activeChapter) return;
-    const currentIdx = allChapters.findIndex((c) => c.id === activeChapter.id);
-    if (currentIdx !== -1 && currentIdx < allChapters.length - 1) {
-      setSelectedChapterId(allChapters[currentIdx + 1].id);
+    const idx = allChapters.findIndex((c) => c.id === activeChapter.id);
+    if (idx !== -1 && idx < allChapters.length - 1) {
+      setSelectedChapterId(allChapters[idx + 1].id);
+      ytHooks.resetVideoEnded();
     }
   };
 
-  const formatDuration = (seconds: number | null | undefined) => {
-    if (!seconds) return "00:00";
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  const ytHooks = useYouTubePlayer(activeVideoUrl, activeChapter?.id ?? null, markChapterComplete);
+  const {
+    ytContainerRef,
+    ytPlayerRef,
+    isPlaying,
+    videoEnded,
+    currentTime,
+    duration,
+    resetVideoEnded,
+  } = ytHooks;
+
+  const toggleFullscreen = async () => {
+    if (!document.fullscreenElement) {
+      await playerContainerRef.current?.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      await document.exitFullscreen();
+      setIsFullscreen(false);
+    }
   };
 
-  if (isCourseLoading) {
-    return (
-      <main className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-muted-foreground animate-pulse">
-            Loading course player workspace...
-          </p>
-        </div>
-      </main>
-    );
-  }
+  const togglePlay = () => {
+    const p = ytPlayerRef.current;
+    if (!p) return;
+    if (isPlaying) {
+      p.pauseVideo();
+    } else {
+      p.playVideo();
+    }
+  };
 
+  const handleSeek = (val: number) => {
+    ytPlayerRef.current?.seekTo(val, true);
+  };
+
+  const handleRewatch = () => {
+    resetVideoEnded();
+    const p = ytPlayerRef.current;
+    if (p) {
+      p.seekTo(0, true);
+      p.playVideo();
+    }
+  };
+
+  // ── Stats ──────────────────────────────────────────────────────────────────
   const totalChapters = allChapters.length;
   const completedCount = allChapters.filter((c) => completedChapters.has(c.id)).length;
   const progressPercentage =
@@ -113,21 +174,24 @@ export function AdminPreviewCoursePage() {
     (acc, ch) => acc + (ch.durationInSeconds || ch.duration || 0),
     0,
   );
-  const formatCourseDuration = (seconds: number) => {
-    if (!seconds) return "0s";
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    const parts = [];
-    if (h > 0) parts.push(`${h}h`);
-    if (m > 0 || h > 0) parts.push(`${m}m`);
-    parts.push(`${s}s`);
-    return parts.join(" ");
-  };
   const totalDurationStr = formatCourseDuration(totalDurationSeconds);
+
+  const isYouTubeUrl = (url: string) => url.includes("youtube.com") || url.includes("youtu.be");
+  const hasNext = activeChapter
+    ? allChapters.findIndex((c) => c.id === activeChapter.id) < allChapters.length - 1
+    : false;
+
+  if (isCourseLoading) {
+    return (
+      <main className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <LoadingSpinner label="Loading course player workspace..." />
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background text-foreground">
+      <CustomContextMenu isAdmin={isAdmin} />
       <div className="mx-auto max-w-[1600px] px-6 py-6">
         <Link
           to={backLink}
@@ -141,7 +205,7 @@ export function AdminPreviewCoursePage() {
           glowColor={glow}
           spotlightRadius={400}
         >
-          {/* Main content area */}
+          {/* ── Main Content ── */}
           <div className="flex flex-col gap-6">
             {/* Player / Content Pane */}
             {activeChapter ? (
@@ -153,7 +217,7 @@ export function AdminPreviewCoursePage() {
                         config={activeChapter.playgroundConfig}
                         from="course"
                         fromId={courseId}
-                        onStop={() => { }}
+                        onStop={() => {}}
                         onMarkComplete={() => markChapterComplete(activeChapter.id)}
                       />
                     ) : (
@@ -166,143 +230,78 @@ export function AdminPreviewCoursePage() {
                     )}
                   </div>
                 ) : activeChapter.type === "DOCUMENT" ? (
-                  <div className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col p-6 space-y-4 min-h-[450px]">
-                    <div className="flex items-center justify-between border-b border-border pb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="grid h-10 w-10 place-items-center rounded-lg bg-amber-500/10">
-                          <FileText className="h-5 w-5 text-amber-500" />
-                        </div>
-                        <div>
-                          <h2 className="text-lg font-semibold text-foreground">
-                            {activeChapter.title}
-                          </h2>
-                          <p className="text-xs text-muted-foreground">
-                            Document Reading Assignment
-                          </p>
-                        </div>
-                      </div>
-                      {activeChapter.documentUrl && (
-                        <a
-                          href={activeChapter.documentUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-primary-soft px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/15 transition"
-                        >
-                          Open in Tab
-                        </a>
-                      )}
-                    </div>
-                    <div className="flex-1 overflow-y-auto max-h-[500px] text-sm text-foreground/85 leading-relaxed space-y-4 pr-2">
-                      <p className="font-semibold text-foreground">Lesson Reference Information:</p>
-                      <p>
-                        This lesson contains documentation and instructions designed to help you
-                        build practical mastery. Please read the document carefully and practice the
-                        setup/steps described inside.
-                      </p>
-                      <div className="rounded-xl bg-background/50 border border-border p-4 space-y-2">
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
-                          Included Document Link:
-                        </p>
-                        <p className="text-xs text-primary hover:underline break-all">
-                          {activeChapter.documentUrl || "No URL provided"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="pt-4 border-t border-border flex justify-end">
-                      <span className="text-xs text-muted-foreground italic">
-                        Document view - Admin Preview
-                      </span>
-                    </div>
-                  </div>
+                  <DocumentPane chapter={activeChapter} />
                 ) : activeChapter.type === "QUIZ" ? (
-                  <div className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col p-6 space-y-4 min-h-[450px] justify-center items-center text-center">
-                    <div className="grid h-16 w-16 place-items-center rounded-full bg-emerald-500/10 mb-3">
-                      <ListChecks className="h-8 w-8 text-emerald-500" />
-                    </div>
-                    <h2 className="text-xl font-bold text-foreground">Lesson Practice Quiz</h2>
-                    <p className="text-sm text-muted-foreground max-w-md">
-                      Test your understanding of the concepts covered in "{activeChapter.title}" to
-                      unlock rewards and check your progress.
-                    </p>
-                    <button className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[image:var(--gradient-primary)] px-5 py-2.5 text-xs font-semibold text-primary-foreground shadow-[var(--shadow-primary)] hover:scale-[1.02] transition">
-                      Preview Quiz (Admin)
-                    </button>
-                  </div>
+                  <QuizPane title={activeChapter.title} />
                 ) : (
-                  <MagicBentoCard
-                    className="overflow-hidden rounded-2xl border border-border bg-card"
-                    glowColor={glow}
-                    enableStars={false}
-                    enableMagnetism={false}
+                  // VIDEO / default
+                  <div
+                    ref={playerContainerRef}
+                    className={
+                      isFullscreen
+                        ? "fixed inset-0 z-[9999] bg-[#07060f] w-screen h-screen flex flex-col p-4 md:p-8 justify-center gap-4"
+                        : "flex flex-col gap-4"
+                    }
                   >
-                    <div className="relative aspect-[16/9] w-full bg-[#07060f] flex items-center justify-center">
-                      {activeChapter.videoUrl ? (
-                        activeChapter.videoUrl.includes("youtube.com") ||
-                          activeChapter.videoUrl.includes("youtu.be") ? (
-                          <iframe
-                            src={`https://www.youtube.com/embed/${activeChapter.videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/)?.[1]
-                              }?autoplay=0&rel=0&controls=0&modestbranding=1`}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            className="w-full h-full border-0"
-                            title={activeChapter.title}
-                          />
+                    <MagicBentoCard
+                      className={`overflow-hidden rounded-2xl border border-border bg-card ${isFullscreen ? "flex-1 min-h-0" : ""}`}
+                      glowColor={glow}
+                      enableStars={false}
+                      enableMagnetism={false}
+                    >
+                      <div
+                        className="relative aspect-[16/9] w-full h-full overflow-hidden bg-[#07060f] flex items-center justify-center"
+                        data-context-type="video"
+                      >
+                        {isVideoLoading ? (
+                          <LoadingSpinner label="Loading video..." />
+                        ) : activeVideoUrl ? (
+                          isYouTubeUrl(activeVideoUrl) ? (
+                            isExtensionDetected ? (
+                              <SecurityAlertOverlay onRetry={resetExtensionGuard} />
+                            ) : (
+                              <div className="relative w-full h-full">
+                                <div ref={ytContainerRef} className="w-full h-full" />
+                                {!videoEnded && (
+                                  <InteractionShield
+                                    containerRef={playerContainerRef}
+                                    onTogglePlay={togglePlay}
+                                  />
+                                )}
+                                {videoEnded && (
+                                  <ChapterCompletedOverlay
+                                    hasNext={hasNext}
+                                    onRewatch={handleRewatch}
+                                    onNext={handleNextLesson}
+                                  />
+                                )}
+                              </div>
+                            )
+                          ) : (
+                            <video
+                              src={activeVideoUrl}
+                              controls
+                              className="w-full h-full object-contain"
+                            />
+                          )
                         ) : (
-                          <video
-                            src={activeChapter.videoUrl}
-                            controls
-                            className="w-full h-full object-contain"
-                          />
-                        )
-                      ) : (
-                        <div
-                          className="relative grid aspect-[16/8] w-full place-items-center"
-                          style={{
-                            background:
-                              "radial-gradient(ellipse at center, color-mix(in oklab, var(--accent-violet) 35%, #0b0a1f) 0%, #06050f 70%)",
-                          }}
-                        >
-                          <button
-                            onClick={handleNextLesson}
-                            className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-lg border border-border bg-background/60 px-3 py-1.5 text-xs font-medium text-foreground backdrop-blur hover:bg-background/80"
-                          >
-                            Next Lesson <ChevronRight className="h-3.5 w-3.5" />
-                          </button>
+                          <VideoPlaceholder title={activeChapter.title} onNext={handleNextLesson} />
+                        )}
+                      </div>
+                    </MagicBentoCard>
 
-                          <div className="absolute left-8 top-1/2 max-w-sm -translate-y-1/2">
-                            <p className="text-xs font-semibold text-primary uppercase tracking-wider">
-                              Video Lesson
-                            </p>
-                            <h1 className="mt-2 font-display text-3xl font-bold text-foreground">
-                              {activeChapter.title}
-                            </h1>
-                            <p className="mt-2 text-xs text-foreground/70">
-                              Press play to start watching.
-                            </p>
-                          </div>
-
-                          <div className="relative grid h-36 w-36 place-items-center">
-                            <div className="absolute inset-0 animate-pulse">
-                              {[0, 60, 120].map((rot) => (
-                                <div
-                                  key={rot}
-                                  className="absolute inset-0 rounded-full border-2 border-[var(--accent-cyan)]/70"
-                                  style={{ transform: `rotate(${rot}deg) scaleY(0.4)` }}
-                                />
-                              ))}
-                            </div>
-                            <div className="relative grid h-3 w-3 place-items-center rounded-full bg-[var(--accent-cyan)]" />
-                            <button
-                              aria-label="Play"
-                              className="absolute grid h-14 w-14 place-items-center rounded-full bg-background/80 text-foreground backdrop-blur transition hover:scale-110"
-                            >
-                              <Play className="h-6 w-6 translate-x-0.5 fill-current" />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </MagicBentoCard>
+                    {activeVideoUrl && isYouTubeUrl(activeVideoUrl) && !videoEnded && (
+                      <VideoProgressBar
+                        isPlaying={isPlaying}
+                        currentTime={currentTime}
+                        duration={duration}
+                        isFullscreen={isFullscreen}
+                        onTogglePlay={togglePlay}
+                        onSeek={handleSeek}
+                        onToggleFullscreen={toggleFullscreen}
+                      />
+                    )}
+                  </div>
                 )}
               </>
             ) : (
@@ -311,16 +310,13 @@ export function AdminPreviewCoursePage() {
               </div>
             )}
 
-            {/* Tabs selector */}
+            {/* Tabs */}
             <div className="flex flex-wrap items-center gap-x-7 gap-y-2 border-b border-border">
-              {tabs.map((t) => (
+              {TABS.map((t) => (
                 <button
                   key={t}
                   onClick={() => setActiveTab(t)}
-                  className={`relative -mb-px py-3 text-sm transition-colors ${activeTab === t
-                    ? "font-semibold text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                    }`}
+                  className={`relative -mb-px py-3 text-sm transition-colors ${activeTab === t ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   {t}
                   {activeTab === t && (
@@ -330,14 +326,14 @@ export function AdminPreviewCoursePage() {
               ))}
             </div>
 
-            {/* Tab contents (Overview, Notes etc.) */}
-            <div className="grid items-stretch gap-5 grid-cols-1">
-              <MagicBentoCard
-                className="flex h-full flex-col rounded-2xl border border-border bg-card p-5"
-                glowColor={glow}
-                enableStars={false}
-                enableMagnetism={false}
-              >
+            {/* Overview Card */}
+            <MagicBentoCard
+              className="flex h-full flex-col rounded-2xl border border-border bg-card p-5"
+              glowColor={glow}
+              enableStars={false}
+              enableMagnetism={false}
+            >
+              <div data-context-menu="lesson-content" className="w-full h-full">
                 {activeChapter ? (
                   <div className="flex items-start gap-4">
                     <div className="grid h-20 w-20 shrink-0 place-items-center rounded-xl bg-primary-soft">
@@ -377,8 +373,8 @@ export function AdminPreviewCoursePage() {
                 ) : (
                   <p className="text-xs text-muted-foreground">No active lesson selected.</p>
                 )}
-              </MagicBentoCard>
-            </div>
+              </div>
+            </MagicBentoCard>
 
             {/* Action Tiles */}
             <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -409,20 +405,17 @@ export function AdminPreviewCoursePage() {
             </div>
           </div>
 
-          {/* Sidebar */}
+          {/* ── Sidebar ── */}
           <aside className="flex flex-col gap-4">
-            {/* Admin Alert banner */}
             <MagicBentoCard
               className="rounded-2xl border border-primary/40 bg-primary-soft px-4 py-3"
               glowColor={glow}
               enableStars={false}
               enableMagnetism={false}
             >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                  Admin Preview Mode
-                </span>
-              </div>
+              <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                Admin Preview Mode
+              </span>
               <p className="text-xs text-primary/80 mt-1">
                 Viewing content as it appears to enrolled students.
               </p>
@@ -440,8 +433,7 @@ export function AdminPreviewCoursePage() {
                   {completedCount} / {totalChapters}
                 </span>
               </div>
-
-              <div className="mt-4 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 [scrollbar-color:color-mix(in_srgb,var(--primary)_45%,transparent)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[color-mix(in_srgb,var(--primary)_45%,transparent)] [&::-webkit-scrollbar-thumb:hover]:bg-[color-mix(in_srgb,var(--primary)_70%,transparent)] [&::-webkit-scrollbar-track]:bg-transparent">
+              <div className="mt-4 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 [scrollbar-color:color-mix(in_srgb,var(--primary)_45%,transparent)_transparent] [scrollbar-width:thin]">
                 {resolvedModules.map((m, i) => (
                   <div key={m.title} className="rounded-lg border border-border bg-background/30">
                     <button
@@ -457,20 +449,16 @@ export function AdminPreviewCoursePage() {
                         {m.title}
                       </span>
                     </button>
-                    {open[i] && m.chapters && m.chapters.length > 0 && (
+                    {open[i] && m.chapters?.length > 0 && (
                       <ul className="border-t border-border px-2 py-2 space-y-1">
                         {m.chapters.map((ch, idx) => {
                           const isCurrent = activeChapter?.id === ch.id;
                           const isCompleted = completedChapters.has(ch.id);
-
                           return (
                             <li key={ch.id}>
                               <button
                                 onClick={() => setSelectedChapterId(ch.id)}
-                                className={`flex w-full items-center justify-between rounded-md px-2 py-2 text-xs transition text-left ${isCurrent
-                                  ? "border border-primary/40 bg-primary-soft text-primary font-medium"
-                                  : "hover:bg-foreground/[0.04] text-foreground/80"
-                                  }`}
+                                className={`flex w-full items-center justify-between rounded-md px-2 py-2 text-xs transition text-left ${isCurrent ? "border border-primary/40 bg-primary-soft text-primary font-medium" : "hover:bg-foreground/[0.04] text-foreground/80"}`}
                               >
                                 <span className="flex min-w-0 items-center gap-2">
                                   {isCompleted ? (
@@ -510,9 +498,7 @@ export function AdminPreviewCoursePage() {
               enableStars={false}
               enableMagnetism={false}
             >
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Course Statistics</h3>
-              </div>
+              <h3 className="text-sm font-semibold">Course Statistics</h3>
               <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                 <Stat value={totalChapters.toString()} label="Lessons" />
                 <Stat value={totalDurationStr} label="Time" />
@@ -527,6 +513,78 @@ export function AdminPreviewCoursePage() {
         </MagicBentoSection>
       </div>
     </main>
+  );
+}
+
+// ── Sub-components ─────────────────────────────────────────────────────────────
+
+function DocumentPane({ chapter }: { chapter: ChapterDisplay }) {
+  return (
+    <div
+      className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col p-6 space-y-4 min-h-[450px]"
+      data-context-type="text"
+    >
+      <div className="flex items-center justify-between border-b border-border pb-4">
+        <div className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-lg bg-amber-500/10">
+            <FileText className="h-5 w-5 text-amber-500" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">{chapter.title}</h2>
+            <p className="text-xs text-muted-foreground">Document Reading Assignment</p>
+          </div>
+        </div>
+        {chapter.documentUrl && (
+          <a
+            href={chapter.documentUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary-soft px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/15 transition"
+          >
+            Open in Tab
+          </a>
+        )}
+      </div>
+      <div
+        data-context-menu="lesson-content"
+        className="flex-1 overflow-y-auto max-h-[500px] text-sm text-foreground/85 leading-relaxed space-y-4 pr-2"
+      >
+        <p className="font-semibold text-foreground">Lesson Reference Information:</p>
+        <p>
+          This lesson contains documentation and instructions designed to help you build practical
+          mastery. Please read the document carefully and practice the setup/steps described inside.
+        </p>
+        <div className="rounded-xl bg-background/50 border border-border p-4 space-y-2">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+            Included Document Link:
+          </p>
+          <p className="text-xs text-primary hover:underline break-all">
+            {chapter.documentUrl || "No URL provided"}
+          </p>
+        </div>
+      </div>
+      <div className="pt-4 border-t border-border flex justify-end">
+        <span className="text-xs text-muted-foreground italic">Document view - Admin Preview</span>
+      </div>
+    </div>
+  );
+}
+
+function QuizPane({ title }: { title: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col p-6 space-y-4 min-h-[450px] justify-center items-center text-center">
+      <div className="grid h-16 w-16 place-items-center rounded-full bg-emerald-500/10 mb-3">
+        <ListChecks className="h-8 w-8 text-emerald-500" />
+      </div>
+      <h2 className="text-xl font-bold text-foreground">Lesson Practice Quiz</h2>
+      <p className="text-sm text-muted-foreground max-w-md">
+        Test your understanding of the concepts covered in "{title}" to unlock rewards and check
+        your progress.
+      </p>
+      <button className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[image:var(--gradient-primary)] px-5 py-2.5 text-xs font-semibold text-primary-foreground shadow-[var(--shadow-primary)] hover:scale-[1.02] transition">
+        Preview Quiz (Admin)
+      </button>
+    </div>
   );
 }
 
@@ -605,12 +663,11 @@ function ProgressTile({
         </div>
         <ul className="flex-1 space-y-1.5 text-xs">
           <li className="flex items-center gap-2">
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />{" "}
-            <span>{completedCount} Completed</span>
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" /> {completedCount}{" "}
+            Completed
           </li>
           <li className="flex items-center gap-2">
-            <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />{" "}
-            <span>{lockedCount} Locked</span>
+            <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> {lockedCount} Locked
           </li>
         </ul>
       </div>

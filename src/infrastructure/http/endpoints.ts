@@ -39,6 +39,8 @@ export const endpoints = {
     updateChapter: (chapterId: string) => `${COURSE_URL}/api/chapters/${chapterId}`,
     deleteChapter: (chapterId: string) => `${COURSE_URL}/api/chapters/${chapterId}`,
     reorderChapters: (moduleId: string) => `${COURSE_URL}/api/modules/${moduleId}/chapters/reorder`,
+    fetchChapterVideo: (chapterId: string) =>
+      `${COURSE_URL}/api/modules/chapters/${chapterId}/video`,
   },
   user: {
     profile: `${USER_URL}/users/me`,
