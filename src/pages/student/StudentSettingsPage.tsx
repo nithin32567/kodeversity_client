@@ -7,7 +7,7 @@ export function StudentSettingsPage() {
   const glow = useAccentRgb();
   return (
     <main className="relative flex-1 w-full overflow-hidden bg-background py-8 md:py-12 flex items-center justify-center min-h-[400px]">
-      <div className="relative w-full px-4 md:px-6 flex justify-center">
+      <div className="relative mx-auto max-w-7xl px-4 md:px-6 w-full flex justify-center">
         <MagicBentoCard
           className="group relative flex flex-col rounded-2xl border border-border bg-card p-10 max-w-md w-full transition-all hover:border-[var(--accent-cyan)] hover:shadow-[0_0_30px_-10px_var(--accent-cyan)] text-center space-y-6"
           glowColor={glow}

@@ -42,6 +42,12 @@ export const endpoints = {
     reorderChapters: (moduleId: string) => `${COURSE_URL}/api/modules/${moduleId}/chapters/reorder`,
     fetchChapterVideo: (chapterId: string) =>
       `${COURSE_URL}/api/modules/chapters/${chapterId}/video`,
+    updateLessonProgress: (lessonId: string) =>
+      `${COURSE_URL}/api/v1/lessons/${lessonId}/progress`,
+    getLessonProgress: (lessonId: string) =>
+      `${COURSE_URL}/api/v1/lessons/${lessonId}/progress`,
+    myCourseProgress: (courseId: string) =>
+      `${COURSE_URL}/api/v1/courses/${courseId}/my-progress`,
   },
   user: {
     profile: `${USER_URL}/users/me`,

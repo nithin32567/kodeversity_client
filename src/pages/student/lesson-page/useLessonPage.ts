@@ -1,11 +1,138 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, no-empty */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
-import { useGetChapterVideoQuery, useGetCourseContentQuery } from "@/features/course/courseApi";
+import {
+  useGetChapterVideoQuery,
+  useGetCourseContentQuery,
+  useUpdateLessonProgressMutation,
+  useGetMyCourseProgressQuery,
+} from "@/features/course/courseApi";
 import { ChapterDisplay } from "./types";
 import { mockModules } from "./mockData";
-import { extractYtId } from "./utils";
+import { useYouTubePlayer } from "@/components/course-preview/useYouTubePlayer";
+import { useAccentRgb } from "@/presentation/lib/useAccent";
+import { usePageProtection } from "@/hooks/usePageProtection";
+import { useExtensionGuard } from "@/components/course-preview/ExtensionGuard";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONSTANTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** How often to flush progress to the backend (ms) */
+const BACKEND_SAVE_INTERVAL_MS = 5_000;
+
+/** How often to flush progress to localStorage (ms) — fast, keeps resume accurate */
+const LS_SAVE_INTERVAL_MS = 1_000;
+
+/** Access methods that bypass sequential locking entirely */
+const BYPASS_ACCESS_METHODS = new Set(["FULL_ACCESS", "ADMIN_OVERRIDE", "INSTRUCTOR_OVERRIDE"]);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCALSTORAGE HELPERS
+// Each course gets a single JSON blob keyed by courseId.
+// Shape: { [lessonId]: { watchTime, percentage, isCompleted } }
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface ProgressEntry {
+  watchTime: number;
+  percentage: number;
+  isCompleted: boolean;
+}
+type ProgressStore = Record<string, ProgressEntry>;
+
+function lsKey(courseId: string) {
+  return `lms:progress:${courseId}`;
+}
+
+function loadProgressStore(courseId: string): ProgressStore {
+  try {
+    const raw = localStorage.getItem(lsKey(courseId));
+    return raw ? (JSON.parse(raw) as ProgressStore) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveProgressStore(courseId: string, store: ProgressStore) {
+  try {
+    localStorage.setItem(lsKey(courseId), JSON.stringify(store));
+  } catch {
+    // Quota exceeded — silently ignore
+  }
+}
+
+/**
+ * Merges a single lesson entry into the localStorage store and persists it.
+ * Never downgrades watchTime or isCompleted once set.
+ */
+function upsertProgressEntry(
+  courseId: string,
+  lessonId: string,
+  patch: Partial<ProgressEntry>,
+): ProgressStore {
+  const store = loadProgressStore(courseId);
+  const existing = store[lessonId] ?? { watchTime: 0, percentage: 0, isCompleted: false };
+  store[lessonId] = {
+    watchTime: Math.max(existing.watchTime, patch.watchTime ?? 0),
+    percentage: Math.max(existing.percentage, patch.percentage ?? 0),
+    isCompleted: existing.isCompleted || (patch.isCompleted ?? false),
+  };
+  saveProgressStore(courseId, store);
+  return store;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLIENT-SIDE SEQUENTIAL LOCK ENGINE
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Re-computes isLocked for every module and chapter using the student's current
+ * completedChapters set. Runs on the client on every render so locks update
+ * the instant markChapterComplete() fires — no re-fetch needed.
+ *
+ * Rules (mirror of the backend SEQUENTIAL strategy):
+ *  - Module 0  → always unlocked
+ *  - Module N  → locked if any chapter in Module N-1 is NOT completed
+ *  - Chapter 0 of unlocked module → always unlocked
+ *  - Chapter N → locked if Chapter N-1 is NOT completed
+ */
+function applySequentialLocks(modules: unknown[], completedChapters: Set<string>): unknown[] {
+  let lastChapterId: string | null = null;
+
+  return (modules as Record<string, unknown>[]).map((mod, modIdx) => {
+    const rawChapters = (mod.chapters as Record<string, unknown>[] | undefined) ?? [];
+
+    let moduleIsLocked: boolean;
+    if (modIdx === 0) {
+      moduleIsLocked = false;
+    } else {
+      const prevMod = (modules as Record<string, unknown>[])[modIdx - 1];
+      const prevChapters = (prevMod.chapters as { id: string }[] | undefined) ?? [];
+      moduleIsLocked = prevChapters.some((ch) => !completedChapters.has(ch.id));
+    }
+
+    const chapters = rawChapters.map((ch, chIdx) => {
+      let chapterIsLocked: boolean;
+
+      if (moduleIsLocked) {
+        chapterIsLocked = true;
+      } else if (modIdx === 0 && chIdx === 0) {
+        chapterIsLocked = false;
+      } else {
+        chapterIsLocked = lastChapterId === null || !completedChapters.has(lastChapterId);
+      }
+
+      lastChapterId = ch.id as string;
+      return { ...ch, isLocked: chapterIsLocked };
+    });
+
+    return { ...mod, isLocked: moduleIsLocked, chapters };
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HOOK
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function useLessonPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -15,104 +142,281 @@ export function useLessonPage() {
 
   const { data: contentData, isLoading: isContentLoading } = useGetCourseContentQuery(
     courseId || "",
-    { skip: !courseId }
+    { skip: !courseId },
   );
+
+  const { data: progressData } = useGetMyCourseProgressQuery(courseId || "", {
+    skip: !courseId,
+  });
+
+  const [updateLessonProgress] = useUpdateLessonProgressMutation();
 
   const [activeTab, setActiveTab] = useState("Overview");
   const [open, setOpen] = useState<Record<number, boolean>>({
-    0: true, 1: true, 2: false, 3: false, 4: false,
+    0: true,
+    1: true,
+    2: false,
+    3: false,
+    4: false,
   });
 
-  const resolvedModules =
-    contentData?.data && Array.isArray(contentData.data) && contentData.data.length > 0
-      ? contentData.data
+  // ── Raw module list (no lock computation yet) ───────────────────────────
+  const contentDataAny = contentData as any;
+  const accessMethod: string = contentDataAny?.accessMethod ?? "SEQUENTIAL";
+
+  const rawModules =
+    contentDataAny?.data && Array.isArray(contentDataAny.data) && contentDataAny.data.length > 0
+      ? contentDataAny.data
       : realCourse?.modules && realCourse.modules.length > 0
         ? realCourse.modules
         : mockModules;
 
   const courseTitle = realCourse?.title || "Course Player";
-  const allChapters = (resolvedModules as { chapters?: unknown[] }[]).flatMap(
-    (m) => (m.chapters ?? []) as ChapterDisplay[]
+
+  // Flat chapter list from raw data — used only for selectedChapterId resolution
+  const allChaptersRaw = (rawModules as { chapters?: unknown[] }[]).flatMap(
+    (m) => (m.chapters ?? []) as ChapterDisplay[],
   );
 
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
-  const activeChapter = allChapters.find((c) => c.id === selectedChapterId) || allChapters[0] || null;
+  const activeChapter =
+    allChaptersRaw.find((c) => c.id === selectedChapterId) || allChaptersRaw[0] || null;
 
   const { data: videoData, isFetching: isVideoLoading } = useGetChapterVideoQuery(
     activeChapter?.id || "",
-    { skip: !activeChapter || !activeChapter.id || activeChapter.type !== "VIDEO" }
+    { skip: !activeChapter || !activeChapter.id || activeChapter.type !== "VIDEO" },
   );
 
   const activeVideoUrl = !isVideoLoading && videoData?.success ? videoData.videoUrl : null;
 
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [videoEnded, setVideoEnded] = useState(false);
-  const ytContainerRef = useRef<HTMLDivElement>(null);
-  const ytPlayerRef = useRef<any>(null);
+  // ── Progress state ────────────────────────────────────────────────────────
+  const [localProgress, setLocalProgress] = useState<Map<string, { watchTime: number; percentage: number }>>(
+    new Map(),
+  );
+  const [completedChapters, setCompletedChapters] = useState<Set<string>>(new Set());
+
+  // ── SEED 1: localStorage (synchronous, fires as soon as courseId is known) ──
+  // This is what makes resume work immediately on reload — no waiting for API.
+  useEffect(() => {
+    if (!courseId) return;
+
+    const store = loadProgressStore(courseId);
+    if (Object.keys(store).length === 0) return;
+
+    const completed = new Set<string>();
+    const progressMap = new Map<string, { watchTime: number; percentage: number }>();
+
+    for (const [lessonId, entry] of Object.entries(store)) {
+      if (entry.isCompleted) completed.add(lessonId);
+      progressMap.set(lessonId, { watchTime: entry.watchTime, percentage: entry.percentage });
+    }
+
+    setCompletedChapters(completed);
+    setLocalProgress(progressMap);
+  }, [courseId]); // Runs once when courseId is first available
+
+  // ── SEED 2: Backend merge (runs whenever progressData arrives / is updated) ──
+  // Takes the maximum of backend + localStorage to avoid downgrading progress.
+  useEffect(() => {
+    if (!progressData?.data || !courseId) return;
+
+    const lsStore = loadProgressStore(courseId);
+
+    const completed = new Set<string>();
+    const progressMap = new Map<string, { watchTime: number; percentage: number }>();
+
+    for (const record of progressData.data) {
+      const lsEntry = lsStore[record.lessonId];
+
+      // Never downgrade: take the higher of backend vs localStorage
+      const watchTime = Math.max(record.watchTime, lsEntry?.watchTime ?? 0);
+      const percentage = Math.max(record.percentage, lsEntry?.percentage ?? 0);
+      const isCompleted = record.isCompleted || (lsEntry?.isCompleted ?? false);
+
+      if (isCompleted) completed.add(record.lessonId);
+      progressMap.set(record.lessonId, { watchTime, percentage });
+
+      // Write merged result back to localStorage
+      lsStore[record.lessonId] = { watchTime, percentage, isCompleted };
+    }
+
+    // Also pick up localStorage-only entries (saved since the last backend sync)
+    for (const [lessonId, entry] of Object.entries(lsStore)) {
+      if (!progressMap.has(lessonId)) {
+        if (entry.isCompleted) completed.add(lessonId);
+        progressMap.set(lessonId, { watchTime: entry.watchTime, percentage: entry.percentage });
+      }
+    }
+
+    saveProgressStore(courseId, lsStore);
+    setCompletedChapters(completed);
+    setLocalProgress(progressMap);
+  }, [progressData, courseId]);
+
+  // ── Real-time sequential locks (client-side, reactive to completedChapters) ─
+  const resolvedModules = BYPASS_ACCESS_METHODS.has(accessMethod)
+    ? rawModules
+    : applySequentialLocks(rawModules, completedChapters);
+
+  const allChapters = (resolvedModules as { chapters?: unknown[] }[]).flatMap(
+    (m) => (m.chapters ?? []) as ChapterDisplay[],
+  );
+
+  // ── Resume position ───────────────────────────────────────────────────────
+  const resumeFromTime = localProgress.get(activeChapter?.id ?? "")?.watchTime ?? 0;
+
+  // ── Progress flush refs ───────────────────────────────────────────────────
+  const pendingProgressRef = useRef<{ currentTime: number; duration: number } | null>(null);
+  const lastBackendSaveRef = useRef<number>(0);
+  const lastLsSaveRef = useRef<number>(0);
+
+  const [completedModuleId, setCompletedModuleId] = useState<string | null>(null);
+
+  // ── markChapterComplete ───────────────────────────────────────────────────
+  // Also writes isCompleted=true to localStorage immediately so it survives reload.
+  const markChapterComplete = useCallback(
+    (id: string) => {
+      // Persist to localStorage right away — this is the source of truth for locks
+      if (courseId) {
+        upsertProgressEntry(courseId, id, { isCompleted: true, percentage: 100 });
+      }
+
+      setCompletedChapters((prev) => {
+        if (prev.has(id)) return prev;
+        const next = new Set(prev);
+        next.add(id);
+        return next;
+      });
+
+      setLocalProgress((prev) => {
+        const existing = prev.get(id);
+        const next = new Map(prev);
+        next.set(id, {
+          watchTime: existing?.watchTime ?? 0,
+          percentage: 100,
+        });
+        return next;
+      });
+
+      // Check if this was the last chapter of a module → trigger module completion banner
+      for (const mod of resolvedModules as { id: string; chapters?: { id: string }[] }[]) {
+        const chapters = mod.chapters ?? [];
+        if (chapters.length > 0 && chapters[chapters.length - 1].id === id) {
+          setCompletedModuleId(mod.id);
+          break;
+        }
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [resolvedModules, courseId],
+  );
+
+  // ── handleVideoProgress ───────────────────────────────────────────────────
+  // Called every ~500ms by useYouTubePlayer.
+  // → localStorage every 1 second (fast — survives tab close / reload)
+  // → Backend every 5 seconds (throttled — avoids API spam)
+  const handleVideoProgress = useCallback(
+    (currentTime: number, duration: number) => {
+      if (!activeChapter || !courseId) return;
+
+      const chapterId = activeChapter.id;
+      pendingProgressRef.current = { currentTime, duration };
+
+      const now = Date.now();
+      const percentage = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+      const watchTime = Math.round(currentTime);
+
+      // ── Save to localStorage every 1 s ───────────────────────────────────
+      if (now - lastLsSaveRef.current >= LS_SAVE_INTERVAL_MS) {
+        lastLsSaveRef.current = now;
+
+        upsertProgressEntry(courseId, chapterId, { watchTime, percentage });
+
+        setLocalProgress((prev) => {
+          const existing = prev.get(chapterId);
+          if (existing && existing.watchTime >= watchTime) return prev;
+          const next = new Map(prev);
+          next.set(chapterId, { watchTime, percentage });
+          return next;
+        });
+      }
+
+      // ── Save to backend every 5 s ─────────────────────────────────────────
+      if (now - lastBackendSaveRef.current >= BACKEND_SAVE_INTERVAL_MS) {
+        lastBackendSaveRef.current = now;
+        updateLessonProgress({ lessonId: chapterId, percentage, watchTime, courseId }).catch(
+          (err) => console.warn("[progress] backend save failed", err),
+        );
+      }
+    },
+    [activeChapter, courseId, updateLessonProgress],
+  );
+
+  const {
+    ytContainerRef,
+    ytPlayerRef,
+    isPlaying,
+    videoEnded,
+    currentTime,
+    duration,
+    resetVideoEnded,
+  } = useYouTubePlayer(activeVideoUrl, activeChapter?.id ?? null, {
+    onEnded: markChapterComplete,
+    onProgress: handleVideoProgress,
+    resumeFromTime,
+  });
+
+  // ── playerHasStarted: hides the Resume button once playback begins ─────────
+  // Resets to false whenever the active chapter changes (or on initial mount),
+  // so the button re-appears correctly on next page load / chapter switch.
+  const [playerHasStarted, setPlayerHasStarted] = useState(false);
 
   useEffect(() => {
-    if (!activeVideoUrl) return;
+    if (isPlaying) setPlayerHasStarted(true);
+  }, [isPlaying]);
 
-    const isYouTube = activeVideoUrl.includes("youtube.com") || activeVideoUrl.includes("youtu.be");
-    if (!isYouTube) return;
+  // ── Flush on chapter switch / unmount ─────────────────────────────────────
+  // Saves the most recent tick to both localStorage and backend immediately
+  // when the student navigates away, so nothing is lost.
+  useEffect(() => {
+    return () => {
+      const pending = pendingProgressRef.current;
+      if (!pending || !activeChapter || !courseId) return;
 
-    const videoId = extractYtId(activeVideoUrl);
-    if (!videoId) return;
+      const { currentTime: ct, duration: dur } = pending;
+      const percentage = dur > 0 ? Math.min(100, (ct / dur) * 100) : 0;
+      const watchTime = Math.round(ct);
 
-    setVideoEnded(false);
+      // localStorage flush — synchronous, always succeeds
+      upsertProgressEntry(courseId, activeChapter.id, { watchTime, percentage });
 
-    const initPlayer = () => {
-      if (ytPlayerRef.current) {
-        try {
-          ytPlayerRef.current.destroy();
-        } catch (_) {}
-        ytPlayerRef.current = null;
-      }
-      if (!ytContainerRef.current) return;
+      // Backend flush — fire-and-forget
+      updateLessonProgress({
+        lessonId: activeChapter.id,
+        percentage,
+        watchTime,
+        courseId,
+      }).catch(() => {/* best-effort */});
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeChapter?.id, courseId]);
 
-      ytPlayerRef.current = new (window as any).YT.Player(ytContainerRef.current, {
-        videoId,
-        playerVars: { autoplay: 0, rel: 0, controls: 1, modestbranding: 1 },
-        events: {
-          onStateChange: (event: any) => {
-            setIsPlaying(event.data === 1);
-            if (event.data === 0) {
-              setVideoEnded(true);
-              setIsPlaying(false);
-              if (activeChapter) {
-                markChapterComplete(activeChapter.id);
-              }
-            }
-          },
-        },
+  // ── Also flush to localStorage on window unload (tab close / refresh) ──────
+  useEffect(() => {
+    const handleUnload = () => {
+      const pending = pendingProgressRef.current;
+      if (!pending || !activeChapter?.id || !courseId) return;
+      const { currentTime: ct, duration: dur } = pending;
+      const percentage = dur > 0 ? Math.min(100, (ct / dur) * 100) : 0;
+      upsertProgressEntry(courseId, activeChapter.id, {
+        watchTime: Math.round(ct),
+        percentage,
       });
     };
 
-    if ((window as any).YT && (window as any).YT.Player) {
-      initPlayer();
-    } else {
-      if (!document.getElementById("yt-iframe-api-script")) {
-        const tag = document.createElement("script");
-        tag.id = "yt-iframe-api-script";
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
-      }
-      const prev = (window as any).onYouTubeIframeAPIReady;
-      (window as any).onYouTubeIframeAPIReady = () => {
-        if (prev) prev();
-        initPlayer();
-      };
-    }
-
-    return () => {
-      if (ytPlayerRef.current) {
-        try {
-          ytPlayerRef.current.destroy();
-        } catch (_) {}
-        ytPlayerRef.current = null;
-      }
-    };
-  }, [activeVideoUrl, activeChapter]);
+    window.addEventListener("beforeunload", handleUnload);
+    return () => window.removeEventListener("beforeunload", handleUnload);
+  }, [activeChapter?.id, courseId]);
 
   const [playgroundLaunched, setPlaygroundLaunched] = useState(false);
 
@@ -120,35 +424,21 @@ export function useLessonPage() {
   if (prevChapterIdRef[0] !== (activeChapter?.id ?? null)) {
     prevChapterIdRef[1](activeChapter?.id ?? null);
     if (playgroundLaunched) setPlaygroundLaunched(false);
+    // Reset progress-flush state on chapter switch
+    pendingProgressRef.current = null;
+    lastBackendSaveRef.current = 0;
+    lastLsSaveRef.current = 0;
+    // Reset so the Resume button re-appears on the next chapter if it has saved progress
+    setPlayerHasStarted(false);
   }
-
-  const [completedChapters, setCompletedChapters] = useState<Set<string>>(
-    new Set(["chap-1", "chap-2"])
-  );
-
-  const [completedModuleId, setCompletedModuleId] = useState<string | null>(null);
-
-  const markChapterComplete = (id: string) => {
-    setCompletedChapters((prev) => {
-      const next = new Set(prev);
-      next.add(id);
-      return next;
-    });
-
-    for (const mod of resolvedModules as { id: string; chapters?: { id: string }[] }[]) {
-      const chapters = mod.chapters ?? [];
-      if (chapters.length > 0 && chapters[chapters.length - 1].id === id) {
-        setCompletedModuleId(mod.id);
-        break;
-      }
-    }
-  };
 
   const handleNextLesson = () => {
     if (!activeChapter) return;
     const currentIdx = allChapters.findIndex((c) => c.id === activeChapter.id);
     if (currentIdx !== -1 && currentIdx < allChapters.length - 1) {
-      setSelectedChapterId(allChapters[currentIdx + 1].id);
+      const next = allChapters[currentIdx + 1];
+      if ((next as ChapterDisplay & { isLocked?: boolean }).isLocked) return;
+      setSelectedChapterId(next.id);
     }
   };
 
@@ -158,9 +448,68 @@ export function useLessonPage() {
     totalChapters > 0 ? Math.round((completedCount / totalChapters) * 100) : 0;
   const totalDurationSeconds = allChapters.reduce(
     (acc, ch) => acc + (ch.durationInSeconds || ch.duration || 0),
-    0
+    0,
   );
   const totalDurationStr = `${Math.floor(totalDurationSeconds / 3600)}h ${Math.floor((totalDurationSeconds % 3600) / 60)}m`;
+
+  // ── UI state ──────────────────────────────────────────────────────────────
+  const glow = useAccentRgb();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
+
+  usePageProtection();
+
+  const { isExtensionDetected, reset: resetExtensionGuard } = useExtensionGuard(playerContainerRef);
+
+  const toggleFullscreen = async () => {
+    if (!document.fullscreenElement) {
+      await playerContainerRef.current?.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      await document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  const togglePlay = () => {
+    const p = ytPlayerRef.current;
+    if (!p) return;
+    if (isPlaying) p.pauseVideo();
+    else p.playVideo();
+  };
+
+  const handleSeek = (val: number) => {
+    ytPlayerRef.current?.seekTo(val, true);
+  };
+
+  const handleRewatch = () => {
+    resetVideoEnded();
+    const p = ytPlayerRef.current;
+    if (p) {
+      p.seekTo(0, true);
+      p.playVideo();
+    }
+  };
+
+  // Resume handler: seek the player to the saved position
+  const handleResume = () => {
+    const savedTime = localProgress.get(activeChapter?.id ?? "")?.watchTime ?? 0;
+    if (savedTime > 0) {
+      ytPlayerRef.current?.seekTo(savedTime, true);
+      ytPlayerRef.current?.playVideo();
+    }
+  };
+
+  // Resume button is shown ONLY during the initial load (before the player starts):
+  // - page reload with saved progress
+  // - navigating back to the lesson
+  // - logging in and returning to the course
+  // Once isPlaying fires for the first time, playerHasStarted → true and the button hides.
+  const hasSavedProgress =
+    activeChapter?.type === "VIDEO" &&
+    !completedChapters.has(activeChapter.id) &&
+    (localProgress.get(activeChapter.id)?.watchTime ?? 0) > 5 &&
+    !playerHasStarted;
 
   return {
     slug,
@@ -181,7 +530,11 @@ export function useLessonPage() {
     activeVideoUrl,
     isPlaying,
     videoEnded,
+    currentTime,
+    duration,
+    resetVideoEnded,
     ytContainerRef,
+    ytPlayerRef,
     playgroundLaunched,
     setPlaygroundLaunched,
     completedChapters,
@@ -193,5 +546,17 @@ export function useLessonPage() {
     completedCount,
     progressPercentage,
     totalDurationStr,
+    localProgress,
+    hasSavedProgress,
+    handleResume,
+    glow,
+    isFullscreen,
+    playerContainerRef,
+    isExtensionDetected,
+    resetExtensionGuard,
+    toggleFullscreen,
+    togglePlay,
+    handleSeek,
+    handleRewatch,
   };
 }

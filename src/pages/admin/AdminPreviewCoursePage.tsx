@@ -69,8 +69,9 @@ export function AdminPreviewCoursePage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: realCourse, isLoading: isCourseLoading } = useCourse(slug || "");
   const { user } = useAuth();
-  const isAdmin = user?.role === "ADMIN";
-  const backLink = isAdmin ? `/admin/courses/${slug || ""}` : `/instructor/courses/${slug || ""}`;
+  const isAdminOrInstructor = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
+  const backLink =
+    user?.role === "ADMIN" ? `/admin/courses/${slug || ""}` : `/instructor/courses/${slug || ""}`;
   const glow = useAccentRgb();
 
   const [activeTab, setActiveTab] = useState("Overview");
@@ -191,7 +192,7 @@ export function AdminPreviewCoursePage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <CustomContextMenu isAdmin={isAdmin} />
+      <CustomContextMenu isAdmin={isAdminOrInstructor} />
       <div className="mx-auto max-w-[1600px] px-6 py-6">
         <Link
           to={backLink}

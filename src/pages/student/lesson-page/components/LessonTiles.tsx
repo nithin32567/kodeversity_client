@@ -92,7 +92,15 @@ export function ProgressTile() {
   );
 }
 
-export function Stat({ value, label, icon }: { value: string; label: string; icon?: React.ReactNode }) {
+export function Stat({
+  value,
+  label,
+  icon,
+}: {
+  value: string;
+  label: string;
+  icon?: React.ReactNode;
+}) {
   return (
     <div className="rounded-xl border border-border bg-card/40 p-2 text-center">
       <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-foreground font-mono uppercase">

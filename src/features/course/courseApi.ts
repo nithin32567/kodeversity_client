@@ -2,6 +2,13 @@ import { baseApi } from "@/services/api";
 import { endpoints } from "@/infrastructure/http/endpoints";
 import type { Course, Lesson } from "@/domain/course";
 
+export interface LessonProgressRecord {
+  lessonId: string;
+  watchTime: number;
+  percentage: number;
+  isCompleted: boolean;
+}
+
 export const courseApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getCourses: build.query<Course[], void>({
@@ -30,8 +37,30 @@ export const courseApi = baseApi.injectEndpoints({
       }),
       providesTags: (_result, _err, { lessonId }) => [{ type: "Course", id: `lesson-${lessonId}` }],
     }),
+
     getChapterVideo: build.query<{ success: boolean; videoUrl: string }, string>({
       query: (chapterId) => ({ url: endpoints.course.fetchChapterVideo(chapterId) }),
+    }),
+
+    /** POST /api/v1/lessons/:id/progress — upserts watch progress for a lesson */
+    updateLessonProgress: build.mutation<
+      { success: boolean; data: LessonProgressRecord },
+      { lessonId: string; percentage: number; watchTime: number; courseId: string }
+    >({
+      query: ({ lessonId, percentage, watchTime, courseId }) => ({
+        url: endpoints.course.updateLessonProgress(lessonId),
+        method: "POST",
+        body: { percentage, watchTime, courseId },
+      }),
+    }),
+
+    /** GET /api/v1/courses/:courseId/my-progress — fetches all lesson progress for a course */
+    getMyCourseProgress: build.query<
+      { success: boolean; data: LessonProgressRecord[] },
+      string
+    >({
+      query: (courseId) => ({ url: endpoints.course.myCourseProgress(courseId) }),
+      providesTags: (_result, _err, courseId) => [{ type: "Progress", id: courseId }],
     }),
   }),
   overrideExisting: false,
@@ -44,4 +73,6 @@ export const {
   useGetLessonByIdQuery,
   useGetChapterVideoQuery,
   useGetCourseContentQuery,
+  useUpdateLessonProgressMutation,
+  useGetMyCourseProgressQuery,
 } = courseApi;
