@@ -11,7 +11,7 @@ export function PlaygroundManager() {
   const { state, actions } = usePlaygroundManager();
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6 w-full my-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -81,18 +81,21 @@ export function PlaygroundManager() {
         <>
           {/* Templates Tab */}
           {state.isLoading ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, i) => (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="flex flex-col h-[220px] rounded-2xl border border-[var(--hairline)] bg-[var(--surface-2)]/20 animate-pulse overflow-hidden p-5 space-y-4"
+                  className="flex flex-col h-[180px] rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)]/20 animate-pulse overflow-hidden p-4 space-y-3"
                 >
-                  <div className="h-6 bg-white/[0.04] rounded w-3/4" />
-                  <div className="h-4 bg-white/[0.04] rounded w-full" />
-                  <div className="h-4 bg-white/[0.04] rounded w-2/3" />
-                  <div className="flex gap-4 pt-4">
-                    <div className="h-6 bg-white/[0.04] rounded w-1/4" />
-                    <div className="h-6 bg-white/[0.04] rounded w-1/4" />
+                  <div className="flex justify-between items-center">
+                    <div className="h-5 bg-white/[0.04] rounded w-2/3" />
+                    <div className="h-5 bg-white/[0.04] rounded w-1/5" />
+                  </div>
+                  <div className="h-3 bg-white/[0.04] rounded w-full" />
+                  <div className="h-3 bg-white/[0.04] rounded w-4/5" />
+                  <div className="flex gap-2 pt-4">
+                    <div className="h-5 bg-white/[0.04] rounded w-1/3" />
+                    <div className="h-5 bg-white/[0.04] rounded w-1/3" />
                   </div>
                 </div>
               ))}
@@ -125,7 +128,7 @@ export function PlaygroundManager() {
               </p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {state.templates.map((tpl) => (
                 <PlaygroundTemplateCard
                   key={tpl._id}

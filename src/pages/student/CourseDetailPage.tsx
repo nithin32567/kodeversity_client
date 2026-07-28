@@ -17,6 +17,7 @@ import {
 import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
 import { useCourse } from "@/presentation/features/student-learning/hooks/useCourses";
+import { useGetMyCourseProgressQuery } from "@/features/course/courseApi";
 import { StatBox } from "@/presentation/features/course/components/StatBox";
 import { CourseCurriculum } from "@/presentation/features/course/components/CourseCurriculum";
 import { CourseReviews } from "@/presentation/features/course/components/CourseReviews";
@@ -93,20 +94,86 @@ export function CourseDetailPage() {
   const totalReviews = reviews.length;
   const averageRating = useMemo(() => computeAverageRating(reviews), [reviews]);
 
-  const firstLessonId = useMemo(() => {
+  const { data: progressData } = useGetMyCourseProgressQuery(course?.id || "", {
+    skip: !course?.id,
+  });
+
+  const resumeLessonId = useMemo(() => {
     if (!course || !course.modules || course.modules.length === 0) return null;
+
     const sortedModules = [...course.modules].sort((a, b) => a.sortOrder - b.sortOrder);
-    for (const mod of sortedModules) {
-      if (mod.chapters && mod.chapters.length > 0) {
-        const sortedChapters = [...mod.chapters].sort((a, b) => a.sortOrder - b.sortOrder);
-        return sortedChapters[0].id;
+    const allChapters = sortedModules.flatMap((m) =>
+      m.chapters ? [...m.chapters].sort((a, b) => a.sortOrder - b.sortOrder) : []
+    );
+
+    if (allChapters.length === 0) return null;
+
+    const completedSet = new Set<string>();
+
+    if (progressData?.data) {
+      progressData.data.forEach((p: any) => {
+        if (p.isCompleted) completedSet.add(p.lessonId);
+      });
+    }
+
+    try {
+      const lsRaw = localStorage.getItem(`lms:progress:${course.id}`);
+      if (lsRaw) {
+        const lsStore = JSON.parse(lsRaw);
+        for (const [id, entry] of Object.entries(lsStore)) {
+          if ((entry as any).isCompleted) completedSet.add(id);
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    for (const ch of allChapters) {
+      if (!completedSet.has(ch.id)) {
+        return ch.id;
       }
     }
-    return null;
-  }, [course]);
+
+    return allChapters[allChapters.length - 1].id;
+  }, [course, progressData]);
 
   if (isLoading) return <CourseDetailSkeleton />;
   if (isError || !course) return <CourseDetailError slug={slug || ""} />;
+
+  let accurateProgress = 0;
+  if (progressData?.data && course?.modules) {
+    let watchedSum = 0;
+    let accurateDuration = course.modules.reduce(
+      (acc, mod) =>
+        acc +
+        (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) ||
+          0),
+      0,
+    );
+    const progressMap = new Map<string, { watchTime: number; percentage: number }>();
+    progressData.data.forEach((p: any) => {
+      progressMap.set(p.lessonId, { watchTime: p.watchTime, percentage: p.percentage });
+    });
+
+    course.modules.forEach((mod) => {
+      mod.chapters?.forEach((ch) => {
+        const entry = progressMap.get(ch.id);
+        if (entry) {
+          if (entry.percentage >= 90) {
+            watchedSum += ch.durationInSeconds || ch.duration || 0;
+          } else {
+            watchedSum += entry.watchTime || 0;
+          }
+        }
+      });
+    });
+
+    if (accurateDuration > 0) {
+      accurateProgress = (watchedSum / accurateDuration) * 100;
+    }
+  }
+
+  accurateProgress = Math.min(100, Math.max(0, Math.round(accurateProgress)));
 
   const durationFormatted = formatDuration(course.totalDuration);
   const instructorName = course.instructor?.name ?? "Instructor";
@@ -234,9 +301,9 @@ export function CourseDetailPage() {
                         ))}
                       </div>
                       <div className="relative grid h-3 w-3 place-items-center rounded-full bg-[var(--accent-cyan)]" />
-                      {firstLessonId && (
+                      {resumeLessonId && (
                         <Link
-                          to={`/student/courses/${slug}/lessons/${firstLessonId}`}
+                          to={`/student/courses/${slug}/lessons/${resumeLessonId}`}
                           aria-label="Play"
                           className="absolute grid h-14 w-14 place-items-center rounded-full bg-background/80 text-foreground backdrop-blur-sm transition hover:scale-110"
                         >
@@ -412,12 +479,12 @@ export function CourseDetailPage() {
                 </span>
               </div>
 
-              {firstLessonId ? (
+              {resumeLessonId ? (
                 <Link
-                  to={`/student/courses/${slug}/lessons/${firstLessonId}`}
+                  to={`/student/courses/${slug}/lessons/${resumeLessonId}`}
                   className="group/btn block w-full rounded-lg bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-violet)] py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-background transition-all hover:scale-[1.02] hover:shadow-[0_0_24px_var(--accent-cyan)]"
                 >
-                  Go to Player
+                  Continue Course
                 </Link>
               ) : (
                 <button
@@ -442,10 +509,10 @@ export function CourseDetailPage() {
               <div className="relative mt-2 h-1 w-full overflow-hidden rounded-full bg-foreground/10">
                 <div
                   className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-violet)]"
-                  style={{ width: `0%` }}
+                  style={{ width: `${accurateProgress}%` }}
                 />
               </div>
-              <div className="mt-2 text-right text-[10px] text-muted-foreground">0% Complete</div>
+              <div className="mt-2 text-right text-[10px] text-muted-foreground">{accurateProgress}% Complete</div>
             </MagicBentoCard>
           </aside>
         </MagicBentoSection>
