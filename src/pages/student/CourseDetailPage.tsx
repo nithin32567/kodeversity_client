@@ -142,34 +142,33 @@ export function CourseDetailPage() {
 
   let accurateProgress = 0;
   if (progressData?.data && course?.modules) {
-    let watchedSum = 0;
-    let accurateDuration = course.modules.reduce(
-      (acc, mod) =>
-        acc +
-        (mod.chapters?.reduce((cAcc, ch) => cAcc + (ch.durationInSeconds || ch.duration || 0), 0) ||
-          0),
-      0,
-    );
-    const progressMap = new Map<string, { watchTime: number; percentage: number }>();
+    let totalWeight = 0;
+    let earnedWeight = 0;
+
+    const progressMap = new Map<string, { watchTime: number; percentage: number; isCompleted: boolean }>();
     progressData.data.forEach((p: any) => {
-      progressMap.set(p.lessonId, { watchTime: p.watchTime, percentage: p.percentage });
+      progressMap.set(p.lessonId, { watchTime: p.watchTime, percentage: p.percentage, isCompleted: p.isCompleted });
     });
 
     course.modules.forEach((mod) => {
       mod.chapters?.forEach((ch) => {
+        const chDur = ch.durationInSeconds || ch.duration || 0;
+        const weight = chDur > 0 ? chDur : 100; // Text chapters count as 100 units of weight
+        totalWeight += weight;
+
         const entry = progressMap.get(ch.id);
-        if (entry) {
-          if (entry.percentage >= 90) {
-            watchedSum += ch.durationInSeconds || ch.duration || 0;
-          } else {
-            watchedSum += entry.watchTime || 0;
-          }
+        const isChCompleted = entry && (entry.percentage >= 90 || entry.isCompleted);
+
+        if (isChCompleted) {
+          earnedWeight += weight;
+        } else if (entry && chDur > 0) {
+          earnedWeight += entry.watchTime || 0;
         }
       });
     });
 
-    if (accurateDuration > 0) {
-      accurateProgress = (watchedSum / accurateDuration) * 100;
+    if (totalWeight > 0) {
+      accurateProgress = (earnedWeight / totalWeight) * 100;
     }
   }
 
@@ -252,9 +251,8 @@ export function CourseDetailPage() {
                         {[0, 1, 2, 3, 4].map((i) => (
                           <Star
                             key={i}
-                            className={`h-3.5 w-3.5 ${
-                              i < Math.round(averageRating) ? "fill-current" : ""
-                            }`}
+                            className={`h-3.5 w-3.5 ${i < Math.round(averageRating) ? "fill-current" : ""
+                              }`}
                           />
                         ))}
                       </div>
@@ -271,13 +269,13 @@ export function CourseDetailPage() {
               </section>
 
               <MagicBentoCard
-                className="overflow-hidden rounded-xl border border-border bg-card"
+                className="h-fit overflow-hidden rounded-xl border border-border bg-card"
                 glowColor={glow}
                 enableStars={false}
                 enableMagnetism={false}
               >
                 <div
-                  className="relative grid aspect-video w-full place-items-center"
+                  className="relative grid  aspect-video w-full place-items-center"
                   style={{
                     background:
                       "radial-gradient(ellipse at center, color-mix(in oklab, var(--accent-violet) 35%, #0b0a1f) 0%, #06050f 70%)",
@@ -313,32 +311,32 @@ export function CourseDetailPage() {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs text-muted-foreground">
+                {/* <div className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs text-muted-foreground">
                   <GraduationCap className="h-3 w-3" />
                   <span>Start Learning</span>
-                </div>
+                </div> */}
               </MagicBentoCard>
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
               <StatBox
                 icon={<BarChart3 className="h-4 w-4" />}
-                value={levelLabel[course.level] ?? course.level}
+                value={course.level ? (levelLabel[course.level] ?? course.level) : "N/A"}
                 label="Level"
               />
               <StatBox
                 icon={<Clock className="h-4 w-4" />}
-                value={durationFormatted}
+                value={durationFormatted || "0m"}
                 label="Duration"
               />
               <StatBox
                 icon={<BookOpen className="h-4 w-4" />}
-                value={`${course.lessonsCount} Lessons`}
+                value={`${course.lessonsCount || 0} Lessons`}
                 label="Content"
               />
               <StatBox
                 icon={<Layers className="h-4 w-4" />}
-                value={`${course.projectsCount} Projects`}
+                value={`${course.projectsCount || 0} Projects`}
                 label="Hands-on"
               />
               <StatBox
@@ -357,11 +355,10 @@ export function CourseDetailPage() {
                   <button
                     key={t}
                     onClick={() => setActiveTab(cleanedTab)}
-                    className={`relative -mb-px py-3 text-sm transition-colors ${
-                      active
+                    className={`relative -mb-px py-3 text-sm transition-colors ${active
                         ? "font-semibold text-foreground"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     {t}
                     {active && (
@@ -494,25 +491,6 @@ export function CourseDetailPage() {
                   No Lessons Yet
                 </button>
               )}
-            </MagicBentoCard>
-
-            <MagicBentoCard
-              className="rounded-2xl border border-border bg-card p-5"
-              glowColor={glow}
-              enableStars={false}
-              enableMagnetism={false}
-            >
-              <div className="text-sm font-semibold mb-2">Track Your Progress</div>
-              <p className="text-xs text-muted-foreground mb-4">
-                Monitor your completion rate across lessons.
-              </p>
-              <div className="relative mt-2 h-1 w-full overflow-hidden rounded-full bg-foreground/10">
-                <div
-                  className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-violet)]"
-                  style={{ width: `${accurateProgress}%` }}
-                />
-              </div>
-              <div className="mt-2 text-right text-[10px] text-muted-foreground">{accurateProgress}% Complete</div>
             </MagicBentoCard>
           </aside>
         </MagicBentoSection>

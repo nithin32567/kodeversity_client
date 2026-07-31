@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { store } from "@/app/store";
@@ -9,13 +8,11 @@ import "./styles.css";
 import { ConfirmProvider } from "@/presentation/global/contexts/ConfirmContext";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <Provider store={store}>
-      <AuthBootstrap>
-        <ConfirmProvider>
-          <AppRoutes />
-        </ConfirmProvider>
-      </AuthBootstrap>
-    </Provider>
-  </StrictMode>,
+  <Provider store={store}>
+    <AuthBootstrap>
+      <ConfirmProvider>
+        <AppRoutes />
+      </ConfirmProvider>
+    </AuthBootstrap>
+  </Provider>,
 );

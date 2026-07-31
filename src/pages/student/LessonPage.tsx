@@ -56,9 +56,10 @@ export function LessonPage() {
     hasSavedProgress,
     handleResume,
     localProgress,
+    initialLessonSelected,
   } = useLessonPage();
 
-  if (isCourseLoading || (courseId && isContentLoading)) {
+  if (isCourseLoading || (courseId && isContentLoading) || !initialLessonSelected) {
     return (
       <main className="relative flex-1 w-full overflow-hidden bg-background flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">

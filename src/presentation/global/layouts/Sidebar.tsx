@@ -85,7 +85,7 @@ export const instructorTools: NavItem[] = [
 
 export const studentWorkspace: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/student/dashboard" },
-  { label: "All Courses", icon: BookOpen, to: "/student/courses" },
+  // { label: "All Courses", icon: BookOpen, to: "/student/courses" },  
   { label: "My Batches", icon: Layers, to: "/student/batches" },
   { label: "Live Classes", icon: Video, to: "/student/live-classes" },
   { label: "Profile", icon: UserCog, to: "/student/profile" },

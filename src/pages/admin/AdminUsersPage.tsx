@@ -136,50 +136,51 @@ export function AdminUsersPage() {
   }
 
   return (
-    <main className="flex-1 px-4 pb-6 sm:px-6 lg:px-8 lg:pb-8 space-y-6 overflow-y-auto max-w-[1400px] mx-auto w-full">
+    <main className="flex-1 px-4 pb-6 sm:px-6 lg:px-8 lg:pb-8 space-y-6 overflow-y-auto max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight md:text-3xl font-display">
+          <h1 className="text-xl font-bold tracking-tight md:text-2xl font-display text-foreground">
             Student Management
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-0.5">
             View and manage all registered students.
           </p>
         </div>
 
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[image:var(--grad-cta)] text-sm font-semibold text-white px-4 py-2.5 shadow-md shadow-indigo-500/20 hover:opacity-90 active:scale-[0.98] transition cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[image:var(--gradient-cta)] text-xs font-semibold text-white px-4 py-2.5 shadow-md shadow-indigo-500/20 hover:opacity-90 active:scale-[0.98] transition cursor-pointer"
         >
-          <UserPlus className="h-4.5 w-4.5" />
+          <UserPlus className="h-4 w-4" />
           <span>Onboard User</span>
         </button>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-[var(--hairline)]">
+      {/* Tabs */}
+      <div className="flex items-center gap-2 border-b border-[var(--hairline)] pb-2">
         <button
           onClick={() => setActiveTab("ACTIVE")}
-          className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors ${
+          className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
             activeTab === "ACTIVE"
-              ? "border-blue-500 text-blue-400"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "bg-indigo-500/10 text-indigo-400"
+              : "text-muted-foreground hover:bg-white/[0.04]"
           }`}
         >
           Active Students ({students.length})
         </button>
         <button
           onClick={() => setActiveTab("SUSPENDED")}
-          className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors ${
+          className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
             activeTab === "SUSPENDED"
-              ? "border-rose-500 text-rose-400"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "bg-rose-500/10 text-rose-400"
+              : "text-muted-foreground hover:bg-white/[0.04]"
           }`}
         >
           Suspended Accounts ({suspendedStudents.length})
         </button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 p-4 rounded-xl bg-[var(--surface-2)]/40 border border-[var(--hairline)]">
+      <div className="flex flex-col md:flex-row gap-4 p-3 rounded-xl bg-[var(--surface-2)]/20 border border-[var(--hairline)]">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
@@ -187,20 +188,20 @@ export function AdminUsersPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name or email..."
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface)] text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:border-blue-500 transition"
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface)] text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:border-indigo-500 transition"
           />
         </div>
       </div>
 
       {isLoading ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="flex items-center gap-4 p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--surface-2)]/30 animate-pulse"
+              className="flex items-center gap-3 p-4 rounded-xl border border-[var(--hairline)] bg-[var(--surface-2)]/20 animate-pulse"
             >
-              <div className="h-12 w-12 rounded-full bg-white/[0.04]" />
-              <div className="space-y-2 flex-1">
+              <div className="h-10 w-10 rounded-full bg-white/[0.04] shrink-0" />
+              <div className="space-y-2 flex-1 min-w-0">
                 <div className="h-4 bg-white/[0.04] rounded w-1/2" />
                 <div className="h-3 bg-white/[0.04] rounded w-3/4" />
               </div>
@@ -228,7 +229,7 @@ export function AdminUsersPage() {
           <p className="text-sm text-muted-foreground mt-1">Try resetting your search term.</p>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredStudents.map((student) => {
             const isProcessing = processingIds.has(student.id);
 

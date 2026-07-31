@@ -198,7 +198,7 @@ export function AppRoutes() {
           >
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<StudentDashboard />} />
-            <Route path="courses" element={<StudentCoursesPage />} />
+            {/* <Route path="courses" element={<StudentCoursesPage />} /> */}
             <Route path="courses/:slug" element={<CourseDetailPage />} />
             <Route path="courses/:slug/lessons/:lessonId" element={<LessonPage />} />
             <Route path="profile" element={<StudentProfilePage />} />

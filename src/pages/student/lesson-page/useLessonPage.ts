@@ -14,24 +14,11 @@ import { useAccentRgb } from "@/presentation/lib/useAccent";
 import { usePageProtection } from "@/hooks/usePageProtection";
 import { useExtensionGuard } from "@/components/course-preview/ExtensionGuard";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONSTANTS
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** How often to flush progress to the backend (ms) */
 const BACKEND_SAVE_INTERVAL_MS = 5_000;
 
-/** How often to flush progress to localStorage (ms) — fast, keeps resume accurate */
 const LS_SAVE_INTERVAL_MS = 1_000;
 
-/** Access methods that bypass sequential locking entirely */
 const BYPASS_ACCESS_METHODS = new Set(["FULL_ACCESS", "ADMIN_OVERRIDE", "INSTRUCTOR_OVERRIDE"]);
-
-// ─────────────────────────────────────────────────────────────────────────────
-// LOCALSTORAGE HELPERS
-// Each course gets a single JSON blob keyed by courseId.
-// Shape: { [lessonId]: { watchTime, percentage, isCompleted } }
-// ─────────────────────────────────────────────────────────────────────────────
 
 interface ProgressEntry {
   watchTime: number;
@@ -56,15 +43,9 @@ function loadProgressStore(courseId: string): ProgressStore {
 function saveProgressStore(courseId: string, store: ProgressStore) {
   try {
     localStorage.setItem(lsKey(courseId), JSON.stringify(store));
-  } catch {
-    // Quota exceeded — silently ignore
-  }
+  } catch {}
 }
 
-/**
- * Merges a single lesson entry into the localStorage store and persists it.
- * Never downgrades watchTime or isCompleted once set.
- */
 function upsertProgressEntry(
   courseId: string,
   lessonId: string,
@@ -81,21 +62,6 @@ function upsertProgressEntry(
   return store;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CLIENT-SIDE SEQUENTIAL LOCK ENGINE
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Re-computes isLocked for every module and chapter using the student's current
- * completedChapters set. Runs on the client on every render so locks update
- * the instant markChapterComplete() fires — no re-fetch needed.
- *
- * Rules (mirror of the backend SEQUENTIAL strategy):
- *  - Module 0  → always unlocked
- *  - Module N  → locked if any chapter in Module N-1 is NOT completed
- *  - Chapter 0 of unlocked module → always unlocked
- *  - Chapter N → locked if Chapter N-1 is NOT completed
- */
 function applySequentialLocks(modules: unknown[], completedChapters: Set<string>): unknown[] {
   let lastChapterId: string | null = null;
 
@@ -130,10 +96,6 @@ function applySequentialLocks(modules: unknown[], completedChapters: Set<string>
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HOOK
-// ─────────────────────────────────────────────────────────────────────────────
-
 export function useLessonPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: realCourse, isLoading: isCourseLoading } = useCourse(slug || "mock-course");
@@ -145,9 +107,14 @@ export function useLessonPage() {
     { skip: !courseId },
   );
 
-  const { data: progressData } = useGetMyCourseProgressQuery(courseId || "", {
-    skip: !courseId,
-  });
+  const { data: progressData, isLoading: isProgressLoading } = useGetMyCourseProgressQuery(
+    courseId || "",
+    {
+      skip: !courseId,
+    },
+  );
+
+  const [initialLessonSelected, setInitialLessonSelected] = useState(false);
 
   const [updateLessonProgress] = useUpdateLessonProgressMutation();
 
@@ -160,7 +127,6 @@ export function useLessonPage() {
     4: false,
   });
 
-  // ── Raw module list (no lock computation yet) ───────────────────────────
   const contentDataAny = contentData as any;
   const accessMethod: string = contentDataAny?.accessMethod ?? "SEQUENTIAL";
 
@@ -173,14 +139,15 @@ export function useLessonPage() {
 
   const courseTitle = realCourse?.title || "Course Player";
 
-  // Flat chapter list from raw data — used only for selectedChapterId resolution
   const allChaptersRaw = (rawModules as { chapters?: unknown[] }[]).flatMap(
     (m) => (m.chapters ?? []) as ChapterDisplay[],
   );
 
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
   const activeChapter =
-    allChaptersRaw.find((c) => c.id === selectedChapterId) || allChaptersRaw[0] || null;
+    allChaptersRaw.find((c) => c.id === selectedChapterId) ||
+    (initialLessonSelected ? allChaptersRaw[0] : null) ||
+    null;
 
   const { data: videoData, isFetching: isVideoLoading } = useGetChapterVideoQuery(
     activeChapter?.id || "",
@@ -189,14 +156,11 @@ export function useLessonPage() {
 
   const activeVideoUrl = !isVideoLoading && videoData?.success ? videoData.videoUrl : null;
 
-  // ── Progress state ────────────────────────────────────────────────────────
-  const [localProgress, setLocalProgress] = useState<Map<string, { watchTime: number; percentage: number }>>(
-    new Map(),
-  );
+  const [localProgress, setLocalProgress] = useState<
+    Map<string, { watchTime: number; percentage: number }>
+  >(new Map());
   const [completedChapters, setCompletedChapters] = useState<Set<string>>(new Set());
 
-  // ── SEED 1: localStorage (synchronous, fires as soon as courseId is known) ──
-  // This is what makes resume work immediately on reload — no waiting for API.
   useEffect(() => {
     if (!courseId) return;
 
@@ -213,10 +177,8 @@ export function useLessonPage() {
 
     setCompletedChapters(completed);
     setLocalProgress(progressMap);
-  }, [courseId]); // Runs once when courseId is first available
+  }, [courseId]);
 
-  // ── SEED 2: Backend merge (runs whenever progressData arrives / is updated) ──
-  // Takes the maximum of backend + localStorage to avoid downgrading progress.
   useEffect(() => {
     if (!progressData?.data || !courseId) return;
 
@@ -228,7 +190,6 @@ export function useLessonPage() {
     for (const record of progressData.data) {
       const lsEntry = lsStore[record.lessonId];
 
-      // Never downgrade: take the higher of backend vs localStorage
       const watchTime = Math.max(record.watchTime, lsEntry?.watchTime ?? 0);
       const percentage = Math.max(record.percentage, lsEntry?.percentage ?? 0);
       const isCompleted = record.isCompleted || (lsEntry?.isCompleted ?? false);
@@ -236,11 +197,9 @@ export function useLessonPage() {
       if (isCompleted) completed.add(record.lessonId);
       progressMap.set(record.lessonId, { watchTime, percentage });
 
-      // Write merged result back to localStorage
       lsStore[record.lessonId] = { watchTime, percentage, isCompleted };
     }
 
-    // Also pick up localStorage-only entries (saved since the last backend sync)
     for (const [lessonId, entry] of Object.entries(lsStore)) {
       if (!progressMap.has(lessonId)) {
         if (entry.isCompleted) completed.add(lessonId);
@@ -253,7 +212,6 @@ export function useLessonPage() {
     setLocalProgress(progressMap);
   }, [progressData, courseId]);
 
-  // ── Real-time sequential locks (client-side, reactive to completedChapters) ─
   const resolvedModules = BYPASS_ACCESS_METHODS.has(accessMethod)
     ? rawModules
     : applySequentialLocks(rawModules, completedChapters);
@@ -262,23 +220,106 @@ export function useLessonPage() {
     (m) => (m.chapters ?? []) as ChapterDisplay[],
   );
 
-  // ── Resume position ───────────────────────────────────────────────────────
+  useEffect(() => {
+    if (initialLessonSelected) return;
+    if (!courseId) return;
+    if (isContentLoading || isProgressLoading) return;
+
+    if (allChapters.length === 0) {
+      setInitialLessonSelected(true);
+      return;
+    }
+
+    let targetLessonId: string | null = null;
+
+    const lastAccessedId = localStorage.getItem(`lms:lastAccessed:${courseId}`);
+    if (lastAccessedId) {
+      const lastAccessedChapter = allChapters.find((c) => c.id === lastAccessedId);
+
+      if (
+        lastAccessedChapter &&
+        !(lastAccessedChapter as any).isLocked &&
+        !completedChapters.has(lastAccessedId)
+      ) {
+        targetLessonId = lastAccessedId;
+      }
+    }
+
+    if (!targetLessonId) {
+      const firstUnlockedIncomplete = allChapters.find(
+        (c) => !(c as any).isLocked && !completedChapters.has(c.id),
+      );
+      if (firstUnlockedIncomplete) {
+        targetLessonId = firstUnlockedIncomplete.id;
+      }
+    }
+
+    if (!targetLessonId && lastAccessedId) {
+      const lastAccessedChapter = allChapters.find((c) => c.id === lastAccessedId);
+      if (lastAccessedChapter && !(lastAccessedChapter as any).isLocked) {
+        targetLessonId = lastAccessedId;
+      }
+    }
+
+    if (!targetLessonId) {
+      const completedList = allChapters.filter((c) => completedChapters.has(c.id));
+      if (completedList.length > 0) {
+        targetLessonId = completedList[completedList.length - 1].id;
+      }
+    }
+
+    if (!targetLessonId) {
+      targetLessonId = allChapters[0]?.id || null;
+    }
+
+    if (targetLessonId) {
+      setSelectedChapterId(targetLessonId);
+
+      const targetModuleIndex = (resolvedModules as { chapters?: { id: string }[] }[]).findIndex(
+        (m) => m.chapters?.some((c) => c.id === targetLessonId),
+      );
+      if (targetModuleIndex !== -1) {
+        setOpen((prev) => ({ ...prev, [targetModuleIndex]: true }));
+      }
+    }
+
+    setInitialLessonSelected(true);
+  }, [
+    courseId,
+    allChapters,
+    completedChapters,
+    initialLessonSelected,
+    isContentLoading,
+    isProgressLoading,
+    resolvedModules,
+  ]);
+
+  useEffect(() => {
+    if (courseId && selectedChapterId) {
+      localStorage.setItem(`lms:lastAccessed:${courseId}`, selectedChapterId);
+    }
+  }, [courseId, selectedChapterId]);
+
   const resumeFromTime = localProgress.get(activeChapter?.id ?? "")?.watchTime ?? 0;
 
-  // ── Progress flush refs ───────────────────────────────────────────────────
   const pendingProgressRef = useRef<{ currentTime: number; duration: number } | null>(null);
   const lastBackendSaveRef = useRef<number>(0);
   const lastLsSaveRef = useRef<number>(0);
 
   const [completedModuleId, setCompletedModuleId] = useState<string | null>(null);
 
-  // ── markChapterComplete ───────────────────────────────────────────────────
-  // Also writes isCompleted=true to localStorage immediately so it survives reload.
   const markChapterComplete = useCallback(
     (id: string) => {
-      // Persist to localStorage right away — this is the source of truth for locks
       if (courseId) {
         upsertProgressEntry(courseId, id, { isCompleted: true, percentage: 100 });
+
+        const currentDur = pendingProgressRef.current?.duration || 0;
+        updateLessonProgress({
+          lessonId: id,
+          percentage: 100,
+          watchTime: currentDur > 0 ? currentDur : 9999,
+          courseId,
+        }).catch(() => {});
       }
 
       setCompletedChapters((prev) => {
@@ -298,7 +339,6 @@ export function useLessonPage() {
         return next;
       });
 
-      // Check if this was the last chapter of a module → trigger module completion banner
       for (const mod of resolvedModules as { id: string; chapters?: { id: string }[] }[]) {
         const chapters = mod.chapters ?? [];
         if (chapters.length > 0 && chapters[chapters.length - 1].id === id) {
@@ -311,10 +351,6 @@ export function useLessonPage() {
     [resolvedModules, courseId],
   );
 
-  // ── handleVideoProgress ───────────────────────────────────────────────────
-  // Called every ~500ms by useYouTubePlayer.
-  // → localStorage every 1 second (fast — survives tab close / reload)
-  // → Backend every 5 seconds (throttled — avoids API spam)
   const handleVideoProgress = useCallback(
     (currentTime: number, duration: number) => {
       if (!activeChapter || !courseId) return;
@@ -326,7 +362,6 @@ export function useLessonPage() {
       const percentage = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
       const watchTime = Math.round(currentTime);
 
-      // ── Save to localStorage every 1 s ───────────────────────────────────
       if (now - lastLsSaveRef.current >= LS_SAVE_INTERVAL_MS) {
         lastLsSaveRef.current = now;
 
@@ -341,7 +376,6 @@ export function useLessonPage() {
         });
       }
 
-      // ── Save to backend every 5 s ─────────────────────────────────────────
       if (now - lastBackendSaveRef.current >= BACKEND_SAVE_INTERVAL_MS) {
         lastBackendSaveRef.current = now;
         updateLessonProgress({ lessonId: chapterId, percentage, watchTime, courseId }).catch(
@@ -366,18 +400,12 @@ export function useLessonPage() {
     resumeFromTime,
   });
 
-  // ── playerHasStarted: hides the Resume button once playback begins ─────────
-  // Resets to false whenever the active chapter changes (or on initial mount),
-  // so the button re-appears correctly on next page load / chapter switch.
   const [playerHasStarted, setPlayerHasStarted] = useState(false);
 
   useEffect(() => {
     if (isPlaying) setPlayerHasStarted(true);
   }, [isPlaying]);
 
-  // ── Flush on chapter switch / unmount ─────────────────────────────────────
-  // Saves the most recent tick to both localStorage and backend immediately
-  // when the student navigates away, so nothing is lost.
   useEffect(() => {
     return () => {
       const pending = pendingProgressRef.current;
@@ -387,21 +415,18 @@ export function useLessonPage() {
       const percentage = dur > 0 ? Math.min(100, (ct / dur) * 100) : 0;
       const watchTime = Math.round(ct);
 
-      // localStorage flush — synchronous, always succeeds
       upsertProgressEntry(courseId, activeChapter.id, { watchTime, percentage });
 
-      // Backend flush — fire-and-forget
       updateLessonProgress({
         lessonId: activeChapter.id,
         percentage,
         watchTime,
         courseId,
-      }).catch(() => {/* best-effort */});
+      }).catch(() => {});
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChapter?.id, courseId]);
 
-  // ── Also flush to localStorage on window unload (tab close / refresh) ──────
   useEffect(() => {
     const handleUnload = () => {
       const pending = pendingProgressRef.current;
@@ -424,11 +449,11 @@ export function useLessonPage() {
   if (prevChapterIdRef[0] !== (activeChapter?.id ?? null)) {
     prevChapterIdRef[1](activeChapter?.id ?? null);
     if (playgroundLaunched) setPlaygroundLaunched(false);
-    // Reset progress-flush state on chapter switch
+
     pendingProgressRef.current = null;
     lastBackendSaveRef.current = 0;
     lastLsSaveRef.current = 0;
-    // Reset so the Resume button re-appears on the next chapter if it has saved progress
+
     setPlayerHasStarted(false);
   }
 
@@ -452,7 +477,6 @@ export function useLessonPage() {
   );
   const totalDurationStr = `${Math.floor(totalDurationSeconds / 3600)}h ${Math.floor((totalDurationSeconds % 3600) / 60)}m`;
 
-  // ── UI state ──────────────────────────────────────────────────────────────
   const glow = useAccentRgb();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const playerContainerRef = useRef<HTMLDivElement>(null);
@@ -491,7 +515,6 @@ export function useLessonPage() {
     }
   };
 
-  // Resume handler: seek the player to the saved position
   const handleResume = () => {
     const savedTime = localProgress.get(activeChapter?.id ?? "")?.watchTime ?? 0;
     if (savedTime > 0) {
@@ -500,11 +523,6 @@ export function useLessonPage() {
     }
   };
 
-  // Resume button is shown ONLY during the initial load (before the player starts):
-  // - page reload with saved progress
-  // - navigating back to the lesson
-  // - logging in and returning to the course
-  // Once isPlaying fires for the first time, playerHasStarted → true and the button hides.
   const hasSavedProgress =
     activeChapter?.type === "VIDEO" &&
     !completedChapters.has(activeChapter.id) &&
@@ -558,5 +576,6 @@ export function useLessonPage() {
     togglePlay,
     handleSeek,
     handleRewatch,
+    initialLessonSelected,
   };
 }

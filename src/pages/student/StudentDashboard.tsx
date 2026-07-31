@@ -73,14 +73,14 @@ export function StudentDashboard() {
   const enrolledCount = enrollments.length;
   const activeBatchesCount = batches.length;
   const completedCourses = enrollments.filter(
-    (e) => e.isCompleted || e.completedPercent >= 100,
+    (e) => e.isCompleted || (e.completedPercent || 0) >= 100,
   ).length;
 
   const averageProgress =
     enrolledCount > 0
       ? Math.round(
-          enrollments.reduce((acc, curr) => acc + curr.completedPercent, 0) / enrolledCount,
-        )
+        enrollments.reduce((acc, curr) => acc + (curr.completedPercent || 0), 0) / enrolledCount,
+      )
       : 0;
 
   const activeLiveNow = meetings.filter((m) => m.status === "LIVE");
@@ -280,17 +280,17 @@ export function StudentDashboard() {
                         <div className="h-1.5 flex-1 bg-foreground/10 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-violet)] rounded-full transition-all duration-500"
-                            style={{ width: `${enroll.completedPercent}%` }}
+                            style={{ width: `${enroll.completedPercent || 0}%` }}
                           />
                         </div>
                         <span className="text-[10px] font-semibold text-muted-foreground font-mono tracking-wider w-8 text-right">
-                          {Math.round(enroll.completedPercent)}%
+                          {Math.round(enroll.completedPercent || 0)}%
                         </span>
                       </div>
                     </div>
 
                     <Link
-                      to={`/student/profile`}
+                      to={`/student/courses/${enroll.course?.slug}`}
                       className="shrink-0 flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-foreground transition-all hover:bg-gradient-to-r hover:from-[var(--accent-cyan)] hover:to-[var(--accent-violet)] hover:text-background hover:scale-105 shadow-md"
                       aria-label={`Resume ${enroll.course?.title}`}
                     >
