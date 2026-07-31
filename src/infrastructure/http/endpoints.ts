@@ -19,6 +19,7 @@ export const endpoints = {
     register: `${AUTH_URL}/api/auth/register`,
     sendOtp: `${AUTH_URL}/api/auth/otp-send`,
     verifyOtp: `${AUTH_URL}/api/auth/otp-verify`,
+    updatePassword: `${AUTH_URL}/api/auth/update-password`,
   },
   course: {
     list: `${COURSE_URL}/api/courses`,

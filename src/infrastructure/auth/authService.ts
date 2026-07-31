@@ -25,6 +25,11 @@ interface VerifyTokenData {
   user: { id: string; role: string };
 }
 
+export interface UpdatePasswordPayload {
+  oldPassword?: string;
+  newPassword?: string;
+}
+
 export const authService = {
   login: (payload: LoginPayload) =>
     apiClient.post<LoginData>(endpoints.auth.login, payload, { skipAuthRefresh: true }),
@@ -49,4 +54,7 @@ export const authService = {
     apiClient.post<{ message: string }>(endpoints.auth.verifyOtp, payload, {
       skipAuthRefresh: true,
     }),
+
+  updatePassword: (payload: UpdatePasswordPayload) =>
+    apiClient.put<{ message: string }>(endpoints.auth.updatePassword, payload),
 };

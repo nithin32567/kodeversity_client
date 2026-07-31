@@ -9,8 +9,9 @@ import {
   DialogClose,
 } from "@/presentation/core-ui/dialog";
 import { studentService } from "@/infrastructure/student/studentService";
+import { authService } from "@/infrastructure/auth/authService";
 import { toast } from "sonner";
-import { RefreshCw, Mail, Phone, GraduationCap, User as UserIcon } from "lucide-react";
+import { RefreshCw, Mail, Phone, GraduationCap, User as UserIcon, Lock } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/presentation/core-ui/input-otp";
 
 interface StudentProfileEditModalProps {
@@ -46,15 +47,39 @@ export function StudentProfileEditModal({
   const [otp, setOtp] = useState("");
   const [emailVerifying, setEmailVerifying] = useState(false);
 
+  // Password states
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
   const handleSave = async () => {
     try {
+      if (passwordData.newPassword && passwordData.newPassword !== passwordData.confirmPassword) {
+        toast.error("New passwords do not match.");
+        return;
+      }
+
       setLoading(true);
       await studentService.updateStudent(userId, formData);
+
+      if (passwordData.oldPassword && passwordData.newPassword) {
+        await authService.updatePassword({
+          oldPassword: passwordData.oldPassword,
+          newPassword: passwordData.newPassword,
+        });
+      }
+
       toast.success("Profile updated successfully!");
       onSuccess();
       onOpenChange(false);
-    } catch (err) {
-      toast.error("Failed to update profile.");
+    } catch (err: any) {
+      if (err.response?.data?.error === "INVALID_OLD_PASSWORD") {
+        toast.error("Invalid old password.");
+      } else {
+        toast.error("Failed to update profile.");
+      }
       console.error(err);
     } finally {
       setLoading(false);
@@ -210,6 +235,37 @@ export function StudentProfileEditModal({
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="grid gap-4 pt-4 border-t border-border/50">
+            <h4 className="text-xs font-mono uppercase tracking-widest text-[var(--accent-cyan)] flex items-center gap-2">
+              <Lock className="h-3 w-3" /> Update Password
+            </h4>
+            <div className="grid gap-2">
+              <input
+                type="password"
+                placeholder="Old Password"
+                value={passwordData.oldPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
+                className="flex h-10 w-full rounded-md border px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono bg-background/50 border-border/50 focus-visible:ring-[var(--accent-cyan)]"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="password"
+                placeholder="New Password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                className="flex h-10 w-full rounded-md border px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono bg-background/50 border-border/50 focus-visible:ring-[var(--accent-cyan)]"
+              />
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                className="flex h-10 w-full rounded-md border px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono bg-background/50 border-border/50 focus-visible:ring-[var(--accent-cyan)]"
+              />
+            </div>
           </div>
         </div>
 
