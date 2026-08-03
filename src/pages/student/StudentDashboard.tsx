@@ -70,22 +70,6 @@ export function StudentDashboard() {
     );
   }
 
-  const enrolledCount = enrollments.length;
-  const activeBatchesCount = batches.length;
-  const completedCourses = enrollments.filter(
-    (e) => e.isCompleted || (e.completedPercent || 0) >= 100,
-  ).length;
-
-  const averageProgress =
-    enrolledCount > 0
-      ? Math.round(
-        enrollments.reduce((acc, curr) => acc + (curr.completedPercent || 0), 0) / enrolledCount,
-      )
-      : 0;
-
-  const activeLiveNow = meetings.filter((m) => m.status === "LIVE");
-  const upcomingMeetings = meetings.filter((m) => m.status === "UPCOMING").slice(0, 3);
-
   const enrolledCoursesList = enrollments
     .map((enroll) => {
       const course = courses.find((c) => c.id === enroll.courseId);
@@ -95,6 +79,22 @@ export function StudentDashboard() {
       };
     })
     .filter((e) => e.course !== undefined);
+
+  const enrolledCount = enrolledCoursesList.length;
+  const activeBatchesCount = batches.length;
+  const completedCourses = enrolledCoursesList.filter(
+    (e) => e.isCompleted || (e.completedPercent || 0) >= 100,
+  ).length;
+
+  const averageProgress =
+    enrolledCount > 0
+      ? Math.round(
+        enrolledCoursesList.reduce((acc, curr) => acc + (curr.completedPercent || 0), 0) / enrolledCount,
+      )
+      : 0;
+
+  const activeLiveNow = meetings.filter((m) => m.status === "LIVE");
+  const upcomingMeetings = meetings.filter((m) => m.status === "UPCOMING").slice(0, 3);
 
   return (
     <main className="relative flex-1 w-full overflow-hidden bg-background py-8 md:py-12">

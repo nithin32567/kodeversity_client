@@ -18,12 +18,13 @@ import { toast } from "sonner";
 export type BannerState = "UNSUBMITTED" | "PENDING" | "APPROVED" | "HIDDEN";
 
 interface ModuleCompletionBannerProps {
-  /** The slug of the current course (for the API call) */
-  courseSlug: string;
+  courseId: string;
   /** Module ID whose unlock is being requested */
   moduleId: string;
   /** Title of the completed module, displayed in the banner */
   moduleName: string;
+  /** ID of the next module to unlock */
+  nextModuleId?: string;
   /** Title of the next module to unlock */
   nextModuleName?: string;
   /**
@@ -39,9 +40,10 @@ interface ModuleCompletionBannerProps {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function ModuleCompletionBanner({
-  courseSlug,
+  courseId,
   moduleId,
   moduleName,
+  nextModuleId,
   nextModuleName,
   existingRequestStatus,
   onApproved,
@@ -68,8 +70,18 @@ export function ModuleCompletionBanner({
   }, [bannerState, onApproved]);
 
   const handleRequestUnlock = async () => {
+    if (!nextModuleId) {
+      toast.error("No next module available to unlock.");
+      return;
+    }
+    
     try {
-      const result = await requestUnlock({ courseSlug, moduleId }).unwrap();
+      const result = await requestUnlock({ 
+        courseId, 
+        currentModuleId: moduleId, 
+        nextModuleId 
+      }).unwrap();
+      
       if (result.status === "APPROVED") {
         setBannerState("APPROVED");
         toast.success("Module unlocked immediately!");

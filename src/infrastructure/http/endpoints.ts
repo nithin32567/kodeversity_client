@@ -61,8 +61,8 @@ export const endpoints = {
       `${PROGRESS_URL}/progress/${courseSlug}/lessons/${lessonId}/complete`,
     certificates: `${PROGRESS_URL}/certificates`,
     // Curriculum gating — student facing
-    requestUnlock: (courseSlug: string, moduleId: string) =>
-      `${PROGRESS_URL}/progress/${courseSlug}/modules/${moduleId}/request-unlock`,
+    requestUnlock: () =>
+      `${COURSE_URL}/api/v1/modules/request-unlock`,
     moduleLockStatus: (courseSlug: string) =>
       `${PROGRESS_URL}/progress/${courseSlug}/module-lock-status`,
   },

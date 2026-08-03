@@ -305,23 +305,11 @@ function AddChapterPanel({
   const [uploadProgress, setUploadProgress] = useState(0);
 
   // Playground states
-  const [pgTemplate, setPgTemplate] = useState("1vmpg");
-  const [pgId, setPgId] = useState("6659f131a9de4f16462740bc");
-  const [pgName, setPgName] = useState("1VMPG");
-  const [pgPlayground, setPgPlayground] = useState("ubuntu2404n1");
-  const [pgDifficulty, setPgDifficulty] = useState<"easy" | "medium" | "hard" | "expert">("easy");
-  const [pgMaxScore, setPgMaxScore] = useState("100");
-  const [showAdvancedPg, setShowAdvancedPg] = useState(false);
-
-  const handleTemplateChange = (presetId: string) => {
-    setPgTemplate(presetId);
-    const preset = PRESETS.find((p) => p.id === presetId);
-    if (preset) {
-      setPgId(preset.pg);
-      setPgName(preset.pgname);
-      setPgPlayground(preset.playground);
-    }
-  };
+  const [language, setLanguage] = useState("python");
+  const [problemDescription, setProblemDescription] = useState("");
+  const [starterCode, setStarterCode] = useState("");
+  const [hints, setHints] = useState<string[]>([]);
+  const [hintInput, setHintInput] = useState("");
 
   // Quiz states
   const [quizTitle, setQuizTitle] = useState("");
@@ -394,7 +382,7 @@ function AddChapterPanel({
     if (!title.trim()) return true;
     if (type === "VIDEO" && !videoUrl.trim()) return true;
     if (type === "DOCUMENT" && !documentUrl.trim()) return true;
-    if (type === "PLAYGROUND" && (!pgId.trim() || !pgPlayground.trim() || !pgName.trim()))
+    if (type === "PLAYGROUND" && (!language.trim() || !problemDescription.trim()))
       return true;
     if (type === "QUIZ") {
       const validQuestions = questions.filter((q) => q.questionText.trim());
@@ -428,11 +416,10 @@ function AddChapterPanel({
       payload.documentUrl = documentUrl.trim() || null;
     } else if (type === "PLAYGROUND") {
       payload.playgroundConfig = {
-        pg: pgId.trim(),
-        pgname: pgName.trim(),
-        playground: pgPlayground.trim(),
-        difficulty: pgDifficulty,
-        maxScore: pgMaxScore ? parseInt(pgMaxScore, 10) : 100,
+        language: language.trim(),
+        problemDescription: problemDescription.trim(),
+        starterCode: starterCode.trim(),
+        hints,
       };
     } else if (type === "QUIZ") {
       const finalQuizTitle = quizTitle.trim() || `${title.trim()} Quiz`;
@@ -503,112 +490,98 @@ function AddChapterPanel({
         <div className="space-y-4 bg-card/40 border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
           <div className="flex items-center justify-between border-b border-[var(--hairline)] pb-2">
             <h4 className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
-              <TerminalSquare className="h-4 w-4 text-purple-400" /> Playground Configuration
+              <TerminalSquare className="h-4 w-4 text-purple-400" /> Coding Playground Configuration
             </h4>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Select Template Preset
-              </label>
-              <select
-                value={pgTemplate}
-                onChange={(e) => handleTemplateChange(e.target.value)}
-                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition cursor-pointer"
-              >
-                {PRESETS.map((preset) => (
-                  <option key={preset.id} value={preset.id}>
-                    {preset.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Difficulty Level
-              </label>
-              <select
-                value={pgDifficulty}
-                onChange={(e) =>
-                  setPgDifficulty(e.target.value as "easy" | "medium" | "hard" | "expert")
-                }
-                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition cursor-pointer"
-              >
-                <option value="easy">Easy (1.0x XP)</option>
-                <option value="medium">Medium (1.5x XP)</option>
-                <option value="hard">Hard (2.0x XP)</option>
-                <option value="expert">Expert (3.0x XP)</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Max Score / XP Points
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={pgMaxScore}
-                onChange={(e) => setPgMaxScore(e.target.value)}
-                placeholder="e.g. 100"
-                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
-              />
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Language
+            </label>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition cursor-pointer"
+            >
+              <option value="python">Python</option>
+              <option value="cpp">C++</option>
+              <option value="java">Java</option>
+              <option value="javascript">JavaScript</option>
+              <option value="go">Go</option>
+              <option value="csharp">C#</option>
+            </select>
           </div>
 
-          <div className="pt-2 border-t border-[var(--hairline)]">
-            <button
-              type="button"
-              onClick={() => setShowAdvancedPg(!showAdvancedPg)}
-              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-            >
-              {showAdvancedPg
-                ? "Hide Advanced Settings"
-                : "Show Advanced Settings (ZFS Parameters)"}
-            </button>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Problem Statement
+            </label>
+            <textarea
+              value={problemDescription}
+              onChange={(e) => setProblemDescription(e.target.value)}
+              rows={4}
+              placeholder="Describe the problem here (HTML/Markdown allowed)..."
+              className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition resize-none"
+            />
+          </div>
 
-            {showAdvancedPg && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 pt-3 border-t border-dashed border-[var(--hairline)]">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                    Template Group ID (pg)
-                  </label>
-                  <input
-                    type="text"
-                    value={pgId}
-                    onChange={(e) => setPgId(e.target.value)}
-                    placeholder="Mongo ObjectId"
-                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
-                  />
-                </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Starter Code
+            </label>
+            <textarea
+              value={starterCode}
+              onChange={(e) => setStarterCode(e.target.value)}
+              rows={4}
+              placeholder="Initial code for the editor (e.g. function signature)..."
+              className="w-full rounded-lg border border-[var(--hairline)] bg-[#1e1e1e] font-mono text-gray-300 px-3 py-2 text-xs focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition resize-none"
+            />
+          </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                    Template Name (pgname)
-                  </label>
-                  <input
-                    type="text"
-                    value={pgName}
-                    onChange={(e) => setPgName(e.target.value)}
-                    placeholder="e.g. UBUNTU2404"
-                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                    VM Template Slug
-                  </label>
-                  <input
-                    type="text"
-                    value={pgPlayground}
-                    onChange={(e) => setPgPlayground(e.target.value)}
-                    placeholder="e.g. ubuntu2404n1"
-                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
-                  />
-                </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Hints
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={hintInput}
+                onChange={(e) => setHintInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (hintInput.trim()) {
+                      setHints([...hints, hintInput.trim()]);
+                      setHintInput("");
+                    }
+                  }
+                }}
+                placeholder="Type a hint and press Enter"
+                className="flex-1 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (hintInput.trim()) {
+                    setHints([...hints, hintInput.trim()]);
+                    setHintInput("");
+                  }
+                }}
+                className="px-3 py-2 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+              >
+                Add Hint
+              </button>
+            </div>
+            {hints.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {hints.map((hint, idx) => (
+                  <div key={idx} className="flex items-center justify-between bg-[var(--surface-2)] p-2 rounded-md text-xs border border-[var(--hairline)]">
+                    <span className="text-muted-foreground truncate flex-1 mr-2">{hint}</span>
+                    <button type="button" onClick={() => setHints(hints.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-300 shrink-0">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -896,34 +869,17 @@ function EditChapterPanel({
 
   // Playground states
   const pgConf = chapter.playgroundConfig;
-  const initialPreset =
-    PRESETS.find((p) => p.pg === pgConf?.pg && p.playground === pgConf?.playground)?.id || "1vmpg";
-
-  const [pgTemplate, setPgTemplate] = useState(initialPreset);
-  const [pgId, setPgId] = useState(pgConf?.pg || "6659f131a9de4f16462740bc");
-  const [pgName, setPgName] = useState(pgConf?.pgname || "1VMPG");
-  const [pgPlayground, setPgPlayground] = useState(pgConf?.playground || "ubuntu2404n1");
-  const [pgDifficulty, setPgDifficulty] = useState<"easy" | "medium" | "hard" | "expert">(
-    pgConf?.difficulty || "easy",
-  );
-  const [pgMaxScore, setPgMaxScore] = useState(pgConf?.maxScore?.toString() || "100");
-  const [showAdvancedPg, setShowAdvancedPg] = useState(false);
-
-  const handleTemplateChange = (presetId: string) => {
-    setPgTemplate(presetId);
-    const preset = PRESETS.find((p) => p.id === presetId);
-    if (preset) {
-      setPgId(preset.pg);
-      setPgName(preset.pgname);
-      setPgPlayground(preset.playground);
-    }
-  };
+  const [language, setLanguage] = useState(pgConf?.language || "python");
+  const [problemDescription, setProblemDescription] = useState(pgConf?.problemDescription || "");
+  const [starterCode, setStarterCode] = useState(pgConf?.starterCode || "");
+  const [hints, setHints] = useState<string[]>(pgConf?.hints || []);
+  const [hintInput, setHintInput] = useState("");
 
   const isFormInvalid = () => {
     if (!title.trim()) return true;
     if (type === "VIDEO" && !videoUrl.trim()) return true;
     if (type === "DOCUMENT" && !documentUrl.trim()) return true;
-    if (type === "PLAYGROUND" && (!pgId.trim() || !pgPlayground.trim() || !pgName.trim()))
+    if (type === "PLAYGROUND" && (!language.trim() || !problemDescription.trim()))
       return true;
     return false;
   };
@@ -945,11 +901,10 @@ function EditChapterPanel({
       payload.documentUrl = documentUrl.trim() || null;
     } else if (type === "PLAYGROUND") {
       payload.playgroundConfig = {
-        pg: pgId.trim(),
-        pgname: pgName.trim(),
-        playground: pgPlayground.trim(),
-        difficulty: pgDifficulty,
-        maxScore: pgMaxScore ? parseInt(pgMaxScore, 10) : 100,
+        language: language.trim(),
+        problemDescription: problemDescription.trim(),
+        starterCode: starterCode.trim(),
+        hints,
       };
     }
 
@@ -1009,112 +964,98 @@ function EditChapterPanel({
         <div className="space-y-4 bg-card/40 border border-[var(--hairline)] rounded-xl p-4 transition-all duration-300">
           <div className="flex items-center justify-between border-b border-[var(--hairline)] pb-2">
             <h4 className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
-              <TerminalSquare className="h-4 w-4 text-purple-400" /> Playground Configuration
+              <TerminalSquare className="h-4 w-4 text-purple-400" /> Coding Playground Configuration
             </h4>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Select Template Preset
-              </label>
-              <select
-                value={pgTemplate}
-                onChange={(e) => handleTemplateChange(e.target.value)}
-                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition cursor-pointer"
-              >
-                {PRESETS.map((preset) => (
-                  <option key={preset.id} value={preset.id}>
-                    {preset.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Difficulty Level
-              </label>
-              <select
-                value={pgDifficulty}
-                onChange={(e) =>
-                  setPgDifficulty(e.target.value as "easy" | "medium" | "hard" | "expert")
-                }
-                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition cursor-pointer"
-              >
-                <option value="easy">Easy (1.0x XP)</option>
-                <option value="medium">Medium (1.5x XP)</option>
-                <option value="hard">Hard (2.0x XP)</option>
-                <option value="expert">Expert (3.0x XP)</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Max Score / XP Points
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={pgMaxScore}
-                onChange={(e) => setPgMaxScore(e.target.value)}
-                placeholder="e.g. 100"
-                className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
-              />
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Language
+            </label>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition cursor-pointer"
+            >
+              <option value="python">Python</option>
+              <option value="cpp">C++</option>
+              <option value="java">Java</option>
+              <option value="javascript">JavaScript</option>
+              <option value="go">Go</option>
+              <option value="csharp">C#</option>
+            </select>
           </div>
 
-          <div className="pt-2 border-t border-[var(--hairline)]">
-            <button
-              type="button"
-              onClick={() => setShowAdvancedPg(!showAdvancedPg)}
-              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-            >
-              {showAdvancedPg
-                ? "Hide Advanced Settings"
-                : "Show Advanced Settings (ZFS Parameters)"}
-            </button>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Problem Statement
+            </label>
+            <textarea
+              value={problemDescription}
+              onChange={(e) => setProblemDescription(e.target.value)}
+              rows={4}
+              placeholder="Describe the problem here (HTML/Markdown allowed)..."
+              className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition resize-none"
+            />
+          </div>
 
-            {showAdvancedPg && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 pt-3 border-t border-dashed border-[var(--hairline)]">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                    Template Group ID (pg)
-                  </label>
-                  <input
-                    type="text"
-                    value={pgId}
-                    onChange={(e) => setPgId(e.target.value)}
-                    placeholder="Mongo ObjectId"
-                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
-                  />
-                </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Starter Code
+            </label>
+            <textarea
+              value={starterCode}
+              onChange={(e) => setStarterCode(e.target.value)}
+              rows={4}
+              placeholder="Initial code for the editor (e.g. function signature)..."
+              className="w-full rounded-lg border border-[var(--hairline)] bg-[#1e1e1e] font-mono text-gray-300 px-3 py-2 text-xs focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition resize-none"
+            />
+          </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                    Template Name (pgname)
-                  </label>
-                  <input
-                    type="text"
-                    value={pgName}
-                    onChange={(e) => setPgName(e.target.value)}
-                    placeholder="e.g. UBUNTU2404"
-                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                    VM Template Slug
-                  </label>
-                  <input
-                    type="text"
-                    value={pgPlayground}
-                    onChange={(e) => setPgPlayground(e.target.value)}
-                    placeholder="e.g. ubuntu2404n1"
-                    className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
-                  />
-                </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Hints
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={hintInput}
+                onChange={(e) => setHintInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (hintInput.trim()) {
+                      setHints([...hints, hintInput.trim()]);
+                      setHintInput("");
+                    }
+                  }
+                }}
+                placeholder="Type a hint and press Enter"
+                className="flex-1 rounded-lg border border-[var(--hairline)] bg-[var(--surface-2,var(--card))] px-3 py-2 text-xs text-foreground focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (hintInput.trim()) {
+                    setHints([...hints, hintInput.trim()]);
+                    setHintInput("");
+                  }
+                }}
+                className="px-3 py-2 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+              >
+                Add Hint
+              </button>
+            </div>
+            {hints.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {hints.map((hint, idx) => (
+                  <div key={idx} className="flex items-center justify-between bg-[var(--surface-2)] p-2 rounded-md text-xs border border-[var(--hairline)]">
+                    <span className="text-muted-foreground truncate flex-1 mr-2">{hint}</span>
+                    <button type="button" onClick={() => setHints(hints.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-300 shrink-0">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>

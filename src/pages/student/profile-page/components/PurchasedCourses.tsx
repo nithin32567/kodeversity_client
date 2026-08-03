@@ -167,7 +167,7 @@ export function PurchasedCourses({ purchasedCourses, glow }: PurchasedCoursesPro
             It seems you haven't bought or registered in any courses yet.
           </p>
           <Link
-            to="/student/courses"
+            to="/courses"
             className="mt-6 inline-flex items-center gap-2 rounded-full border border-foreground/15 bg-foreground/[0.02] px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/90 transition-colors hover:border-[var(--accent-cyan)]/40 hover:text-[var(--accent-cyan)]"
           >
             Browse Course Catalog <ArrowRight className="h-3.5 w-3.5" />

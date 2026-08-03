@@ -309,17 +309,24 @@ export function useLessonPage() {
   const [completedModuleId, setCompletedModuleId] = useState<string | null>(null);
 
   const markChapterComplete = useCallback(
-    (id: string) => {
+    async (id: string) => {
       if (courseId) {
         upsertProgressEntry(courseId, id, { isCompleted: true, percentage: 100 });
 
         const currentDur = pendingProgressRef.current?.duration || 0;
-        updateLessonProgress({
-          lessonId: id,
-          percentage: 100,
-          watchTime: currentDur > 0 ? currentDur : 9999,
-          courseId,
-        }).catch(() => {});
+        try {
+          await updateLessonProgress({
+            lessonId: id,
+            percentage: 100,
+            watchTime: currentDur > 0 ? currentDur : 9999,
+            courseId,
+          }).unwrap();
+        } catch (err) {
+          console.error("Failed to mark lesson complete in backend", err);
+          // We can silently ignore or show a toast here. But if it fails, 
+          // we should still allow the user to proceed locally, though unlocking might fail.
+          // For now, let's proceed to update local state so they are not hard-blocked.
+        }
       }
 
       setCompletedChapters((prev) => {

@@ -15,6 +15,10 @@ import {
 import { MagicBentoCard, MagicBentoSection } from "@/presentation/global/MagicBento";
 import { useAccentRgb } from "@/presentation/lib/useAccent";
 import { useCourses } from "@/presentation/features/student-learning/hooks/useCourses";
+import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
+import { UserRole } from "@/domain/auth";
+import { studentService, type StudentEnrollment } from "@/infrastructure/student/studentService";
+import { useEffect } from "react";
 import type { Course } from "@/domain/course";
 
 const categories = [
@@ -72,10 +76,21 @@ function formatPrice(price: number, currency: string): string {
 }
 
 export function StudentCoursesPage() {
+  const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState("All Courses");
   const [query, setQuery] = useState("");
+  const [enrollments, setEnrollments] = useState<StudentEnrollment[]>([]);
   const glow = useAccentRgb();
   const { data: courses, isLoading, isError } = useCourses();
+
+  useEffect(() => {
+    if (user?.role === UserRole.STUDENT) {
+      studentService
+        .getStudentEnrollments(user.id)
+        .then(setEnrollments)
+        .catch(console.error);
+    }
+  }, [user]);
 
   const filtered = useMemo(() => {
     if (!courses) return [];
@@ -172,7 +187,13 @@ export function StudentCoursesPage() {
             spotlightRadius={400}
           >
             {filtered.map((course, i) => (
-              <CourseGridCard key={course.id} course={course} index={i} />
+              <CourseGridCard
+                key={course.id}
+                course={course}
+                index={i}
+                userRole={user?.role}
+                isEnrolled={enrollments.some((e) => e.courseId === course.id)}
+              />
             ))}
           </MagicBentoSection>
         )}
@@ -210,7 +231,17 @@ function CourseCardSkeleton() {
   );
 }
 
-function CourseGridCard({ course, index }: { course: Course; index: number }) {
+function CourseGridCard({
+  course,
+  index,
+  userRole,
+  isEnrolled,
+}: {
+  course: Course;
+  index: number;
+  userRole?: string;
+  isEnrolled?: boolean;
+}) {
   const glow = useAccentRgb();
   const palette_item = palette[index % palette.length];
   const badge = badgeCycle[index % badgeCycle.length];
@@ -279,7 +310,7 @@ function CourseGridCard({ course, index }: { course: Course; index: number }) {
             }`}
           >
             {badge}
-          </span>
+          </span> 
         )}
         {course.thumbnailUrl ? (
           <img
@@ -350,7 +381,13 @@ function CourseGridCard({ course, index }: { course: Course; index: number }) {
           to={`/student/courses/${course.slug}`}
           className="group/btn mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-violet)] py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-background transition-all hover:scale-[1.02] hover:shadow-[0_0_24px_var(--accent-cyan)]"
         >
-          <span>View Course</span>
+          <span>
+            {userRole === UserRole.STUDENT
+              ? isEnrolled
+                ? "Enrolled"
+                : "Enroll"
+              : "View Course"}
+          </span>
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-1" />
         </Link>
       </div>

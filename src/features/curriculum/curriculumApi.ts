@@ -102,15 +102,16 @@ export const curriculumApi = baseApi.injectEndpoints({
 
     requestModuleUnlock: build.mutation<
       { status: UnlockRequestStatus },
-      { courseSlug: string; moduleId: string }
+      { courseId: string; currentModuleId: string; nextModuleId: string }
     >({
-      query: ({ courseSlug, moduleId }) => ({
-        url: endpoints.progress.requestUnlock(courseSlug, moduleId),
+      query: (body) => ({
+        url: endpoints.progress.requestUnlock(),
         method: "POST",
+        body,
       }),
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {

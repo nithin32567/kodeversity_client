@@ -9,9 +9,9 @@ export function PlaygroundLaunchGate({
   chapter: ChapterDisplay;
   onLaunch: () => void;
 }) {
-  const diff = chapter.playgroundConfig?.difficulty ?? "easy";
+  const diff = "easy";
   const meta = DIFFICULTY_META[diff] ?? DIFFICULTY_META.easy;
-  const maxScore = chapter.playgroundConfig?.maxScore ?? 100;
+  const maxScore = 100;
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#07060f] relative overflow-hidden">

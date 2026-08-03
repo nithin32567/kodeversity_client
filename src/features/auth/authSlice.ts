@@ -39,9 +39,13 @@ export const bootstrapAuth = createAsyncThunk("auth/bootstrap", async (_, { reje
       role: normalizeRole(user.role),
     };
     return normalized;
-  } catch (err) {
+  } catch (err: any) {
     tokenStore.set(null);
-    return rejectWithValue(err);
+    return rejectWithValue({
+      status: err?.status ?? "FETCH_ERROR",
+      message: err?.message ?? "Failed to bootstrap auth",
+      code: err?.code ?? "UNKNOWN",
+    });
   }
 });
 
@@ -59,8 +63,12 @@ export const loginThunk = createAsyncThunk(
         avatarUrl: user.avatarUrl,
       };
       return normalized;
-    } catch (err) {
-      return rejectWithValue(err);
+    } catch (err: any) {
+      return rejectWithValue({
+        status: err?.status ?? "FETCH_ERROR",
+        message: err?.message ?? "Login failed",
+        code: err?.code ?? "UNKNOWN",
+      });
     }
   },
 );

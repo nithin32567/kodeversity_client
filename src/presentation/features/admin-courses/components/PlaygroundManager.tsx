@@ -224,19 +224,12 @@ export function PlaygroundManager() {
             <div className="flex-1 min-h-0 relative">
               <PlaygroundWorkspace
                 config={{
-                  pg: state.inspectingInstance.type,
-                  pgname: state.inspectingInstance.type,
-                  playground: state.inspectingInstance.type,
-                  difficulty: "medium",
-                  maxScore: 100,
+                  language: "python",
+                  problemDescription: "Admin inspecting instance",
+                  hints: [],
                 }}
                 from="admin"
                 fromId="admin-inspect"
-                perm="rw"
-                existingInstance={{
-                  id: state.inspectingInstance.id,
-                  postName: state.inspectingInstance.postName,
-                }}
                 onStop={() => actions.setInspectingInstance(null)}
               />
             </div>

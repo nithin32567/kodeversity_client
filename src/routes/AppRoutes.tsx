@@ -140,6 +140,7 @@ export function AppRoutes() {
             <Route path="register" element={<RegisterPage />} />
             {/* Dedicated admin login — no auth guard, admin-only portal */}
             <Route path="admin/login" element={<AdminLoginPage />} />
+            <Route path="courses" element={<StudentCoursesPage />} />
           </Route>
 
           <Route

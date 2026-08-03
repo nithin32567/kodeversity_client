@@ -1,13 +1,4 @@
-/**
- * LoginPage
- * Migrated from: src/routes/login.tsx
- *
- * Changes from TanStack version:
- *   - Removed: createFileRoute, Route.useSearch(), useNavigate from @tanstack
- *   - Added: useNavigate, useSearchParams from react-router-dom
- *   - Auth: useAppDispatch + loginThunk instead of useAuth().login (Context)
- *   - Redirect: navigate() with string paths instead of TanStack { to } objects
- */
+
 import { useState, type FormEvent } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAppDispatch } from "@/app/hooks";

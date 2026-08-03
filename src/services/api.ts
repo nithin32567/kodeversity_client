@@ -19,8 +19,14 @@ const apiBaseQuery: BaseQueryFn<ApiBaseQueryArgs, unknown, unknown> = async ({
   try {
     const data = await apiRequest(url, { method, body, ...extraOptions });
     return { data };
-  } catch (err) {
-    return { error: err };
+  } catch (err: any) {
+    return { 
+      error: {
+        status: err?.status ?? "FETCH_ERROR",
+        message: err?.message ?? "An unexpected network error occurred",
+        code: err?.code ?? "UNKNOWN",
+      } 
+    };
   }
 };
 

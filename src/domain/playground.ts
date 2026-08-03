@@ -1,9 +1,8 @@
 export interface PlaygroundConfig {
-  pg: string;
-  pgname: string;
-  playground: string;
-  difficulty: "easy" | "medium" | "hard" | "expert";
-  maxScore: number;
+  language: string;
+  problemDescription: string;
+  starterCode?: string;
+  hints: string[];
 }
 
 export type PlaygroundLifecyclePhase =

@@ -362,8 +362,7 @@ export function AdminPreviewCoursePage() {
                           {formatDuration(activeChapter.duration)}
                         </span>
                         <span className="flex items-center gap-1">
-                          <BarChart3 className="h-3.5 w-3.5" />{" "}
-                          {activeChapter.playgroundConfig?.difficulty || "Beginner"}
+                          <BarChart3 className="h-3.5 w-3.5" /> Beginner
                         </span>
                         <span className="flex items-center gap-1">
                           <FileText className="h-3.5 w-3.5" /> English

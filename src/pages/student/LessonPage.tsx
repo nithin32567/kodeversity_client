@@ -127,9 +127,10 @@ export function LessonPage() {
                 const nextMod = modList[modIndex + 1];
                 return completedMod ? (
                   <ModuleCompletionBanner
-                    courseSlug={slug ?? "mock-course"}
+                    courseId={courseId!}
                     moduleId={completedMod.id}
                     moduleName={completedMod.title}
+                    nextModuleId={nextMod?.id}
                     nextModuleName={nextMod?.title}
                     onApproved={() => setCompletedModuleId(null)}
                   />
