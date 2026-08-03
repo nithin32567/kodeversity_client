@@ -30,7 +30,12 @@ export function AdminArchivePage() {
   const displayCourses = activeTab === "suspended" ? suspendedCourses : deletedCourses;
 
   const handleReactivate = async (courseId: string) => {
-    if (await confirm("Are you sure you want to reactivate this course?")) {
+    const isConfirmed = await confirm({
+      title: "Reactivate Course",
+      message: "Are you sure you want to reactivate this course?",
+      confirmText: "Reactivate",
+    });
+    if (isConfirmed) {
       try {
         await suspendCourse({ id: courseId, isSuspended: false }).unwrap();
         toast.success("Course reactivated successfully");
@@ -42,7 +47,12 @@ export function AdminArchivePage() {
   };
 
   const handleRestore = async (courseId: string) => {
-    if (await confirm("Are you sure you want to restore this deleted course?")) {
+    const isConfirmed = await confirm({
+      title: "Restore Course",
+      message: "Are you sure you want to restore this deleted course?",
+      confirmText: "Restore",
+    });
+    if (isConfirmed) {
       try {
         await restoreCourse(courseId).unwrap();
         toast.success("Course restored successfully");

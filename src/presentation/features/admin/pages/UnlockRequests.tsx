@@ -21,6 +21,7 @@ import {
   GraduationCap,
   Filter,
   Unlock,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -28,9 +29,11 @@ import {
   useGetInstructorUnlockRequestsQuery,
   useApproveUnlockRequestMutation,
   useRejectUnlockRequestMutation,
+  useDeleteUnlockRequestMutation,
 } from "@/features/curriculum/curriculumApi";
 import type { UnlockRequest, UnlockRequestStatus } from "@/features/curriculum/curriculumApi";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
+import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -92,8 +95,11 @@ function RequestRow({
 }) {
   const [approve, { isLoading: approving }] = useApproveUnlockRequestMutation();
   const [reject, { isLoading: rejecting }] = useRejectUnlockRequestMutation();
-  const isBusy = approving || rejecting;
+  const [deleteReq, { isLoading: deleting }] = useDeleteUnlockRequestMutation();
+  const { confirm } = useConfirm();
+  const isBusy = approving || rejecting || deleting;
   const isPending = request.status === "PENDING";
+  const courseUnavailable = request.courseIsDeleted || request.courseIsSuspended;
 
   const handleApprove = async () => {
     try {
@@ -112,6 +118,23 @@ function RequestRow({
       toast.warning(`❌ Request rejected for ${request.studentName || request.studentEmail}`);
     } catch {
       toast.error("Failed to reject request. Please try again.");
+    }
+  };
+
+  const handleDelete = async () => {
+    const isConfirmed = await confirm({
+      title: "Delete Request",
+      message: "Are you sure you want to delete this module unlock request?",
+      confirmText: "Delete",
+      destructive: true,
+    });
+    if (!isConfirmed) return;
+
+    try {
+      await deleteReq(request.id).unwrap();
+      toast.success("Request deleted successfully");
+    } catch {
+      toast.error("Failed to delete request. Please try again.");
     }
   };
 
@@ -146,9 +169,21 @@ function RequestRow({
 
       {/* Course */}
       <td className="px-4 py-3.5">
-        <div className="flex items-center gap-1.5 text-xs text-foreground/80">
-          <BookOpen className="h-3.5 w-3.5 shrink-0 text-sky-400" />
-          <span className="line-clamp-1">{request.courseName || request.courseId}</span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1.5 text-xs text-foreground/80">
+            <BookOpen className="h-3.5 w-3.5 shrink-0 text-sky-400" />
+            <span className="line-clamp-1">{request.courseName || request.courseId}</span>
+          </div>
+          {request.courseIsDeleted && (
+            <span className="text-[10px] text-rose-400 font-semibold flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" /> Course Deleted
+            </span>
+          )}
+          {request.courseIsSuspended && !request.courseIsDeleted && (
+            <span className="text-[10px] text-amber-400 font-semibold flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" /> Course Suspended
+            </span>
+          )}
         </div>
       </td>
 
@@ -194,41 +229,52 @@ function RequestRow({
 
       {/* Actions */}
       <td className="px-4 py-3.5">
-        {isPending ? (
-          <div className="flex items-center gap-2">
-            <button
-              id={`approve-request-${request.id}`}
-              onClick={handleApprove}
-              disabled={isBusy}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-md shadow-violet-500/20 transition hover:bg-violet-500 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {approving ? (
-                <RefreshCw className="h-3 w-3 animate-spin" />
-              ) : (
-                <CheckCircle2 className="h-3 w-3" />
-              )}
-              Approve
-            </button>
+        <div className="flex items-center gap-2">
+          {isPending ? (
+            <>
+              <button
+                id={`approve-request-${request.id}`}
+                onClick={handleApprove}
+                disabled={isBusy || courseUnavailable}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-md shadow-violet-500/20 transition hover:bg-violet-500 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {approving ? (
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-3 w-3" />
+                )}
+                Approve
+              </button>
 
-            <button
-              id={`reject-request-${request.id}`}
-              onClick={handleReject}
-              disabled={isBusy}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-600/50 bg-slate-700/60 px-3 py-1.5 text-[11px] font-semibold text-slate-300 transition hover:border-rose-500/50 hover:bg-rose-500/10 hover:text-rose-300 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {rejecting ? (
-                <RefreshCw className="h-3 w-3 animate-spin" />
-              ) : (
-                <XCircle className="h-3 w-3" />
-              )}
-              Reject
-            </button>
-          </div>
-        ) : (
-          <span className="text-[11px] text-muted-foreground italic">
-            {request.status === "APPROVED" ? "Approved ✓" : "Rejected ✗"}
-          </span>
-        )}
+              <button
+                id={`reject-request-${request.id}`}
+                onClick={handleReject}
+                disabled={isBusy || courseUnavailable}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-600/50 bg-slate-700/60 px-3 py-1.5 text-[11px] font-semibold text-slate-300 transition hover:border-rose-500/50 hover:bg-rose-500/10 hover:text-rose-300 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {rejecting ? (
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                ) : (
+                  <XCircle className="h-3 w-3" />
+                )}
+                Reject
+              </button>
+            </>
+          ) : (
+            <span className="text-[11px] text-muted-foreground italic flex-1">
+              {request.status === "APPROVED" ? "Approved ✓" : "Rejected ✗"}
+            </span>
+          )}
+          
+          <button
+            onClick={handleDelete}
+            disabled={isBusy}
+            title="Delete Request"
+            className="p-1.5 rounded-lg border border-transparent text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition disabled:opacity-40 disabled:cursor-not-allowed ml-auto"
+          >
+            {deleting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+          </button>
+        </div>
       </td>
     </tr>
   );

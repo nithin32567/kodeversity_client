@@ -42,35 +42,51 @@ export function AdminDashboard() {
 
   return (
     <main className="px-4 pb-5 sm:px-5 lg:px-6 lg:pb-6 space-y-4 lg:space-y-5 overflow-y-auto">
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
-        {data.kpis.map((k) => (
-          <KpiCard key={k.label} {...k} />
-        ))}
-      </div>
+      {data.kpis && data.kpis.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+          {data.kpis.map((k) => (
+            <KpiCard key={k.label} {...k} />
+          ))}
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
-        <div className="xl:col-span-8 min-w-0">
-          <OverviewAnalytics />
+      {(data.revenueData?.length > 0 || data.recentActivities?.length > 0) && (
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+          {data.revenueData?.length > 0 && (
+            <div className="xl:col-span-8 min-w-0">
+              <OverviewAnalytics data={data.revenueData} />
+            </div>
+          )}
+          {data.recentActivities?.length > 0 && (
+            <div className="xl:col-span-4 min-w-0">
+              <RecentActivities activities={data.recentActivities} />
+            </div>
+          )}
         </div>
-        <div className="xl:col-span-4 min-w-0">
-          <RecentActivities />
-        </div>
-      </div>
+      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-4">
-        <div className="xl:col-span-5 min-w-0">
-          <EnrollmentsDonut />
+      {(data.enrollmentDistribution?.length > 0 || data.systemStatus?.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-4">
+          {data.enrollmentDistribution?.length > 0 && (
+            <div className="xl:col-span-5 min-w-0">
+              <EnrollmentsDonut />
+            </div>
+          )}
+          {data.revenueData?.length > 0 && (
+            <div className="xl:col-span-4 min-w-0">
+              <RevenueBars />
+            </div>
+          )}
+          {data.systemStatus?.length > 0 && (
+            <div className="xl:col-span-3 min-w-0 space-y-4">
+              <SystemStatus />
+            </div>
+          )}
         </div>
-        <div className="xl:col-span-4 min-w-0">
-          <RevenueBars />
-        </div>
-        <div className="xl:col-span-3 min-w-0 space-y-4">
-          <SystemStatus />
-        </div>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <TopCategories />
+        {data.enrollmentDistribution?.length > 0 && <TopCategories />}
         <QuickActions
           onAddStudentClick={() => openUserModal("STUDENT")}
           onAddInstructorClick={() => openUserModal("INSTRUCTOR")}
@@ -78,7 +94,7 @@ export function AdminDashboard() {
         />
       </div>
 
-      <TopCoursesTable />
+      {data.topCourses?.length > 0 && <TopCoursesTable />}
 
       <CreateUserModal
         isOpen={isUserModalOpen}

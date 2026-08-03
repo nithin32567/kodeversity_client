@@ -45,10 +45,12 @@ export function CreateCourseModal({
       await instructorService.createCourse({
         title: title.trim(),
         slug: slug.trim(),
-        description: description.trim() || undefined,
+        subtitle: "Comprehensive course on " + title.trim(),
+        description: description.trim() || "No description provided.",
         level,
-        price: price === "" ? undefined : Number(price),
-        coverImageUrl: coverImageUrl.trim() || undefined,
+        price: price === "" ? 0 : Number(price),
+        currency: "INR",
+        thumbnailUrl: coverImageUrl.trim() || undefined,
       });
       toast.success(`Course "${title}" created successfully!`);
       onCreated();

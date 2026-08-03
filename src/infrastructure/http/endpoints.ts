@@ -106,13 +106,15 @@ export const endpoints = {
       `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}/reject`,
     patchUnlockRequest: (requestId: string) =>
       `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}`,
+    deleteUnlockRequest: (requestId: string) =>
+      `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}`,
     accessOverride: (enrollmentId: string) =>
       `${COURSE_URL}/api/v1/enrollments/${enrollmentId}/access-override`,
   },
   instructor: {
     myCourses: `${COURSE_URL}/api/instructor/courses`,
     myBatches: `${COURSE_URL}/api/instructor/batches`,
-    createCourse: `${COURSE_URL}/api/instructor/courses`,
+    createCourse: `${COURSE_URL}/api/courses`,
 
     createModule: (courseId: string) => `${COURSE_URL}/api/courses/${courseId}/modules`,
     updateModule: (moduleId: string) => `${COURSE_URL}/api/modules/${moduleId}`,
@@ -133,6 +135,8 @@ export const endpoints = {
     rejectUnlockRequest: (requestId: string) =>
       `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}/reject`,
     patchUnlockRequest: (requestId: string) =>
+      `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}`,
+    deleteUnlockRequest: (requestId: string) =>
       `${COURSE_URL}/api/v1/modules/unlock-requests/${requestId}`,
   },
   playground: {

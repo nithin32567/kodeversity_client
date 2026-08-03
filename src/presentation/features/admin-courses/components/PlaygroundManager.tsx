@@ -11,14 +11,14 @@ export function PlaygroundManager() {
   const { state, actions } = usePlaygroundManager();
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 w-full my-8">
+    <main className="flex-1 px-4 pb-6 sm:px-6 lg:px-8 lg:pb-8 space-y-6 overflow-y-auto max-w-[1400px] mx-auto w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight md:text-2xl font-display text-foreground">
+          <h1 className="text-2xl font-bold tracking-tight md:text-3xl font-display">
             Playground Management
-          </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Configure baseline templates and monitor active running containers.
           </p>
         </div>
@@ -42,9 +42,9 @@ export function PlaygroundManager() {
           {state.activeTab === "templates" && (
             <button
               onClick={() => actions.setIsFormOpen(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[image:var(--gradient-cta)] text-xs font-semibold text-white px-4 py-2.5 shadow-md shadow-indigo-500/20 hover:opacity-90 active:scale-[0.98] transition cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[image:var(--gradient-cta)] text-sm font-semibold text-white px-4 py-2.5 shadow-md shadow-indigo-500/20 hover:opacity-90 active:scale-[0.98] transition cursor-pointer"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4.5 w-4.5" />
               <span>Create Profile</span>
             </button>
           )}
@@ -236,6 +236,6 @@ export function PlaygroundManager() {
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }

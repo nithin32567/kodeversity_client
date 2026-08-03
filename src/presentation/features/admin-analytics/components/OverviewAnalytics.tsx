@@ -1,9 +1,14 @@
 import { Panel, MonthPill } from "./Card";
-import { useAnalyticsData } from "../hooks/useAnalyticsData";
 import { AnalyticsChart } from "./AnalyticsChart";
+import type { RevenueData } from "@/domain/admin-analytics";
 
-export function OverviewAnalytics() {
-  const { timelineData, selectedMonth } = useAnalyticsData();
+export function OverviewAnalytics({ data = [] }: { data?: RevenueData[] }) {
+  const chartData = data.map((d) => ({
+    d: d.month,
+    students: 0,
+    enrollments: 0,
+    revenue: d.revenue,
+  }));
 
   return (
     <Panel
@@ -13,11 +18,11 @@ export function OverviewAnalytics() {
           <Legend dot="#3b82f6" label="Students" />
           <Legend dot="#a855f7" label="Enrollments" />
           <Legend dot="#10b981" label="Revenue" />
-          <MonthPill label={selectedMonth} />
+          <MonthPill label="This Month" />
         </div>
       }
     >
-      <AnalyticsChart data={timelineData} />
+      <AnalyticsChart data={chartData} />
     </Panel>
   );
 }

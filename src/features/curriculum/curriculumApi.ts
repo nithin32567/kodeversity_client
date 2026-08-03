@@ -19,6 +19,8 @@ export interface UnlockRequest {
   studentEmail: string;
   courseId: string;
   courseName: string;
+  courseIsDeleted?: boolean;
+  courseIsSuspended?: boolean;
   moduleId: string;
   moduleName: string;
   /** ID of the instructor assigned to this student/course */
@@ -91,6 +93,14 @@ export const curriculumApi = baseApi.injectEndpoints({
       invalidatesTags: ["UnlockRequests"],
     }),
 
+    deleteUnlockRequest: build.mutation<void, string>({
+      query: (requestId) => ({
+        url: endpoints.admin.deleteUnlockRequest(requestId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["UnlockRequests"],
+    }),
+
     setAccessOverride: build.mutation<void, AccessOverridePayload>({
       query: ({ enrollmentId, strategy }) => ({
         url: endpoints.admin.accessOverride(enrollmentId),
@@ -121,6 +131,7 @@ export const {
   useApproveUnlockRequestMutation,
   useRejectUnlockRequestMutation,
   usePatchUnlockRequestMutation,
+  useDeleteUnlockRequestMutation,
   useSetAccessOverrideMutation,
   useRequestModuleUnlockMutation,
 } = curriculumApi;

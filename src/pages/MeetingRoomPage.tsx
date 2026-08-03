@@ -156,7 +156,13 @@ export function MeetingRoomPage() {
       <div className="absolute top-4 left-4 z-50">
         <button
           onClick={async () => {
-            if (await confirm("Are you sure you want to leave the live class?")) {
+            const isConfirmed = await confirm({
+              title: "Leave Class",
+              message: "Are you sure you want to leave the live class?",
+              confirmText: "Leave",
+              destructive: true,
+            });
+            if (isConfirmed) {
               meeting?.leaveRoom();
               navigate(-1);
             }

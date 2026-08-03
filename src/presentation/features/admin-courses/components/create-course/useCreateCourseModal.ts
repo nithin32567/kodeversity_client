@@ -151,14 +151,7 @@ export function useCreateCourseModal(
 
     try {
       if (user?.role === "INSTRUCTOR") {
-        await instructorService.createCourse({
-          title: payload.title,
-          slug: payload.slug,
-          description: payload.description,
-          level: payload.level,
-          price: payload.price,
-          coverImageUrl: payload.thumbnailUrl || undefined,
-        });
+        await instructorService.createCourse(payload as any);
       } else {
         await managementService.createCourse(payload);
       }
