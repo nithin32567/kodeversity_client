@@ -45,7 +45,6 @@ export function CreateCourseModal({
       await instructorService.createCourse({
         title: title.trim(),
         slug: slug.trim(),
-        subtitle: "Comprehensive course on " + title.trim(),
         description: description.trim() || "No description provided.",
         level,
         price: price === "" ? 0 : Number(price),
