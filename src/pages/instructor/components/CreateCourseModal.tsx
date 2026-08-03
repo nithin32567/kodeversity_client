@@ -48,8 +48,7 @@ export function CreateCourseModal({
         description: description.trim() || "No description provided.",
         level,
         price: price === "" ? 0 : Number(price),
-        currency: "INR",
-        thumbnailUrl: coverImageUrl.trim() || undefined,
+        coverImageUrl: coverImageUrl.trim() || undefined,
       });
       toast.success(`Course "${title}" created successfully!`);
       onCreated();
