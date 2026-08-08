@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { User } from "@/domain/user";
 import { UserRole } from "@/domain/auth";
-import { authService } from "@/infrastructure/auth/authService";
+import { authService, type GoogleLoginPayload } from "@/infrastructure/auth/authService";
 import { tokenStore, setUnauthorizedHandler } from "@/infrastructure/http/apiClient";
 import type { AppDispatch } from "@/app/store";
 
@@ -72,6 +72,30 @@ export const loginThunk = createAsyncThunk(
     }
   },
 );
+
+export const googleLoginThunk = createAsyncThunk(
+  "auth/googleLogin",
+  async (payload: GoogleLoginPayload, { rejectWithValue }) => {
+    try {
+      const { accessToken, user } = await authService.googleLogin(payload);
+      tokenStore.set(accessToken);
+      const normalized: User = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: normalizeRole(user.role as string),
+        avatarUrl: user.avatarUrl,
+      };
+      return normalized;
+    } catch (err: any) {
+      return rejectWithValue({
+        status: err?.status ?? "FETCH_ERROR",
+        message: err?.message ?? "Google login failed",
+        code: err?.code ?? "UNKNOWN",
+      });
+    }
+  }
+);
 export const logoutThunk = createAsyncThunk("auth/logout", async () => {
   try {
     await authService.logout();
@@ -123,6 +147,14 @@ export const authSlice = createSlice({
         state.isAuthenticated = true;
       })
       .addCase(loginThunk.rejected, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+      })
+      .addCase(googleLoginThunk.fulfilled, (state, action: PayloadAction<User>) => {
+        state.user = action.payload;
+        state.isAuthenticated = true;
+      })
+      .addCase(googleLoginThunk.rejected, (state) => {
         state.user = null;
         state.isAuthenticated = false;
       });

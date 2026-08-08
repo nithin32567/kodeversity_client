@@ -13,6 +13,12 @@ interface LoginData {
   user: User;
 }
 
+export interface GoogleLoginPayload {
+  idToken?: string;
+  code?: string;
+  role?: "student" | "instructor";
+}
+
 interface RegisterData {
   userId: string;
 }
@@ -33,6 +39,9 @@ export interface UpdatePasswordPayload {
 export const authService = {
   login: (payload: LoginPayload) =>
     apiClient.post<LoginData>(endpoints.auth.login, payload, { skipAuthRefresh: true }),
+
+  googleLogin: (payload: GoogleLoginPayload) =>
+    apiClient.post<LoginData>(endpoints.auth.googleLogin, payload, { skipAuthRefresh: true }),
 
   register: (payload: RegisterPayload) =>
     apiClient.post<RegisterData>(endpoints.auth.register, payload, { skipAuthRefresh: true }),

@@ -163,7 +163,7 @@ export function StudentCard({
             className="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-400 hover:text-white px-2 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500 transition cursor-pointer"
           >
             <Trash2 className="h-3 w-3" />
-            Delete
+            Delete Permanently
           </button>
         </div>
       </div>

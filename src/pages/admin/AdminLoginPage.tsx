@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAppDispatch } from "@/app/hooks";
-import { loginThunk } from "@/features/auth/authSlice";
+import { loginThunk, googleLoginThunk } from "@/features/auth/authSlice";
 import { getAuthErrorMessage, UserRole } from "@/domain/auth";
 import { Shield, Lock, Mail, ArrowRight } from "lucide-react";
+import { useGoogleLogin } from "@react-oauth/google";
+import { FcGoogle } from "react-icons/fc";
 
 export function AdminLoginPage() {
   const dispatch = useAppDispatch();
@@ -15,6 +17,34 @@ export function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (codeResponse) => {
+      setBusy(true);
+      setError(null);
+      try {
+        const result = await dispatch(googleLoginThunk({ code: codeResponse.code }));
+
+        if (!googleLoginThunk.fulfilled.match(result)) {
+          const errMsg = (result.payload as Error | undefined)?.message ?? "LOGIN_FAILED";
+          setError(getAuthErrorMessage(errMsg));
+          return;
+        }
+
+        const user = result.payload;
+        if (user.role !== UserRole.ADMIN) {
+          setError("Access Denied: This portal is for administrators only.");
+          return;
+        }
+        navigate(redirectTo);
+      } catch (err) {
+        setError(getAuthErrorMessage((err as Error).message));
+      } finally {
+        setBusy(false);
+      }
+    },
+    flow: "auth-code",
+  });
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -128,6 +158,25 @@ export function AdminLoginPage() {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </>
           )}
+        </button>
+
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border"></span>
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card/60 px-2 text-muted-foreground backdrop-blur-xl">Secure SSO</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => handleGoogleLogin()}
+          disabled={busy}
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-background/50 text-sm font-medium transition-colors hover:bg-muted focus:outline-none disabled:opacity-60 shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+        >
+          <FcGoogle className="h-5 w-5" />
+          Admin Google Sign-In
         </button>
 
         <div className="text-center pt-2">

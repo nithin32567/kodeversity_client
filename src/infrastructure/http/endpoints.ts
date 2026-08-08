@@ -20,6 +20,7 @@ export const endpoints = {
     sendOtp: `${AUTH_URL}/api/auth/otp-send`,
     verifyOtp: `${AUTH_URL}/api/auth/otp-verify`,
     updatePassword: `${AUTH_URL}/api/auth/update-password`,
+    googleLogin: `${AUTH_URL}/api/auth/google`,
   },
   course: {
     list: `${COURSE_URL}/api/courses`,

@@ -3,6 +3,7 @@ import { Provider } from "react-redux";
 import { store } from "@/app/store";
 import { AuthBootstrap } from "@/app/AuthBootstrap";
 import { AppRoutes } from "@/routes/AppRoutes";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./styles.css";
 import posthog from 'posthog-js'
 import { PostHogProvider } from 'posthog-js/react'
@@ -18,11 +19,13 @@ import { ConfirmProvider } from "@/presentation/global/contexts/ConfirmContext";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Provider store={store}>
     <PostHogProvider client={posthog}>
-      <AuthBootstrap>
-        <ConfirmProvider>
-          <AppRoutes />
-        </ConfirmProvider>
-      </AuthBootstrap>
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "dummy_client_id"}>
+        <AuthBootstrap>
+          <ConfirmProvider>
+            <AppRoutes />
+          </ConfirmProvider>
+        </AuthBootstrap>
+      </GoogleOAuthProvider>
     </PostHogProvider>
   </Provider>,
 );

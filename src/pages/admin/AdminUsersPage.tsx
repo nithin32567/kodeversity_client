@@ -92,12 +92,16 @@ export function AdminUsersPage() {
       if (type === "SUSPEND") {
         await managementService.updateUserStatus(userId, "SUSPENDED");
         toast.success("Account suspended successfully");
+        setStudents((prev) => prev.filter((s) => s.id !== userId));
       } else if (type === "ACTIVATE") {
         await managementService.updateUserStatus(userId, "ACTIVE");
         toast.success("Account activated successfully");
+        setSuspendedStudents((prev) => prev.filter((s) => s.id !== userId));
       } else if (type === "DELETE") {
         await managementService.deleteUser(userId);
         toast.success("User deleted permanently");
+        setStudents((prev) => prev.filter((s) => s.id !== userId));
+        setSuspendedStudents((prev) => prev.filter((s) => s.id !== userId));
       }
       fetchStudents();
     } catch (err) {
@@ -160,21 +164,19 @@ export function AdminUsersPage() {
       <div className="flex items-center gap-2 border-b border-[var(--hairline)] pb-2">
         <button
           onClick={() => setActiveTab("ACTIVE")}
-          className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
-            activeTab === "ACTIVE"
-              ? "bg-indigo-500/10 text-indigo-400"
-              : "text-muted-foreground hover:bg-white/[0.04]"
-          }`}
+          className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${activeTab === "ACTIVE"
+            ? "bg-indigo-500/10 text-indigo-400"
+            : "text-muted-foreground hover:bg-white/[0.04]"
+            }`}
         >
           Active Students ({students.length})
         </button>
         <button
           onClick={() => setActiveTab("SUSPENDED")}
-          className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
-            activeTab === "SUSPENDED"
-              ? "bg-rose-500/10 text-rose-400"
-              : "text-muted-foreground hover:bg-white/[0.04]"
-          }`}
+          className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${activeTab === "SUSPENDED"
+            ? "bg-rose-500/10 text-rose-400"
+            : "text-muted-foreground hover:bg-white/[0.04]"
+            }`}
         >
           Suspended Accounts ({suspendedStudents.length})
         </button>
