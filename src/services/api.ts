@@ -25,6 +25,7 @@ const apiBaseQuery: BaseQueryFn<ApiBaseQueryArgs, unknown, unknown> = async ({
         status: err?.status ?? "FETCH_ERROR",
         message: err?.message ?? "An unexpected network error occurred",
         code: err?.code ?? "UNKNOWN",
+        data: err?.data,
       } 
     };
   }
@@ -45,6 +46,7 @@ export const baseApi = createApi({
     "Playgrounds",
     "Progress",
     "UnlockRequests",
+    "Exams",
   ],
   endpoints: () => ({}),
 });

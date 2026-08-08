@@ -44,7 +44,7 @@ async function extractError(res: Response): Promise<ApiError> {
     // Prefer the structured error code / message from the envelope.
     const code = payload.error ?? "UNKNOWN_ERROR";
     const msg = payload.error ?? payload.message ?? `Request failed: ${res.status}`;
-    return new ApiError(msg, res.status, code);
+    return new ApiError(msg, res.status, code, payload.data);
   } catch (parseError) {
     console.error("====== API CLIENT PARSE ERROR ======");
     console.error("URL:", res.url);

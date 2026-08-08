@@ -128,6 +128,27 @@ const StudentChallengesPage = lazy(() =>
 const MeetingRoomPage = lazy(() =>
   import("@/pages/MeetingRoomPage").then((m) => ({ default: m.MeetingRoomPage })),
 );
+const StudentExamsPage = lazy(() =>
+  import("@/pages/student/StudentExamsPage").then((m) => ({ default: m.StudentExamsPage })),
+);
+const StudentExamAttemptPage = lazy(() =>
+  import("@/pages/student/StudentExamAttemptPage").then((m) => ({
+    default: m.StudentExamAttemptPage,
+  })),
+);
+const InstructorExamsPage = lazy(() =>
+  import("@/pages/instructor/InstructorExamsPage").then((m) => ({
+    default: m.InstructorExamsPage,
+  })),
+);
+const AdminExamsPage = lazy(() =>
+  import("@/pages/admin/AdminExamsPage").then((m) => ({ default: m.AdminExamsPage })),
+);
+const ExamBuilderPage = lazy(() =>
+  import("@/presentation/features/exam/components/ExamBuilderPage").then((m) => ({
+    default: m.ExamBuilderPage,
+  })),
+);
 
 export function AppRoutes() {
   return (
@@ -169,6 +190,9 @@ export function AppRoutes() {
             <Route path="instructors" element={<AdminInstructorsPage />} />
             <Route path="live-classes" element={<AdminLiveClassesPage />} />
             <Route path="unlock-requests" element={<UnlockRequestsPage />} />
+            <Route path="exams" element={<AdminExamsPage />} />
+            <Route path="exams/create" element={<ExamBuilderPage />} />
+            <Route path="exams/:examId/edit" element={<ExamBuilderPage />} />
           </Route>
 
           <Route
@@ -187,6 +211,9 @@ export function AppRoutes() {
             <Route path="meetings" element={<InstructorMeetingsPage />} />
             <Route path="batches" element={<InstructorBatchesPage />} />
             <Route path="unlock-requests" element={<UnlockRequestsPage />} />
+            <Route path="exams" element={<InstructorExamsPage />} />
+            <Route path="exams/create" element={<ExamBuilderPage />} />
+            <Route path="exams/:examId/edit" element={<ExamBuilderPage />} />
           </Route>
 
           <Route
@@ -208,6 +235,8 @@ export function AppRoutes() {
             <Route path="settings" element={<StudentSettingsPage />} />
             <Route path="live-classes" element={<StudentLiveClassesPage />} />
             <Route path="challenges" element={<StudentChallengesPage />} />
+            <Route path="exams" element={<StudentExamsPage />} />
+            <Route path="exams/:examId/attempt/:attemptId" element={<StudentExamAttemptPage />} />
           </Route>
 
           <Route
