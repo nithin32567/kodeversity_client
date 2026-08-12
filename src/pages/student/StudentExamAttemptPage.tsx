@@ -46,6 +46,7 @@ export function StudentExamAttemptPage() {
     currentIndex,
     answers,
     selectOption,
+    updateTextAnswer,
     toggleFlag,
     clearAllFlags,
     goTo,
@@ -230,9 +231,22 @@ export function StudentExamAttemptPage() {
                 </div>
               </div>
 
-              {/* Options */}
-              <div className="space-y-3">
-                {currentQuestion.options.map((opt, oi) => {
+              {/* Options / Textarea */}
+              {currentQuestion.type === "QUIZZ" ? (
+                <div className="space-y-3">
+                  <textarea
+                    id={`answer-${currentQuestion.id}`}
+                    value={currentAnswer?.textAnswer || ""}
+                    onChange={(e) => updateTextAnswer(currentQuestion.id, e.target.value)}
+                    rows={6}
+                    placeholder="Write your answer here..."
+                    aria-label="Your answer"
+                    className="w-full resize-none rounded-xl border border-border bg-card px-5 py-4 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-[var(--primary)]/60 focus:ring-1 focus:ring-[var(--primary)]/20 transition"
+                  />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {currentQuestion.options.map((opt, oi) => {
                   const isSelected = currentAnswer?.selectedOptionId === opt.id;
                   return (
                     <button
@@ -267,7 +281,8 @@ export function StudentExamAttemptPage() {
                     </button>
                   );
                 })}
-              </div>
+                </div>
+              )}
 
               {/* Flag button */}
               <button

@@ -10,10 +10,10 @@ export const setupSchema = z.object({
   scheduledStartDate: z.string().optional(),
   scheduledEndDate: z.string().optional(),
   minQuestionsToAttend: z.number().min(0, "Min 0").optional(),
-  isSameMarkForAllQuestions: z.boolean().default(false),
+  isSameMarkForAllQuestions: z.boolean(),
   marksPerQuestion: z.number().min(1, "Min 1 mark").optional(),
   durationMin: z.number({ invalid_type_error: "Required" }).min(1, "Min 1 min"),
-  maxAttempts: z.number().min(1, "Min 1 attempt").default(1),
+  maxAttempts: z.number().min(1, "Min 1 attempt"),
 });
 
 export type SetupForm = z.infer<typeof setupSchema>;
@@ -32,5 +32,6 @@ export function makeEmptyQuestion(): QuestionDraft {
       { id: crypto.randomUUID(), text: "", isCorrect: false },
       { id: crypto.randomUUID(), text: "", isCorrect: false },
     ],
+    correctAnswerText: "",
   };
 }

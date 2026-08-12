@@ -8,6 +8,7 @@ import { useSaveAnswerMutation, useGetAttemptQuery } from "@/presentation/featur
 
 export interface AnswerState {
   selectedOptionId?: string;
+  textAnswer?: string;
   isFlagged: boolean;
   saving?: "saving" | "saved" | "error";
 }
@@ -22,6 +23,7 @@ interface UseExamAttemptResult {
   currentIndex: number;
   answers: Map<string, AnswerState>;
   selectOption: (questionId: string, optionId: string) => void;
+  updateTextAnswer: (questionId: string, text: string) => void;
   toggleFlag: (questionId: string) => void;
   clearAllFlags: () => Promise<void>;
   goTo: (index: number) => void;
@@ -50,6 +52,7 @@ export function useExamAttempt({
           if (!next.has(ans.questionId)) {
             next.set(ans.questionId, {
               selectedOptionId: ans.selectedOptionId ?? undefined,
+              textAnswer: ans.textAnswer ?? undefined,
               isFlagged: ans.isFlagged ?? false,
               saving: "saved",
             });
@@ -76,6 +79,7 @@ export function useExamAttempt({
             attemptId,
             questionId,
             selectedOptionId: state.selectedOptionId,
+            textAnswer: state.textAnswer,
             isFlagged: state.isFlagged,
           }).unwrap();
           setAnswers((prev) => {
@@ -114,6 +118,20 @@ export function useExamAttempt({
     [debouncedSave],
   );
 
+  const updateTextAnswer = useCallback(
+    (questionId: string, text: string) => {
+      setAnswers((prev) => {
+        const next = new Map(prev);
+        const existing = next.get(questionId) ?? { isFlagged: false };
+        const updated: AnswerState = { ...existing, textAnswer: text };
+        next.set(questionId, updated);
+        debouncedSave(questionId, updated);
+        return next;
+      });
+    },
+    [debouncedSave],
+  );
+
   const toggleFlag = useCallback(
     (questionId: string) => {
       setAnswers((prev) => {
@@ -135,6 +153,7 @@ export function useExamAttempt({
         attemptId,
         questionId,
         selectedOptionId: state.selectedOptionId,
+        textAnswer: state.textAnswer,
         isFlagged: false,
       }).unwrap()
     );
@@ -167,7 +186,7 @@ export function useExamAttempt({
   }, []);
 
   const answeredCount = useMemo(
-    () => [...answers.values()].filter((a) => a.selectedOptionId).length,
+    () => [...answers.values()].filter((a) => a.selectedOptionId || (a.textAnswer && a.textAnswer.trim().length > 0)).length,
     [answers],
   );
 
@@ -183,6 +202,7 @@ export function useExamAttempt({
     currentIndex,
     answers,
     selectOption,
+    updateTextAnswer,
     toggleFlag,
     clearAllFlags,
     goTo,

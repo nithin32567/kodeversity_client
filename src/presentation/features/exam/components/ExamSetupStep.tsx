@@ -1,14 +1,15 @@
 import { UseFormReturn } from "react-hook-form";
 import { AlertCircle } from "lucide-react";
-import { ExamTypeSelector } from "./ExamTypeSelector";
+import { ExamTypeSelector, type ExamType } from "./ExamTypeSelector";
 import { type SetupForm } from "./examBuilderConstants";
 
 interface ExamSetupStepProps {
   form: UseFormReturn<SetupForm>;
-  examType: "MCQ" | "LIVE_CODING";
+  examType: ExamType;
+  setExamType: (type: ExamType) => void;
 }
 
-export function ExamSetupStep({ form, examType }: ExamSetupStepProps) {
+export function ExamSetupStep({ form, examType, setExamType }: ExamSetupStepProps) {
   const {
     register,
     watch,
@@ -60,7 +61,7 @@ export function ExamSetupStep({ form, examType }: ExamSetupStepProps) {
         <label className="text-xs font-semibold text-foreground">
           Exam Type <span className="text-rose-400">*</span>
         </label>
-        <ExamTypeSelector value={examType} onChange={() => {}} />
+        <ExamTypeSelector value={examType} onChange={setExamType} />
       </div>
 
       {/* Marking Configuration */}

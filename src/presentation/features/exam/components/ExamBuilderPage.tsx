@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ClipboardCheck } from "lucide-react";
@@ -16,6 +16,7 @@ import { ExamSetupStep } from "./ExamSetupStep";
 import { ExamQuestionBuilderStep } from "./ExamQuestionBuilderStep";
 import { ExamSettingsStep } from "./ExamSettingsStep";
 import { ExamBuilderFooter } from "./ExamBuilderFooter";
+import { type ExamType } from "./ExamTypeSelector";
 
 export function ExamBuilderPage() {
   const { examId } = useParams<{ examId?: string }>();
@@ -32,12 +33,12 @@ export function ExamBuilderPage() {
     }
   }, [examId]);
 
-  const [step, setStep] = useState(savedState?.step ?? 0);
-  const [examType] = useState<"MCQ" | "LIVE_CODING">(savedState?.examType ?? "MCQ");
+  const [step, setStep] = useState<number>(savedState?.step ?? 0);
+  const [examType, setExamType] = useState<ExamType>(savedState?.examType ?? "MCQ");
   const [questions, setQuestions] = useState<QuestionDraft[]>(
     savedState?.questions ?? [makeEmptyQuestion()]
   );
-  const [selectedQIndex, setSelectedQIndex] = useState(savedState?.selectedQIndex ?? 0);
+  const [selectedQIndex, setSelectedQIndex] = useState<number>(savedState?.selectedQIndex ?? 0);
   const [createdExamId, setCreatedExamId] = useState<string | undefined>(
     savedState?.createdExamId ?? examId
   );
@@ -53,7 +54,7 @@ export function ExamBuilderPage() {
     skip: !createdExamId,
   });
 
-  const form = useForm<SetupForm>({
+  const form: UseFormReturn<SetupForm> = useForm<SetupForm>({
     resolver: zodResolver(setupSchema),
     defaultValues: savedState?.formValues ?? {
       title: "",
@@ -82,7 +83,7 @@ export function ExamBuilderPage() {
         description: existingExam.description || "",
         passMarks: existingExam.passMarks,
         minQuestionsToAttend: existingExam.minQuestionsToAttend || 0,
-        status: existingExam.status,
+        status: existingExam.status === "ARCHIVED" ? "DRAFT" : existingExam.status,
         isSameMarkForAllQuestions: existingExam.isSameMarkForAllQuestions || false,
         marksPerQuestion: existingExam.marksPerQuestion || 1,
         durationMin: existingExam.durationMin,
@@ -100,7 +101,8 @@ export function ExamBuilderPage() {
             timeLimit: q.timeLimit || 60,
             marks: q.marks,
             optional: q.optional || false,
-            options: q.options.map((o) => ({ id: o.id, text: o.text, isCorrect: o.isCorrect || false })),
+            options: q.options ? q.options.map((o: any) => ({ id: o.id, text: o.text, isCorrect: o.isCorrect || false })) : [],
+            correctAnswerText: q.correctAnswerText || "",
           }))
         );
       }
@@ -165,15 +167,23 @@ export function ExamBuilderPage() {
   }, []);
 
   const validateStep2 = () => {
-    const complete = questions.some(
-      (q) =>
+    const complete = questions.some((q) => {
+      if (examType === "QUIZZ") {
+        return q.text.trim().length > 0;
+      }
+      return (
         q.text.trim() &&
         q.options.length >= 2 &&
         q.options.some((o) => o.isCorrect) &&
-        q.options.every((o) => o.text.trim()),
-    );
+        q.options.every((o) => o.text.trim())
+      );
+    });
     if (!complete) {
-      toast.error("Add at least one complete question with a marked correct answer.");
+      toast.error(
+        examType === "QUIZZ" 
+          ? "Add at least one complete question with question text." 
+          : "Add at least one complete question with a marked correct answer."
+      );
       return false;
     }
     return true;
@@ -202,11 +212,13 @@ export function ExamBuilderPage() {
       timeLimit: q.timeLimit,
       marks: data.isSameMarkForAllQuestions ? (data.marksPerQuestion || 1) : q.marks,
       optional: q.optional || false,
-      options: q.options.map((o) => ({ text: o.text, isCorrect: o.isCorrect })),
+      type: examType === "QUIZZ" ? "QUIZZ" : "MCQ",
+      options: examType === "QUIZZ" ? [] : q.options.map((o) => ({ text: o.text, isCorrect: o.isCorrect })),
+      correctAnswerText: examType === "QUIZZ" ? q.correctAnswerText : undefined,
     })) : undefined,
   });
 
-  const onFinalSubmit = handleSubmit(async (data) => {
+  const onFinalSubmit = handleSubmit(async (data: SetupForm) => {
     if (data.passMarks > calculatedTotal) {
       toast.error(`Pass marks cannot exceed total marks (${calculatedTotal})`);
       return;
@@ -242,7 +254,7 @@ export function ExamBuilderPage() {
     }
   };
 
-  const handleSaveDraft = handleSubmit(async (data) => {
+  const handleSaveDraft = handleSubmit(async (data: SetupForm) => {
     try {
       const payload = getPayload(data, "DRAFT");
       if (isEditing && createdExamId) {
@@ -304,11 +316,12 @@ export function ExamBuilderPage() {
         </div>
       ) : (
         <>
-          {step === 0 && <ExamSetupStep form={form} examType={examType} />}
+          {step === 0 && <ExamSetupStep form={form} examType={examType} setExamType={setExamType} />}
 
           {step === 1 && (
             <ExamQuestionBuilderStep
               questions={questions}
+              examType={examType}
               selectedQIndex={selectedQIndex}
               isSameMark={isSameMark}
               setSelectedQIndex={setSelectedQIndex}

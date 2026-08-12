@@ -4,7 +4,7 @@
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ClipboardCheck, BookOpen, AlertCircle, RefreshCw } from "lucide-react";
+import { ClipboardCheck, BookOpen, AlertCircle, RefreshCw, Filter } from "lucide-react";
 import { useGetExamsByCourseQuery } from "@/presentation/features/exam/api/examApi";
 import { ExamCard } from "@/presentation/features/exam/components/ExamCard";
 import { StartExamDialog } from "@/presentation/features/exam/components/StartExamDialog";
@@ -13,6 +13,12 @@ import type { Exam } from "@/presentation/features/exam/api/examApi";
 // Hard-coded sample course IDs — in production, fetch from enrolled courses
 const SAMPLE_COURSES = [
   { id: "all", label: "All Courses" },
+];
+
+const EXAM_TYPES = [
+  { id: "ALL", label: "All Types" },
+  { id: "MCQ", label: "Multiple Choice" },
+  { id: "QUIZZ", label: "Quiz" },
 ];
 
 function SkeletonCard() {
@@ -42,11 +48,15 @@ function SkeletonCard() {
 export function StudentExamsPage() {
   const navigate = useNavigate();
   const [selectedCourseId, setSelectedCourseId] = useState(SAMPLE_COURSES[0].id);
+  const [selectedExamType, setSelectedExamType] = useState(EXAM_TYPES[0].id);
   const [dialogExam, setDialogExam] = useState<Exam | null>(null);
 
   const { data: exams, isLoading, isError, refetch } = useGetExamsByCourseQuery(selectedCourseId);
 
-  const displayExams = exams ?? [];
+  let displayExams = exams ?? [];
+  if (selectedExamType !== "ALL") {
+    displayExams = displayExams.filter((e) => e.type === selectedExamType);
+  }
 
   const handleStarted = (examId: string, attemptId: string) => {
     setDialogExam(null);
@@ -81,28 +91,54 @@ export function StudentExamsPage() {
         </button>
       </div>
 
-      {/* Course filter */}
-      <div className="flex flex-wrap items-center gap-2 p-4 rounded-xl border border-border bg-card">
-        <BookOpen className="h-4 w-4 text-muted-foreground" />
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Filter by Course:
-        </span>
-        {SAMPLE_COURSES.map((c) => (
-          <button
-            key={c.id}
-            id={`course-filter-${c.id}`}
-            onClick={() => setSelectedCourseId(c.id)}
-            aria-pressed={selectedCourseId === c.id}
-            aria-label={`Filter by ${c.label}`}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-              selectedCourseId === c.id
-                ? "bg-[var(--primary)]/10 border-[var(--primary)]/40 text-[var(--primary)]"
-                : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
-            }`}
-          >
-            {c.label}
-          </button>
-        ))}
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        {/* Course filter */}
+        <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl border border-border bg-card">
+          <BookOpen className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Course:
+          </span>
+          {SAMPLE_COURSES.map((c) => (
+            <button
+              key={c.id}
+              id={`course-filter-${c.id}`}
+              onClick={() => setSelectedCourseId(c.id)}
+              aria-pressed={selectedCourseId === c.id}
+              aria-label={`Filter by ${c.label}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                selectedCourseId === c.id
+                  ? "bg-[var(--primary)]/10 border-[var(--primary)]/40 text-[var(--primary)]"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/50"
+              }`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Type filter */}
+        <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl border border-border bg-card">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Type:
+          </span>
+          {EXAM_TYPES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setSelectedExamType(t.id)}
+              aria-pressed={selectedExamType === t.id}
+              aria-label={`Filter by ${t.label}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                selectedExamType === t.id
+                  ? "bg-[var(--primary)]/10 border-[var(--primary)]/40 text-[var(--primary)]"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/50"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Content */}

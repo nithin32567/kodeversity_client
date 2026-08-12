@@ -3,6 +3,7 @@ import { QuestionEditor } from "./QuestionEditor";
 
 interface ExamQuestionBuilderStepProps {
   questions: QuestionDraft[];
+  examType: string;
   selectedQIndex: number;
   isSameMark: boolean;
   setSelectedQIndex: (index: number) => void;
@@ -15,6 +16,7 @@ interface ExamQuestionBuilderStepProps {
 
 export function ExamQuestionBuilderStep({
   questions,
+  examType,
   selectedQIndex,
   isSameMark,
   setSelectedQIndex,
@@ -31,6 +33,7 @@ export function ExamQuestionBuilderStep({
         <div className="border-r border-border flex flex-col" style={{ minHeight: 520 }}>
           <QuestionList
             questions={questions}
+            examType={examType}
             selectedIndex={selectedQIndex}
             onSelect={setSelectedQIndex}
             onAdd={handleAddQuestion}
@@ -45,6 +48,7 @@ export function ExamQuestionBuilderStep({
           {questions[selectedQIndex] ? (
             <QuestionEditor
               question={questions[selectedQIndex]}
+              examType={examType}
               questionIndex={selectedQIndex}
               isSameMark={isSameMark}
               onChange={handleQuestionChange}

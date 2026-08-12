@@ -8,12 +8,13 @@ import type { QuestionDraft } from "./QuestionList";
 
 interface QuestionEditorProps {
   question: QuestionDraft;
+  examType: string;
   questionIndex: number;
   isSameMark: boolean;
   onChange: (updated: QuestionDraft) => void;
 }
 
-export function QuestionEditor({ question, questionIndex, isSameMark, onChange }: QuestionEditorProps) {
+export function QuestionEditor({ question, examType, questionIndex, isSameMark, onChange }: QuestionEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-grow textarea
@@ -60,6 +61,10 @@ export function QuestionEditor({ question, questionIndex, isSameMark, onChange }
   };
 
   const hasCorrect = question.options.some((o) => o.isCorrect);
+
+  const updateCorrectAnswerText = (text: string) => {
+    onChange({ ...question, correctAnswerText: text });
+  };
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
@@ -156,12 +161,32 @@ export function QuestionEditor({ question, questionIndex, isSameMark, onChange }
           </div>
         </div>
 
-        {/* Options */}
+        {/* Options / Answer */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold text-foreground">
-              Answer Options <span className="text-rose-400">*</span>
-            </label>
+          {examType === "QUIZZ" ? (
+            <div className="space-y-1.5">
+              <label htmlFor={`q-answer-${question.id}`} className="text-xs font-semibold text-foreground">
+                Correct Answer Text <span className="text-muted-foreground font-normal">(Optional)</span>
+              </label>
+              <textarea
+                id={`q-answer-${question.id}`}
+                value={question.correctAnswerText || ""}
+                onChange={(e) => updateCorrectAnswerText(e.target.value)}
+                rows={3}
+                placeholder="Enter the required text answer..."
+                aria-label="Correct answer text"
+                className="w-full resize-none rounded-lg border border-border bg-muted/20 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-[var(--primary)]/60 focus:ring-1 focus:ring-[var(--primary)]/20 transition min-h-[64px]"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Providing this text enables auto-grading (students must match it exactly, case-insensitive). Omitting this sets the question for manual evaluation.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-foreground">
+                  Answer Options <span className="text-rose-400">*</span>
+                </label>
             <span className="text-[10px] text-muted-foreground">
               Click a radio to mark correct
             </span>
@@ -245,6 +270,8 @@ export function QuestionEditor({ question, questionIndex, isSameMark, onChange }
           )}
           {question.options.length < 2 && (
             <p className="text-[11px] text-rose-400">Minimum 2 options required</p>
+          )}
+            </>
           )}
         </div>
       </div>

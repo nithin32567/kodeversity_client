@@ -19,12 +19,13 @@ export interface ExamOption {
 export interface ExamQuestion {
   id: string;
   text: string;
-  type: "MCQ";
+  type: "MCQ" | "QUIZZ";
   marks: number;
   optional?: boolean;
   hint?: string;
   timeLimit?: number;
   options: ExamOption[];
+  correctAnswerText?: string;
 }
 
 export interface Exam {
@@ -36,6 +37,7 @@ export interface Exam {
   totalMarks: number;
   passMarks: number;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  type?: "MCQ" | "LIVE_CODING" | "QUIZZ";
   isSameMarkForAllQuestions?: boolean;
   marksPerQuestion?: number;
   minQuestionsToAttend?: number;
@@ -45,6 +47,7 @@ export interface Exam {
   scheduledEndDate?: string;
   questions?: ExamQuestion[];
   examAssignments?: Array<{ studentId: string }>;
+  attempts?: ExamAttempt[];
   createdAt: string;
   updatedAt: string;
   _count?: { questions: number; attempts: number };
@@ -54,7 +57,10 @@ export interface StudentAnswer {
   id: string;
   questionId: string;
   selectedOptionId?: string;
+  textAnswer?: string;
   isFlagged: boolean;
+  isCorrect?: boolean | null;
+  marksObtained?: number | null;
 }
 
 export interface ExamAttempt {
@@ -62,7 +68,7 @@ export interface ExamAttempt {
   examId: string;
   studentId: string;
   score?: number;
-  isPassed?: boolean;
+  isPassed?: boolean | null;
   startedAt: string;
   submittedAt?: string;
   answers?: StudentAnswer[];
@@ -77,12 +83,13 @@ export interface AttemptResult {
   score: number;
   totalMarks: number;
   passMarks: number;
-  isPassed: boolean;
+  isPassed: boolean | null;
   startedAt: string;
   submittedAt: string;
   answers?: Array<{
     questionId: string;
     selectedOptionId?: string;
+    textAnswer?: string;
     isFlagged: boolean;
     isCorrect?: boolean;
     question?: ExamQuestion;
@@ -102,6 +109,8 @@ export interface CreateExamPayload {
   questions?: Array<{
     text: string;
     marks?: number;
+    type?: string;
+    correctAnswerText?: string;
     options: Array<{ text: string; isCorrect: boolean }>;
   }>;
 }
@@ -110,7 +119,17 @@ export interface SaveAnswerPayload {
   attemptId: string;
   questionId: string;
   selectedOptionId?: string;
+  textAnswer?: string;
   isFlagged?: boolean;
+}
+
+export interface EvaluateAttemptPayload {
+  attemptId: string;
+  evaluations: Array<{
+    answerId: string;
+    isCorrect: boolean;
+    marksObtained: number;
+  }>;
 }
 
 // ─── Slice ────────────────────────────────────────────────────────────────────
@@ -194,6 +213,15 @@ export const examApi = baseApi.injectEndpoints({
       query: (attemptId) => ({ url: `${BASE}/api/exams/attempts/${attemptId}` }),
       providesTags: ["Exams"],
     }),
+
+    evaluateAttempt: build.mutation<ExamAttempt, EvaluateAttemptPayload>({
+      query: ({ attemptId, evaluations }) => ({
+        url: `${BASE}/api/exams/attempts/${attemptId}/evaluate`,
+        method: "PUT",
+        body: { evaluations },
+      }),
+      invalidatesTags: ["Exams"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -210,4 +238,5 @@ export const {
   useSubmitAttemptMutation,
   useGetAttemptResultQuery,
   useGetAttemptQuery,
+  useEvaluateAttemptMutation,
 } = examApi;

@@ -19,6 +19,8 @@ import { toast } from "sonner";
 import { useGetExamsByCourseQuery, useDeleteExamMutation } from "@/presentation/features/exam/api/examApi";
 import type { Exam } from "@/presentation/features/exam/api/examApi";
 import { useAuth } from "@/presentation/features/auth/hooks/useAuth";
+import { useConfirm } from "@/presentation/global/contexts/ConfirmContext";
+import { InstructorExamDetails } from "./InstructorExamDetails";
 
 // For a real implementation, pass a courseId from context or URL params.
 const PLACEHOLDER_COURSE_ID = "all";
@@ -54,10 +56,12 @@ function SkeletonRow() {
 export function InstructorExamsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { confirm } = useConfirm();
   const role = user?.role === "ADMIN" ? "admin" : "instructor";
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | Exam["status"]>("ALL");
+  const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
 
   const { data: exams, isLoading, isError, refetch } = useGetExamsByCourseQuery(PLACEHOLDER_COURSE_ID);
 
@@ -75,7 +79,12 @@ export function InstructorExamsPage() {
   }, [allExams, search, statusFilter]);
 
   const handleDelete = async (exam: Exam) => {
-    const confirmed = window.confirm(`Delete exam "${exam.title}"? This cannot be undone.`);
+    const confirmed = await confirm({
+      title: "Delete Exam",
+      message: `Delete exam "${exam.title}"? This cannot be undone.`,
+      confirmText: "Delete",
+      destructive: true,
+    });
     if (!confirmed) return;
     try {
       await deleteExam(exam.id).unwrap();
@@ -84,6 +93,17 @@ export function InstructorExamsPage() {
       toast.error("Failed to delete exam.");
     }
   };
+
+  if (selectedExamId) {
+    return (
+      <main className="flex-1 px-4 pb-8 sm:px-6 lg:px-8 max-w-[1400px] mx-auto w-full space-y-6 overflow-y-auto pt-6">
+        <InstructorExamDetails 
+          examId={selectedExamId} 
+          onBack={() => setSelectedExamId(null)} 
+        />
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1 px-4 pb-8 sm:px-6 lg:px-8 max-w-[1400px] mx-auto w-full space-y-6 overflow-y-auto">
@@ -265,7 +285,7 @@ export function InstructorExamsPage() {
                         <div className="flex items-center gap-1.5">
                           <button
                             id={`view-exam-${exam.id}`}
-                            onClick={() => navigate(`/${role}/exams/${exam.id}/edit`)}
+                            onClick={() => setSelectedExamId(exam.id)}
                             aria-label={`View details of ${exam.title}`}
                             className="p-1.5 rounded-lg border border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30 transition"
                           >

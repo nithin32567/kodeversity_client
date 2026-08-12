@@ -12,10 +12,12 @@ export interface QuestionDraft {
   marks: number;
   optional?: boolean;
   options: Array<{ id: string; text: string; isCorrect: boolean }>;
+  correctAnswerText?: string;
 }
 
 interface QuestionListProps {
   questions: QuestionDraft[];
+  examType: string;
   selectedIndex: number;
   onSelect: (index: number) => void;
   onAdd: () => void;
@@ -24,7 +26,10 @@ interface QuestionListProps {
   onMoveDown: (index: number) => void;
 }
 
-function isQuestionComplete(q: QuestionDraft): boolean {
+function isQuestionComplete(q: QuestionDraft, examType: string): boolean {
+  if (examType === "QUIZZ") {
+    return q.text.trim().length > 0;
+  }
   return (
     q.text.trim().length > 0 &&
     q.options.length >= 2 &&
@@ -35,6 +40,7 @@ function isQuestionComplete(q: QuestionDraft): boolean {
 
 export function QuestionList({
   questions,
+  examType,
   selectedIndex,
   onSelect,
   onAdd,
@@ -60,7 +66,7 @@ export function QuestionList({
         )}
 
         {questions.map((q, i) => {
-          const complete = isQuestionComplete(q);
+          const complete = isQuestionComplete(q, examType);
           const isSel = i === selectedIndex;
           const preview = q.text.trim() ? q.text.slice(0, 40) : "Empty question";
 

@@ -21,17 +21,25 @@ export function AttemptResultPanel({ result }: AttemptResultPanelProps) {
         {/* Score card */}
         <div
           className={`rounded-2xl border p-8 text-center space-y-4 shadow-2xl ${
-            result.isPassed
+            result.isPassed === null
+              ? "border-amber-500/30 bg-amber-500/5 shadow-amber-500/10"
+              : result.isPassed
               ? "border-emerald-500/30 bg-emerald-500/5 shadow-emerald-500/10"
               : "border-rose-500/30 bg-rose-500/5 shadow-rose-500/10"
           }`}
         >
           <div
             className={`mx-auto h-16 w-16 rounded-full grid place-items-center ${
-              result.isPassed ? "bg-emerald-500/20" : "bg-rose-500/20"
+              result.isPassed === null
+                ? "bg-amber-500/20"
+                : result.isPassed
+                ? "bg-emerald-500/20"
+                : "bg-rose-500/20"
             }`}
           >
-            {result.isPassed ? (
+            {result.isPassed === null ? (
+              <BookOpen className="h-8 w-8 text-amber-400" />
+            ) : result.isPassed ? (
               <Trophy className="h-8 w-8 text-emerald-400" />
             ) : (
               <XCircle className="h-8 w-8 text-rose-400" />
@@ -40,10 +48,18 @@ export function AttemptResultPanel({ result }: AttemptResultPanelProps) {
 
           <div>
             <h1 className="font-display text-3xl font-bold text-foreground">
-              {result.isPassed ? "🎉 Exam Submitted!" : "Exam Submitted"}
+              {result.isPassed === null
+                ? "Exam Submitted"
+                : result.isPassed
+                ? "🎉 Exam Submitted!"
+                : "Exam Submitted"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {result.isPassed ? "Congratulations! You passed." : "Better luck next time."}
+              {result.isPassed === null
+                ? "Your answers are pending manual evaluation."
+                : result.isPassed
+                ? "Congratulations! You passed."
+                : "Better luck next time."}
             </p>
           </div>
 
@@ -59,7 +75,11 @@ export function AttemptResultPanel({ result }: AttemptResultPanelProps) {
             <div>
               <p
                 className={`font-display text-2xl font-bold ${
-                  result.isPassed ? "text-emerald-400" : "text-rose-400"
+                  result.isPassed === null
+                    ? "text-amber-400"
+                    : result.isPassed
+                    ? "text-emerald-400"
+                    : "text-rose-400"
                 }`}
               >
                 {percent}%
@@ -76,7 +96,11 @@ export function AttemptResultPanel({ result }: AttemptResultPanelProps) {
           </div>
 
           <div className="flex items-center justify-center gap-2">
-            {result.isPassed ? (
+            {result.isPassed === null ? (
+              <span className="inline-flex items-center gap-2 rounded-full bg-amber-500/15 border border-amber-500/30 px-4 py-1.5 text-sm font-bold text-amber-300">
+                <BookOpen className="h-4 w-4" /> PENDING EVALUATION
+              </span>
+            ) : result.isPassed ? (
               <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-4 py-1.5 text-sm font-bold text-emerald-300">
                 <CheckCircle2 className="h-4 w-4" /> PASSED
               </span>
@@ -98,8 +122,9 @@ export function AttemptResultPanel({ result }: AttemptResultPanelProps) {
             <div className="divide-y divide-border">
               {result.answers.map((ans, i) => {
                 const q = ans.question;
-                const correctOption = q?.options.find((o) => o.isCorrect);
-                const chosenOption = q?.options.find((o) => o.id === ans.selectedOptionId);
+                const isQuizz = q?.type === "QUIZZ" || q?.correctAnswerText !== null; // Fallback check
+                const correctOption = q?.options?.find((o: any) => o.isCorrect);
+                const chosenOption = q?.options?.find((o: any) => o.id === ans.selectedOptionId);
                 const isCorrect = ans.isCorrect;
 
                 return (
@@ -120,26 +145,58 @@ export function AttemptResultPanel({ result }: AttemptResultPanelProps) {
                     </div>
 
                     <div className="ml-9 space-y-1.5">
-                      {chosenOption && (
-                        <div
-                          className={`text-xs rounded-lg px-3 py-2 border ${
-                            isCorrect
-                              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
-                              : "bg-rose-500/10 border-rose-500/20 text-rose-300"
-                          }`}
-                        >
-                          <span className="font-semibold">Your answer: </span>
-                          {chosenOption.text}
-                        </div>
-                      )}
-                      {!isCorrect && correctOption && (
-                        <div className="text-xs rounded-lg px-3 py-2 border bg-emerald-500/10 border-emerald-500/20 text-emerald-300">
-                          <span className="font-semibold">Correct answer: </span>
-                          {correctOption.text}
-                        </div>
-                      )}
-                      {!ans.selectedOptionId && (
-                        <div className="text-xs text-muted-foreground italic">Not answered</div>
+                      {isQuizz ? (
+                        <>
+                          {ans.textAnswer ? (
+                            <div
+                              className={`text-xs rounded-lg px-3 py-2 border ${
+                                isCorrect
+                                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
+                                  : "bg-rose-500/10 border-rose-500/20 text-rose-300"
+                              }`}
+                            >
+                              <span className="font-semibold">Your answer: </span>
+                              {ans.textAnswer}
+                            </div>
+                          ) : (
+                            <div className="text-xs text-muted-foreground italic">Not answered</div>
+                          )}
+                          {!isCorrect && q?.correctAnswerText && (
+                            <div className="text-xs rounded-lg px-3 py-2 border bg-emerald-500/10 border-emerald-500/20 text-emerald-300">
+                              <span className="font-semibold">Correct answer: </span>
+                              {q.correctAnswerText}
+                            </div>
+                          )}
+                          {!q?.correctAnswerText && (
+                            <div className="text-xs text-amber-400/80 italic mt-1">
+                              This question requires manual evaluation by an instructor.
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {chosenOption && (
+                            <div
+                              className={`text-xs rounded-lg px-3 py-2 border ${
+                                isCorrect
+                                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
+                                  : "bg-rose-500/10 border-rose-500/20 text-rose-300"
+                              }`}
+                            >
+                              <span className="font-semibold">Your answer: </span>
+                              {chosenOption.text}
+                            </div>
+                          )}
+                          {!isCorrect && correctOption && (
+                            <div className="text-xs rounded-lg px-3 py-2 border bg-emerald-500/10 border-emerald-500/20 text-emerald-300">
+                              <span className="font-semibold">Correct answer: </span>
+                              {correctOption.text}
+                            </div>
+                          )}
+                          {!ans.selectedOptionId && (
+                            <div className="text-xs text-muted-foreground italic">Not answered</div>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

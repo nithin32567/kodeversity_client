@@ -2,9 +2,9 @@
  * ExamTypeSelector.tsx
  * Custom card-based exam type selector (MCQ active, Live Coding coming soon).
  */
-import { FileQuestion, Code2 } from "lucide-react";
+import { FileQuestion, Code2, FileText } from "lucide-react";
 
-type ExamType = "MCQ" | "LIVE_CODING";
+export type ExamType = "MCQ" | "LIVE_CODING" | "QUIZZ";
 
 interface ExamTypeSelectorProps {
   value: ExamType;
@@ -23,6 +23,12 @@ const types: Array<{
     icon: <FileQuestion className="h-6 w-6" />,
     label: "Multiple Choice",
     description: "Auto-graded, timed MCQ exam",
+  },
+  {
+    id: "QUIZZ",
+    icon: <FileText className="h-6 w-6" />,
+    label: "Quiz",
+    description: "Questions requiring exact text answers",
   },
   {
     id: "LIVE_CODING",
