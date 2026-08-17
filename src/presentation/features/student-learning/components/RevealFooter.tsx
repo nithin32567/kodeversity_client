@@ -81,14 +81,14 @@ export function RevealFooter() {
               className="select-none whitespace-nowrap font-display font-black leading-[0.95] tracking-[-0.06em] text-foreground text-center pb-[0.08em]"
               style={{ fontSize: "clamp(3rem, 14.8vw, 12.5rem)" }}
             >
-              Kodeversity
+              Study Laah
             </h2>
           </div>
 
           {}
           <div className="flex flex-col items-start justify-between gap-4 border-t border-border/40 pt-6 text-sm text-muted-foreground md:flex-row md:items-center">
             <span className="font-mono text-xs tracking-widest uppercase">
-              © {new Date().getFullYear()} Kodeversity
+              © {new Date().getFullYear()} Study Laah
             </span>
             <nav className="flex flex-wrap items-center gap-x-8 gap-y-2">
               <a href="#about" className="hover:text-foreground transition-colors">

@@ -42,7 +42,7 @@ export function LessonDetailsAndNotes({
                 <p className="mt-1 text-xs text-muted-foreground">{courseTitle}</p>
                 <p className="mt-2 text-sm text-foreground/80">
                   Type: {activeChapter.type} lesson. Master real-world cloud/systems
-                  capabilities through Kodeversity.
+                  capabilities through Study Laah.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">

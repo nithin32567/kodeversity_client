@@ -5,7 +5,7 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicLayout } from "@/layouts/PublicLayout";
 import { PortalLayout } from "@/presentation/global/layouts/PortalLayout";
 
-import { LandingPage } from "@/pages/public/LandingPage";
+import { StudyLaahlanding } from "@/pages/public/StudyLaahlanding";
 import { LoginPage } from "@/pages/public/LoginPage";
 import { RegisterPage } from "@/pages/public/RegisterPage";
 import { NotFoundPage } from "@/pages/public/NotFoundPage";
@@ -156,7 +156,7 @@ export function AppRoutes() {
       <Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<PublicLayout />}>
-            <Route index element={<LandingPage />} />
+            <Route index element={<StudyLaahlanding />} />y
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />
             {/* Dedicated admin login — no auth guard, admin-only portal */}

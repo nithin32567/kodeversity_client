@@ -18,12 +18,12 @@ export function SidebarHeader({ isStudent, isAdmin, isInstructor, onClose }: Sid
             className="h-9 w-9 rounded-lg grid place-items-center text-white font-bold shrink-0"
             style={{ background: "var(--grad-cta)" }}
           >
-            K
+            SL
           </div>
           <span
             className={`text-[17px] font-semibold tracking-tight ${isStudent ? "lg:hidden" : ""}`}
           >
-            Kodeversity
+            Study Laah
           </span>
         </div>
         {onClose && (

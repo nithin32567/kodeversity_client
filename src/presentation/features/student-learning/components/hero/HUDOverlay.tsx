@@ -36,7 +36,7 @@ export function HUDOverlay({ mouse }: Props) {
       <header className="flex items-start justify-between p-4 md:p-10 text-[11px] uppercase tracking-[0.2em] text-foreground/80">
         <div className="pointer-events-auto flex items-center gap-2 md:gap-3">
           <span className="inline-block size-2 rounded-full bg-cyan shadow-[0_0_12px_var(--accent-cyan)]" />
-          <span className="font-semibold">KODEVERSITY</span>
+          <span className="font-semibold">Study Laah</span>
           <span className="hidden text-muted-foreground sm:inline">cluster.us-east-1</span>
         </div>
         <nav className="pointer-events-auto hidden gap-6 md:flex">

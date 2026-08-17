@@ -24,7 +24,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const email = user?.email ?? "user@kodeversity.com";
+  const email = user?.email ?? "user@studylaah.com";
   const name = user?.name ?? "LMS User";
   const role = user?.role ?? "STUDENT";
   const initials = getInitials(email, name);

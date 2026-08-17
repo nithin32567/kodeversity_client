@@ -129,7 +129,7 @@ export function CustomContextMenu({ isAdmin = false }: CustomContextMenuProps) {
         )}
 
         {contextType === "default" && (
-          <div className="px-3 py-2 text-xs text-muted-foreground italic">Kodeversity LMS</div>
+          <div className="px-3 py-2 text-xs text-muted-foreground italic">Study Laah</div>
         )}
 
         {isAdmin && (
