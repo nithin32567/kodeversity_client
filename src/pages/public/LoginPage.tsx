@@ -1,11 +1,15 @@
-
 import { useState, type FormEvent } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { Lock, Mail } from "lucide-react";
 import { useAppDispatch } from "@/app/hooks";
 import { loginThunk, googleLoginThunk } from "@/features/auth/authSlice";
 import { getAuthErrorMessage, UserRole } from "@/domain/auth";
 import { useGoogleLogin } from "@react-oauth/google";
-import { FcGoogle } from "react-icons/fc";
+import { Mail as MailIcon } from "lucide-react";
+import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
+import { AuthPromoPanel } from "@/components/auth/AuthPromoPanel";
+import { AuthField } from "@/components/auth/AuthField";
+import { Button } from "@/components/ui/button";
 
 export function LoginPage() {
   const dispatch = useAppDispatch();
@@ -17,40 +21,31 @@ export function LoginPage() {
 
   const [email, setEmail] = useState(verifiedEmail);
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const verifiedBanner = !!verifiedEmail;
+  const [formError, setFormError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (codeResponse) => {
-      setBusy(true);
-      setError(null);
+      setSubmitting(true);
+      setFormError(null);
       try {
         const result = await dispatch(googleLoginThunk({ code: codeResponse.code }));
         if (!googleLoginThunk.fulfilled.match(result)) {
           const errMsg = (result.payload as Error | undefined)?.message ?? "LOGIN_FAILED";
-          setError(getAuthErrorMessage(errMsg));
+          setFormError(getAuthErrorMessage(errMsg));
           return;
         }
-
         const user = result.payload;
-        console.log("Email sent response:", (result.payload as any)?.emailResponse || "No email sent (not a new user)");
-        
         if (user.role === UserRole.ADMIN) {
-          setError("Admins must use the secure admin portal to log in.");
+          setFormError("Admins must use the secure admin portal to log in.");
           return;
         }
-
-        if (user.role === UserRole.INSTRUCTOR) {
-          navigate("/instructor/dashboard");
-        } else {
-          navigate(redirectTo);
-        }
+        navigate(user.role === UserRole.INSTRUCTOR ? "/instructor/dashboard" : redirectTo);
       } catch (err) {
-        setError(getAuthErrorMessage((err as Error).message));
+        setFormError(getAuthErrorMessage((err as Error).message));
       } finally {
-        setBusy(false);
+        setSubmitting(false);
       }
     },
     flow: "auth-code",
@@ -58,136 +53,169 @@ export function LoginPage() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setBusy(true);
-    setError(null);
+    setSubmitting(true);
+    setFormError(null);
+    setNotice(null);
     try {
       const result = await dispatch(loginThunk({ email, password }));
-
       if (!loginThunk.fulfilled.match(result)) {
         const errMsg = (result.payload as Error | undefined)?.message ?? "LOGIN_FAILED";
         if (errMsg === "EMAIL_NOT_VERIFIED") {
           navigate(`/register?email=${encodeURIComponent(email)}&step=otp`);
           return;
         }
-        setError(getAuthErrorMessage(errMsg));
+        setFormError(getAuthErrorMessage(errMsg));
         return;
       }
-
       const user = result.payload;
-
-      // Block Admins from the student login page
       if (user.role === UserRole.ADMIN) {
-        setError("Admins must use the secure admin portal to log in.");
+        setFormError("Admins must use the secure admin portal to log in.");
         return;
       }
-
-      // Role-based redirect
-      if (user.role === UserRole.INSTRUCTOR) {
-        navigate("/instructor/dashboard");
-      } else {
-        navigate(redirectTo);
-      }
+      navigate(user.role === UserRole.INSTRUCTOR ? "/instructor/dashboard" : redirectTo);
     } catch (err) {
-      setError(getAuthErrorMessage((err as Error).message));
+      setFormError(getAuthErrorMessage((err as Error).message));
     } finally {
-      setBusy(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <main className="grid min-h-screen place-items-center bg-background px-4 text-foreground relative overflow-hidden">
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-32 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-brand/8 blur-[140px]" />
-        <div className="absolute bottom-0 right-1/4 h-[300px] w-[300px] rounded-full bg-brand/5 blur-[100px]" />
+    <main className="h-screen w-screen overflow-hidden bg-background">
+      <div className="grid h-full w-full grid-cols-1 lg:grid-cols-2">
+        {/* ── Left: Promo panel ── */}
+        <AuthPromoPanel mode="sign-in" />
+
+        {/* ── Right: Sign-in form ── */}
+        <div className="border-t border-border bg-background lg:border-l lg:border-t-0">
+          <section className="flex h-full flex-col justify-center px-6 py-6 sm:px-12">
+            <div className="mx-auto w-full max-w-md">
+
+              {/* Verified-email banner */}
+              {verifiedEmail && (
+                <div className="mb-5 flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2.5 text-sm text-green-600 dark:text-green-400">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
+                  Email verified! You can now sign in.
+                </div>
+              )}
+
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                Sign in to your account
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Don&apos;t have an account?{" "}
+                <Link
+                  to="/register"
+                  className="font-medium text-primary hover:underline"
+                >
+                  Create a new account
+                </Link>
+              </p>
+
+              <form onSubmit={onSubmit} noValidate className="mt-6 space-y-4">
+                <AuthField
+                  id="login-email"
+                  label="Email address"
+                  icon={<Mail />}
+                  type="email"
+                  autoComplete="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+
+                <div className="space-y-2">
+                  <AuthField
+                    id="login-password"
+                    label="Password"
+                    icon={<Lock />}
+                    revealable
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                </div>
+
+                {formError ? (
+                  <p role="alert" className="text-sm text-destructive">
+                    {formError}
+                  </p>
+                ) : null}
+                {notice ? (
+                  <p role="status" className="text-sm text-success">
+                    {notice}
+                  </p>
+                ) : null}
+
+                <Button
+                  type="submit"
+                  variant="brand"
+                  size="xl"
+                  className="w-full"
+                  disabled={submitting}
+                >
+                  {submitting ? "Signing in…" : "Sign in"}
+                </Button>
+              </form>
+
+              {/* ── OR divider ── */}
+              <div className="my-4 flex items-center gap-4">
+                <span className="h-px flex-1 bg-border" />
+                <span className="text-sm text-muted-foreground">or continue with</span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              {/* ── Social buttons 2×2 grid ── */}
+              <SocialAuthButtons
+                disabled={submitting}
+                onSelect={(provider) => {
+                  if (provider === "google") handleGoogleLogin();
+                }}
+              />
+
+              {/* ── Magic Link ── */}
+              <div className="mt-4 flex items-center gap-4">
+                <span className="h-px flex-1 bg-border" />
+                <span className="flex shrink-0 items-center gap-2 text-sm text-muted-foreground">
+                  or continue with
+                  <button
+                    type="button"
+                    onClick={() => setNotice("Magic link sent! Check your inbox.")}
+                    className="inline-flex items-center gap-2 font-medium text-primary hover:underline"
+                  >
+                    <MailIcon className="size-4" aria-hidden />
+                    Magic Link
+                  </button>
+                </span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              <p className="mt-6 text-center text-xs text-muted-foreground">
+                By signing in, you agree to our{" "}
+                <Link to="/legal/terms" className="text-primary hover:underline">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link to="/legal/privacy" className="text-primary hover:underline">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+            </div>
+          </section>
+        </div>
       </div>
-
-      <form
-        onSubmit={onSubmit}
-        className="relative z-10 w-full max-w-sm space-y-5 rounded-2xl border border-border bg-card/70 p-8 shadow-[var(--shadow-elegant)] backdrop-blur-xl"
-      >
-        {/* Header */}
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight font-display">Welcome back</h1>
-          <p className="text-sm text-muted-foreground">Sign in to continue your learning journey.</p>
-        </div>
-
-        {verifiedBanner && (
-          <div className="flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2.5 text-sm text-green-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-            Email verified! You can now sign in.
-          </div>
-        )}
-
-        {/* Fields */}
-        <div className="space-y-4">
-          <label className="block space-y-1.5 text-sm">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</span>
-            <input
-              id="login-email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full rounded-lg border border-border bg-background/60 px-3 py-2.5 text-sm transition-all placeholder:text-muted-foreground/50 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/30"
-            />
-          </label>
-          <label className="block space-y-1.5 text-sm">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Password</span>
-            <input
-              id="login-password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full rounded-lg border border-border bg-background/60 px-3 py-2.5 text-sm transition-all placeholder:text-muted-foreground/50 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/30"
-            />
-          </label>
-        </div>
-
-        {error && (
-          <p id="login-error" role="alert" className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">
-            {error}
-          </p>
-        )}
-
-        <button
-          id="login-submit"
-          type="submit"
-          disabled={busy}
-          className="group relative h-11 w-full overflow-hidden rounded-lg bg-[image:var(--gradient-brand)] text-sm font-semibold text-white shadow-[var(--shadow-brand)] transition-all hover:opacity-90 hover:shadow-[0_0_30px_-5px_var(--brand)] disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {busy ? "Signing in…" : "Sign in"}
-        </button>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card/70 px-2 text-muted-foreground backdrop-blur-xl">Or continue with</span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => handleGoogleLogin()}
-          disabled={busy}
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-background/50 text-sm font-medium transition-colors hover:bg-muted focus:outline-none disabled:opacity-60"
-        >
-          <FcGoogle className="h-5 w-5" />
-          Google
-        </button>
-
-        <p className="text-center text-xs text-muted-foreground">
-          Don&apos;t have an account?{" "}
-          <Link to="/register" className="font-semibold text-brand hover:underline">
-            Register
-          </Link>
-        </p>
-      </form>
     </main>
   );
 }

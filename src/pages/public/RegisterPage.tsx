@@ -1,19 +1,39 @@
-
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useMemo } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { CheckCircle2, Lock, Mail } from "lucide-react";
+import { useAppDispatch } from "@/app/hooks";
+import { googleLoginThunk } from "@/features/auth/authSlice";
 import { getAuthErrorMessage, UserRole } from "@/domain/auth";
 import { useRegisterMutation } from "@/features/auth/authApi";
 import { OtpModal } from "@/features/auth/components/OtpModal";
-import { useAppDispatch } from "@/app/hooks";
-import { googleLoginThunk } from "@/features/auth/authSlice";
 import { useGoogleLogin } from "@react-oauth/google";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
+import { AuthPromoPanel } from "@/components/auth/AuthPromoPanel";
+import { AuthField } from "@/components/auth/AuthField";
+import { Button } from "@/components/ui/button";
+
+// ─── Password strength check item ────────────────────────────────────────────
+
+function CheckItem({ satisfied, label }: { satisfied: boolean; label: string }) {
+  return (
+    <li className="flex items-center gap-2 text-xs">
+      <CheckCircle2
+        className={satisfied ? "size-4 shrink-0 text-success" : "size-4 shrink-0 text-muted-foreground/40"}
+        aria-hidden
+      />
+      <span className={satisfied ? "text-foreground" : "text-muted-foreground"}>{label}</span>
+    </li>
+  );
+}
+
+// ─── Register Page ────────────────────────────────────────────────────────────
 
 export function RegisterPage() {
   const [registerMutation] = useRegisterMutation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const dispatch = useAppDispatch();
 
   const initialEmail = searchParams.get("email") ?? "";
   const initialStep = searchParams.get("step");
@@ -21,38 +41,39 @@ export function RegisterPage() {
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [otpOpen, setOtpOpen] = useState(initialStep === "otp" && !!initialEmail);
   const [role, setRole] = useState<"student" | "instructor">("student");
 
-  const dispatch = useAppDispatch();
+  // Password strength checks
+  const checks = useMemo(
+    () => ({
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      number: /[0-9]/.test(password),
+    }),
+    [password],
+  );
 
   const handleGoogleSignup = useGoogleLogin({
     onSuccess: async (codeResponse) => {
-      setBusy(true);
-      setError(null);
+      setSubmitting(true);
+      setFormError(null);
       try {
         const result = await dispatch(googleLoginThunk({ code: codeResponse.code, role }));
         if (!googleLoginThunk.fulfilled.match(result)) {
           const errMsg = (result.payload as Error | undefined)?.message ?? "SIGNUP_FAILED";
-          setError(getAuthErrorMessage(errMsg));
+          setFormError(getAuthErrorMessage(errMsg));
           return;
         }
-
         const user = result.payload;
-        console.log("Email sent response:", (result.payload as any)?.emailResponse || "No email sent");
-        toast.success("Login successful! Welcome to Study Laah.");
-
-        if (user.role === UserRole.INSTRUCTOR) {
-          navigate("/instructor/dashboard");
-        } else {
-          navigate("/student/dashboard");
-        }
+        toast.success("Login successful! Welcome to Kodeversity.");
+        navigate(user.role === UserRole.INSTRUCTOR ? "/instructor/dashboard" : "/student/dashboard");
       } catch (err) {
-        setError(getAuthErrorMessage((err as Error).message));
+        setFormError(getAuthErrorMessage((err as Error).message));
       } finally {
-        setBusy(false);
+        setSubmitting(false);
       }
     },
     flow: "auth-code",
@@ -60,159 +81,172 @@ export function RegisterPage() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setFormError(null);
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setFormError("Passwords do not match.");
       return;
     }
     if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setFormError("Password must be at least 8 characters.");
       return;
     }
 
-    setBusy(true);
+    setSubmitting(true);
     try {
       const res = await registerMutation({ email, password, role }).unwrap();
       console.log("Email sent response:", (res as any)?.emailResponse || "No email sent");
       toast.success("Account created successfully! Welcome email sent.");
       navigate(`/login?verified=${encodeURIComponent(email)}`);
     } catch (err) {
-      setError(getAuthErrorMessage((err as Error).message));
+      setFormError(getAuthErrorMessage((err as Error).message));
     } finally {
-      setBusy(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <main className="grid min-h-screen place-items-center bg-background px-4 text-foreground relative overflow-hidden">
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-32 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-brand/8 blur-[140px]" />
-        <div className="absolute bottom-0 left-1/4 h-[300px] w-[300px] rounded-full bg-brand/5 blur-[100px]" />
+    <main className="h-screen w-screen overflow-hidden bg-background">
+      <div className="grid h-full w-full grid-cols-1 lg:grid-cols-2">
+        {/* ── Left: Promo panel ── */}
+        <AuthPromoPanel mode="sign-up" />
+
+        {/* ── Right: Register form ── */}
+        <div className="border-t border-border bg-background lg:border-l lg:border-t-0">
+          <section className="flex h-full flex-col justify-center overflow-y-auto px-6 py-6 sm:px-12">
+            <div className="mx-auto w-full max-w-md">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                Create your account
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link to="/login" className="font-medium text-primary hover:underline">
+                  Sign in
+                </Link>
+              </p>
+
+              {/* ── Role toggle ── */}
+              <div className="mt-5 flex w-full items-center gap-1.5 rounded-lg border border-border bg-muted/40 p-1">
+                <button
+                  type="button"
+                  onClick={() => setRole("student")}
+                  className={[
+                    "flex-1 rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-all",
+                    role === "student"
+                      ? "brand-gradient text-white shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  ].join(" ")}
+                >
+                  Student
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("instructor")}
+                  className={[
+                    "flex-1 rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-all",
+                    role === "instructor"
+                      ? "brand-gradient text-white shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  ].join(" ")}
+                >
+                  Instructor
+                </button>
+              </div>
+
+              <form onSubmit={onSubmit} noValidate className="mt-5 space-y-4">
+                <AuthField
+                  id="register-email"
+                  label="Email address"
+                  icon={<Mail />}
+                  type="email"
+                  autoComplete="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+
+                <AuthField
+                  id="register-password"
+                  label="Password"
+                  icon={<Lock />}
+                  revealable
+                  autoComplete="new-password"
+                  placeholder="Create a password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+
+                <AuthField
+                  id="register-confirm-password"
+                  label="Confirm password"
+                  icon={<Lock />}
+                  revealable
+                  autoComplete="new-password"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+
+                {/* Password strength checklist */}
+                <ul className="flex flex-wrap items-center gap-x-5 gap-y-1">
+                  <CheckItem satisfied={checks.length} label="At least 8 characters" />
+                  <CheckItem satisfied={checks.uppercase} label="One uppercase letter" />
+                  <CheckItem satisfied={checks.number} label="One number" />
+                </ul>
+
+                {formError ? (
+                  <p role="alert" className="text-sm text-destructive">
+                    {formError}
+                  </p>
+                ) : null}
+
+                <Button
+                  type="submit"
+                  variant="brand"
+                  size="xl"
+                  className="w-full"
+                  disabled={submitting}
+                >
+                  {submitting ? "Creating account…" : "Create Account"}
+                </Button>
+              </form>
+
+              {/* ── OR divider ── */}
+              <div className="my-4 flex items-center gap-4">
+                <span className="h-px flex-1 bg-border" />
+                <span className="text-sm text-muted-foreground">or sign up with</span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              {/* ── Social buttons ── */}
+              <button
+                type="button"
+                onClick={() => handleGoogleSignup()}
+                disabled={submitting}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-background text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none disabled:opacity-60"
+              >
+                <FcGoogle className="size-5" />
+                Google
+              </button>
+
+              <p className="mt-5 text-center text-xs text-muted-foreground">
+                By creating an account, you agree to our{" "}
+                <Link to="/legal/terms" className="text-primary hover:underline">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link to="/legal/privacy" className="text-primary hover:underline">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+            </div>
+          </section>
+        </div>
       </div>
-
-      <form
-        onSubmit={onSubmit}
-        className="relative z-10 w-full max-w-sm space-y-5 rounded-2xl border border-border bg-card/70 p-8 shadow-[var(--shadow-elegant)] backdrop-blur-xl"
-      >
-        {/* Header */}
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight font-display">Create account</h1>
-          <p className="text-sm text-muted-foreground">Join Study Laah and start learning today.</p>
-        </div>
-
-        {/* Role Toggle */}
-        <div className="flex w-full items-center gap-1.5 rounded-lg border border-border bg-background/40 p-1">
-          <button
-            type="button"
-            onClick={() => setRole("student")}
-            className={`flex-1 rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-all ${
-              role === "student"
-                ? "bg-brand text-white shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Student
-          </button>
-          <button
-            type="button"
-            onClick={() => setRole("instructor")}
-            className={`flex-1 rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-all ${
-              role === "instructor"
-                ? "bg-brand text-white shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Instructor
-          </button>
-        </div>
-
-        {/* Fields */}
-        <div className="space-y-4">
-          <label className="block space-y-1.5 text-sm">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</span>
-            <input
-              id="register-email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full rounded-lg border border-border bg-background/60 px-3 py-2.5 text-sm transition-all placeholder:text-muted-foreground/50 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/30"
-            />
-          </label>
-
-          <label className="block space-y-1.5 text-sm">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Password</span>
-            <input
-              id="register-password"
-              type="password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Min. 8 characters"
-              className="w-full rounded-lg border border-border bg-background/60 px-3 py-2.5 text-sm transition-all placeholder:text-muted-foreground/50 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/30"
-            />
-          </label>
-
-          <label className="block space-y-1.5 text-sm">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Confirm password</span>
-            <input
-              id="register-confirm-password"
-              type="password"
-              required
-              minLength={8}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full rounded-lg border border-border bg-background/60 px-3 py-2.5 text-sm transition-all placeholder:text-muted-foreground/50 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/30"
-            />
-          </label>
-        </div>
-
-        {error && (
-          <p id="register-error" role="alert" className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">
-            {error}
-          </p>
-        )}
-
-        <button
-          id="register-submit"
-          type="submit"
-          disabled={busy}
-          className="group relative h-11 w-full overflow-hidden rounded-lg bg-[image:var(--gradient-brand)] text-sm font-semibold text-white shadow-[var(--shadow-brand)] transition-all hover:opacity-90 hover:shadow-[0_0_30px_-5px_var(--brand)] disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {busy ? "Creating account…" : "Create account"}
-        </button>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card/70 px-2 text-muted-foreground backdrop-blur-xl">Or sign up with</span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => handleGoogleSignup()}
-          disabled={busy}
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-background/50 text-sm font-medium transition-colors hover:bg-muted focus:outline-none disabled:opacity-60"
-        >
-          <FcGoogle className="h-5 w-5" />
-          Google
-        </button>
-
-        <p className="text-center text-xs text-muted-foreground">
-          Already have an account?{" "}
-          <Link to="/login" className="font-semibold text-brand hover:underline">
-            Sign in
-          </Link>
-        </p>
-      </form>
 
       <OtpModal email={email} open={otpOpen} onSuccess={() => setOtpOpen(false)} />
     </main>
